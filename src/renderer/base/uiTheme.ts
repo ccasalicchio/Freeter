@@ -3,7 +3,8 @@
  * GNU General Public License v3.0 or later (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
  */
 
-const uiThemeIds = ['dark', 'light'] as const;
+const uiThemeIds = ['dark', 'light', 'nord', 'catppuccin', 'solarized-dark', 'gruvbox-dark', 'dracula', 'high-contrast'] as const;
+export const autoThemeId = 'auto';
 
 export type UiThemeId = typeof uiThemeIds[number];
 
@@ -15,7 +16,13 @@ export interface UiThemeData {
 
 export const uiThemeDataById: Record<UiThemeId, UiThemeData> = {
   ['dark']: { name: 'Dark' },
-  ['light']: { name: 'Light' }
+  ['light']: { name: 'Light' },
+  ['nord']: { name: 'Nord' },
+  ['catppuccin']: { name: 'Catppuccin Mocha' },
+  ['solarized-dark']: { name: 'Solarized Dark' },
+  ['gruvbox-dark']: { name: 'Gruvbox Dark' },
+  ['dracula']: { name: 'Dracula' },
+  ['high-contrast']: { name: 'High Contrast' },
 }
 
 export const uiThemes = uiThemeIds.map(id => ({ id, ...uiThemeDataById[id] }));
@@ -29,4 +36,14 @@ export function sanitizeUiThemeId(id: string): UiThemeId {
     return id;
   }
   return defaultUiThemeId;
+}
+
+export function resolveUiThemeId(id: string): UiThemeId {
+  if (id === autoThemeId) {
+    if (typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      return 'dark';
+    }
+    return 'light';
+  }
+  return sanitizeUiThemeId(id);
 }
