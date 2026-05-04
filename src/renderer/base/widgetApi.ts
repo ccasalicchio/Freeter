@@ -6,7 +6,7 @@
 import { EntityId } from '@/base/entity';
 import { WidgetContextMenuFactory } from '@/base/widget';
 import { ActionBarItems } from './actionBar';
-import { ProcessInfo } from '@common/base/process';
+import { ProcessInfo, SystemMetrics } from '@common/base/process';
 import { OpenDialogResult, OpenDirDialogConfig, OpenFileDialogConfig } from '@common/base/dialog';
 
 interface WidgetApiCommon {
@@ -25,6 +25,7 @@ interface WidgetApiModules {
   readonly clipboard: {
     writeBookmark: (title: string, url: string) => Promise<void>;
     writeText: (text: string) => Promise<void>;
+    readText: () => Promise<string>;
   };
   readonly dataStorage: {
     getText: (key: string) => Promise<string | undefined>;
@@ -37,6 +38,7 @@ interface WidgetApiModules {
   };
   readonly process: {
     getProcessInfo: () => ProcessInfo;
+    getSystemMetrics: () => Promise<SystemMetrics>;
   };
   readonly shell: {
     openApp: (appPath: string, args?: string[]) => Promise<void>;
@@ -48,6 +50,10 @@ interface WidgetApiModules {
   }
   readonly widgets: {
     getWidgetsInCurrentWorkflow<T extends object>(widgetTypeId: string): ReadonlyArray<WidgetApiWidget<T>>;
+  }
+  readonly safeStorage: {
+    encryptString: (plainText: string) => Promise<string>;
+    decryptString: (encryptedText: string) => Promise<string>;
   }
 }
 

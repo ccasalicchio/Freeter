@@ -22,11 +22,13 @@ import { createContextMenuProvider } from '@/infra/contextMenuProvider/contextMe
 import { createClipboardControllers } from '@/controllers/clipboard';
 import { createShellControllers } from '@/controllers/shell';
 import { createWriteTextIntoClipboardUseCase } from '@/application/useCases/clipboard/writeTextIntoClipboard';
+import { createReadTextFromClipboardUseCase } from '@/application/useCases/clipboard/readTextFromClipboard';
 import { createClipboardProvider } from '@/infra/clipboardProvider/clipboardProvider';
 import { createOpenExternalUrlUseCase } from '@/application/useCases/shell/openExternalUrl';
 import { createShellProvider } from '@/infra/shellProvider/shellProvider';
 import { createProcessControllers } from '@/controllers/process';
 import { createGetProcessInfoUseCase } from '@/application/useCases/process/getProcessInfo';
+import { createGetSystemMetricsUseCase } from '@/application/useCases/process/getSystemMetrics';
 import { createProcessProvider } from '@/infra/processProvider/processProvider';
 import { createWriteBookmarkIntoClipboardUseCase } from '@/application/useCases/clipboard/writeBookmarkIntoClipboard';
 import { createObjectManager } from '@common/base/objectManager';
@@ -69,6 +71,9 @@ import { createChildProcessProvider } from '@/infra/childProcessProvider/childPr
 import { createOpenPathUseCase } from '@/application/useCases/shell/openPath';
 import { createCopyWidgetDataStorageUseCase } from '@/application/useCases/widgetDataStorage/copyWidgetDataStorage';
 import { createOpenAppUseCase } from '@/application/useCases/shell/openApp';
+import { createSafeStorageControllers } from '@/controllers/safeStorage';
+import { createSafeStorageEncryptUseCase, createSafeStorageDecryptUseCase } from '@/application/useCases/safeStorage/safeStorage';
+import { createSafeStorageProvider } from '@/infra/safeStorageProvider/safeStorageProvider';
 
 let appWindow: BrowserWindow | null = null; // ref to the app window
 
@@ -145,12 +150,14 @@ if (!app.requestSingleInstanceLock()) {
     const clipboardProvider = createClipboardProvider();
     const writeBookmarkIntoClipboardUseCase = createWriteBookmarkIntoClipboardUseCase({ clipboardProvider });
     const writeTextIntoClipboardUseCase = createWriteTextIntoClipboardUseCase({ clipboardProvider });
+    const readTextFromClipboardUseCase = createReadTextFromClipboardUseCase({ clipboardProvider });
 
     const shellProvider = createShellProvider();
     const openExternalUrlUseCase = createOpenExternalUrlUseCase({ shellProvider });
     const openPathUseCase = createOpenPathUseCase({ shellProvider })
 
     const getProcessInfoUseCase = createGetProcessInfoUseCase({ processProvider });
+    const getSystemMetricsUseCase = createGetSystemMetricsUseCase({ processProvider });
     const { isLinux } = await getProcessInfoUseCase();
 
     const dialogProvider = createDialogProvider();
@@ -177,6 +184,10 @@ if (!app.requestSingleInstanceLock()) {
 
     const openAppUseCase = createOpenAppUseCase({ childProcessProvider, processProvider })
 
+    const safeStorageProvider = createSafeStorageProvider();
+    const safeStorageEncryptUseCase = createSafeStorageEncryptUseCase({ safeStorageProvider });
+    const safeStorageDecryptUseCase = createSafeStorageDecryptUseCase({ safeStorageProvider });
+
     registerControllers(ipcMain, [
       ...createAppDataStorageControllers({ getTextFromAppDataStorageUseCase, setTextInAppDataStorageUseCase }),
       ...createWidgetDataStorageControllers({
@@ -188,9 +199,9 @@ if (!app.requestSingleInstanceLock()) {
         copyWidgetDataStorageUseCase,
       }),
       ...createContextMenuControllers({ popupContextMenuUseCase }),
-      ...createClipboardControllers({ writeBookmarkIntoClipboardUseCase, writeTextIntoClipboardUseCase }),
+      ...createClipboardControllers({ writeBookmarkIntoClipboardUseCase, writeTextIntoClipboardUseCase, readTextFromClipboardUseCase }),
       ...createShellControllers({ openExternalUrlUseCase, openPathUseCase, openAppUseCase }),
-      ...createProcessControllers({ getProcessInfoUseCase }),
+      ...createProcessControllers({ getProcessInfoUseCase, getSystemMetricsUseCase }),
       ...createDialogControllers({
         showMessageBoxUseCase: dialogShowMessageBoxUseCase,
         showOpenDirDialogUseCase,
@@ -201,7 +212,8 @@ if (!app.requestSingleInstanceLock()) {
       ...createGlobalShortcutControllers({ setMainShortcutUseCase }),
       ...createTrayMenuControllers({ setTrayMenuUseCase }),
       ...createBrowserWindowControllers({ showBrowserWindowUseCase }),
-      ...createTerminalControllers({ execCmdLinesInTerminalUseCase })
+      ...createTerminalControllers({ execCmdLinesInTerminalUseCase }),
+      ...createSafeStorageControllers({ safeStorageEncryptUseCase, safeStorageDecryptUseCase })
     ])
 
     const [windowStore] = createWindowStore({

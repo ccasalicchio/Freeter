@@ -12,16 +12,21 @@ const getProcessInfoUseCaseRes = 'get-process-info-return-res';
 
 function setup() {
   const getProcessInfoUseCase = jest.fn(async () => getProcessInfoUseCaseRes as unknown as ProcessInfo);
+  const getSystemMetricsUseCase = jest.fn();
 
   const [
-    getProcessInfoController
+    getProcessInfoController,
+    getSystemMetricsController,
   ] = createProcessControllers({
     getProcessInfoUseCase,
+    getSystemMetricsUseCase,
   })
 
   return {
     getProcessInfoUseCase,
     getProcessInfoController,
+    getSystemMetricsUseCase,
+    getSystemMetricsController,
   }
 }
 

@@ -6,7 +6,8 @@
 import { ProcessProvider } from '@/application/interfaces/processProvider';
 
 const processProvider: ProcessProvider = {
-  getProcessInfo: jest.fn()
+  getProcessInfo: jest.fn(),
+  getSystemMetrics: jest.fn()
 }
 
 export const mockProcessProvider = (props: Partial<ProcessProvider>) => ({ ...processProvider, ...props });

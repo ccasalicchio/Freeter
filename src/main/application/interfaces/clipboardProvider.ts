@@ -6,4 +6,5 @@
 export interface ClipboardProvider {
   writeBookmark: (title: string, url: string) => void;
   writeText: (text: string) => void;
+  readText: () => string;
 }

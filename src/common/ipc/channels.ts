@@ -4,7 +4,7 @@
  */
 
 import { MenuItemsIpc } from '@common/base/menu';
-import { ProcessInfo } from '@common/base/process';
+import { ProcessInfo, SystemMetrics } from '@common/base/process';
 import { makeIpcChannelName } from '@common/ipc/ipc';
 import { MessageBoxConfig, MessageBoxResult, OpenDialogResult, OpenDirDialogConfig, OpenFileDialogConfig, SaveDialogResult, SaveFileDialogConfig } from '@common/base/dialog';
 
@@ -76,9 +76,17 @@ export const ipcWriteTextIntoClipboardChannel = makeIpcChannelName('write-text-i
 export type IpcWriteTextIntoClipboardArgs = [text: string];
 export type IpcWriteTextIntoClipboardRes = void;
 
+export const ipcReadTextFromClipboardChannel = makeIpcChannelName('read-text-from-clipboard');
+export type IpcReadTextFromClipboardArgs = [];
+export type IpcReadTextFromClipboardRes = string;
+
 export const ipcGetProcessInfoChannel = makeIpcChannelName('get-process-info');
 export type IpcGetProcessInfoArgs = [];
 export type IpcGetProcessInfoRes = ProcessInfo;
+
+export const ipcGetSystemMetricsChannel = makeIpcChannelName('get-system-metrics');
+export type IpcGetSystemMetricsArgs = [];
+export type IpcGetSystemMetricsRes = SystemMetrics;
 
 export const ipcShowOsMessageBoxChannel = makeIpcChannelName('show-os-message-box');
 export type IpcShowOsMessageBoxArgs = [config: MessageBoxConfig];
@@ -127,3 +135,11 @@ export type IpcShowBrowserWindowRes = void;
 export const ipcExecCmdLinesInTerminalChannel = makeIpcChannelName('exec-cmd-lines-in-terminal');
 export type IpcExecCmdLinesInTerminalArgs = [cmdLines: ReadonlyArray<string>, cwd?: string];
 export type IpcExecCmdLinesInTerminalRes = void;
+
+export const ipcSafeStorageEncryptChannel = makeIpcChannelName('safe-storage-encrypt');
+export type IpcSafeStorageEncryptArgs = [plainText: string];
+export type IpcSafeStorageEncryptRes = string;
+
+export const ipcSafeStorageDecryptChannel = makeIpcChannelName('safe-storage-decrypt');
+export type IpcSafeStorageDecryptArgs = [encryptedText: string];
+export type IpcSafeStorageDecryptRes = string;

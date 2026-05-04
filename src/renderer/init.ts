@@ -53,6 +53,7 @@ import { createShowWidgetContextMenuUseCase } from '@/application/useCases/widge
 import { createClipboardProvider } from '@/infra/clipboardProvider/clipboardProvider';
 import { createShellProvider } from '@/infra/shellProvider/shellProvider';
 import { createProcessProvider } from '@/infra/processProvider/processProvider';
+import { createSafeStorageProvider } from '@/infra/safeStorageProvider/safeStorageProvider';
 import { createGetWidgetApiUseCase } from '@/application/useCases/widget/getWidgetApi';
 import { DataStorageRenderer } from '@/application/interfaces/dataStorage';
 import { DataStorage } from '@common/application/interfaces/dataStorage';
@@ -258,6 +259,7 @@ async function createUseCases(store: ReturnType<typeof createStore>) {
     copyWidgetDataStorage
   )
   const terminalProvider = createTerminalProvider();
+  const safeStorageProvider = createSafeStorageProvider();
   const getWidgetApiUseCase = createGetWidgetApiUseCase({
     clipboardProvider,
     processProvider,
@@ -265,6 +267,7 @@ async function createUseCases(store: ReturnType<typeof createStore>) {
     widgetDataStorageManager,
     terminalProvider,
     getWidgetsInCurrentWorkflowUseCase,
+    safeStorageProvider,
   })
   const deleteWidgetUseCase = createDeleteWidgetUseCase({
     ...deps,

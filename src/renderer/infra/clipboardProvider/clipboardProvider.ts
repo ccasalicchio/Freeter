@@ -3,7 +3,7 @@
  * GNU General Public License v3.0 or later (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
  */
 
-import { IpcWriteBookmarkIntoClipboardArgs, ipcWriteBookmarkIntoClipboardChannel, IpcWriteBookmarkIntoClipboardRes, IpcWriteTextIntoClipboardArgs, ipcWriteTextIntoClipboardChannel, IpcWriteTextIntoClipboardRes } from '@common/ipc/channels';
+import { IpcWriteBookmarkIntoClipboardArgs, ipcWriteBookmarkIntoClipboardChannel, IpcWriteBookmarkIntoClipboardRes, IpcWriteTextIntoClipboardArgs, ipcWriteTextIntoClipboardChannel, IpcWriteTextIntoClipboardRes, IpcReadTextFromClipboardArgs, ipcReadTextFromClipboardChannel, IpcReadTextFromClipboardRes } from '@common/ipc/channels';
 import { electronIpcRenderer } from '@/infra/mainApi/mainApi';
 import { ClipboardProvider } from '@/application/interfaces/clipboardProvider';
 
@@ -17,6 +17,9 @@ export function createClipboardProvider(): ClipboardProvider {
     writeText: async (text) => electronIpcRenderer.invoke<IpcWriteTextIntoClipboardArgs, IpcWriteTextIntoClipboardRes>(
       ipcWriteTextIntoClipboardChannel,
       text
+    ),
+    readText: async () => electronIpcRenderer.invoke<IpcReadTextFromClipboardArgs, IpcReadTextFromClipboardRes>(
+      ipcReadTextFromClipboardChannel
     )
   }
 }

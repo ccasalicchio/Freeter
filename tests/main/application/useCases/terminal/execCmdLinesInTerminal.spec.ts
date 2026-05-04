@@ -18,7 +18,8 @@ function setup(processInfo: ProcessInfo, defaultTerminal: string) {
     spawnDetached: jest.fn()
   }
   const processProviderMock: ProcessProvider = {
-    getProcessInfo: jest.fn(() => processInfo)
+    getProcessInfo: jest.fn(() => processInfo),
+    getSystemMetrics: jest.fn()
   }
   const useCase = createExecCmdLinesInTerminalUseCase({
     appsProvider: appsProviderMock,
