@@ -2,14 +2,18 @@ module.exports = {
   appId: 'io.freeter.app',
   productName: 'Freeter',
   artifactName: '${productName}-${version}-${os}-${arch}.${ext}',
-  files: [{
-    from: './build',
-    to: './'
-  }, {
-    from: './',
-    to: './',
-    filter: ['package.json']
-  }],
+  directories: {
+    output: 'release'
+  },
+  files: [
+    'dist/**/*',
+    '!dist/renderer/src/**',
+    {
+      from: './',
+      to: './',
+      filter: ['package.json']
+    }
+  ],
   mac: {
     category: 'public.app-category.productivity',
     target: [
