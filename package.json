@@ -1,7 +1,7 @@
 {
   "name": "freeter",
   "version": "3.0.0-alpha.1",
-  "main": "dist/main/index.js",
+  "main": "dist/main/main.js",
   "homepage": "https://freeter.io/",
   "repository": "https://github.com/FreeterApp/Freeter.git",
   "author": "Alex Kaul",
@@ -10,8 +10,8 @@
   "scripts": {
     "dev": "electron-vite dev",
     "dev:run": "electron-vite dev",
-    "prod": "electron-vite build",
-    "prod:run": "electron dist/main/index.js",
+    "prod": "electron-vite build && node -e \"require('fs').cpSync('src/assets', 'dist/main/assets', {recursive: true})\"",
+    "prod:run": "NODE_ENV=production electron dist/main/main.js",
     "preview": "electron-vite preview",
     "package": "electron-builder --config electron-builder.config.js",
     "test": "vitest",
