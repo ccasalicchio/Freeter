@@ -1,8 +1,3 @@
-/*
- * Copyright: (c) 2024, Alex Kaul
- * GNU General Public License v3.0 or later (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
- */
-
 import { WidgetApi } from '@/widgets/appModules';
 
 export const labelCopyFullText = 'Copy Full Text';
@@ -17,6 +12,6 @@ export function canCopyFullText() {
   return true;
 }
 
-export function copyFullText(elTextArea: HTMLTextAreaElement, widgetApi: WidgetApi) {
-  widgetApi.clipboard.writeText(elTextArea.value);
+export function copyFullText(noteText: string, widgetApi: WidgetApi) {
+  widgetApi.clipboard.writeText(noteText);
 }

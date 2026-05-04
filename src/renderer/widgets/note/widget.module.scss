@@ -1,168 +1,91 @@
-/*
- * Copyright: (c) 2024, Alex Kaul
- * GNU General Public License v3.0 or later (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
- */
-
-.textarea {
-  resize: none;
-  position: absolute;
-  border: none;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: var(--freeter-mutedText);
+  font-style: italic;
 }
 
-:global {
-  .TinyMDE {
-    position: absolute;
-    border: none;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    overflow-y: auto;
+.editor {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
 
-    background-color: var(--freeter-textareaBackground);
-    color: var(--freeter-textareaColor);
-    font-size: 14px; //16px;
-    line-height: 20px; //24px;
-    outline: none;
-    padding:6px;//5px;
+  .cm-editor {
+    height: 100%;
   }
 
-  .TMBlankLine {
-    height:20px;//24px;
+  .cm-scroller {
+    overflow: auto;
+  }
+}
+
+.split-view {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.split-editor {
+  flex: 1;
+  overflow: hidden;
+  border-right: 1px solid var(--freeter-headerBorder);
+
+  .cm-editor {
+    height: 100%;
   }
 
-  .TMH1, .TMSetextH1 {
-    font-size:20px;//22px;
-    line-height:28px;//32px;
-    font-weight:bold;
-    margin-bottom:6px;//8px;
+  .cm-scroller {
+    overflow: auto;
   }
+}
 
-  .TMSetextH1 {
-    margin-bottom:0px;
-  }
+.split-preview {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--freeter-componentColor);
+  word-break: break-word;
 
-  .TMSetextH1Marker {
-    margin-bottom:6px;//8px;
-  }
+  h1, h2, h3, h4 { margin: 0.5em 0 0.25em; }
+  p { margin: 0.5em 0; }
+  code { background: var(--freeter-inputBackground); padding: 2px 4px; border-radius: 3px; font-size: 0.9em; }
+  pre { background: var(--freeter-inputBackground); padding: 8px; border-radius: 4px; overflow-x: auto; }
+  pre code { background: none; padding: 0; }
+  blockquote { border-left: 3px solid var(--freeter-primary, #4e9af1); margin: 0.5em 0; padding-left: 12px; color: var(--freeter-mutedText); }
+  ul, ol { padding-left: 24px; margin: 0.5em 0; }
+  a { color: var(--freeter-primary, #4e9af1); text-decoration: underline; }
+  img { max-width: 100%; }
+  table { border-collapse: collapse; width: 100%; margin: 0.5em 0; }
+  th, td { border: 1px solid var(--freeter-componentBorder); padding: 6px 10px; text-align: left; }
+  th { background: var(--freeter-inputBackground); font-weight: 600; }
+}
 
-  .TMH2, .TMSetextH2 {
-    font-size:18px;//20px;
-    line-height:26px;//28px;
-    font-weight:bold;
-    margin-bottom:4px;
-  }
+.preview {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  padding: 12px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--freeter-componentColor);
+  word-break: break-word;
 
-  .TMMark_TMCode {
-    font-family:monospace;
-    font-size:.9em;
-  }
-
-  .TMFencedCodeBacktick, .TMFencedCodeTilde, .TMIndentedCode, .TMCode {
-    font-family:monospace;
-    font-size:.9em;
-    background-color:var(--freeter-widgetBackground);//#e0e0e0;
-  }
-
-  .TMCodeFenceBacktickOpen, .TMCodeFenceTildeOpen {
-    border-bottom: 1px solid var(--freeter-textareaBorder);//#c0c0c0;
-    font-family: monospace;
-    font-size:.9em;
-  }
-
-  .TMCodeFenceBacktickClose, .TMCodeFenceTildeClose {
-    border-top: 1px solid var(--freeter-textareaBorder);//#c0c0c0;
-    font-family: monospace;
-    font-size:.9em;
-  }
-
-  .TMInfoString {
-    color: #0000ff;
-  }
-
-  .TMCode {
-    border:1px solid var(--freeter-textareaBorder);//#c0c0c0;
-    border-radius: 2px;
-  }
-
-  .TMBlockquote {
-    font-style: italic;
-    border-left:2px solid var(--freeter-textareaBorder);//#c0c0c0;
-    padding-left:8px;//10px;
-    margin-left:8px;//10px;
-  }
-
-  .TMMark {
-    color:#a0a0a0;
-  }
-
-  .TMMark_TMH1, .TMMark_TMH2 {
-    color: var(--freeter-primary60);//#ff8080;
-  }
-
-  .TMMark_TMUL, .TMMark_TMOL {
-    color: var(--freeter-primary60);//#ff8080;
-  }
-
-  .TMImage {
-    text-decoration: underline;
-    text-decoration-color: var(--freeter-componentColor60);//#00ff00;
-  }
-
-
-  .TMLink {
-    text-decoration: underline;
-    text-decoration-color: var(--freeter-componentColor60);//#0000ff;
-  }
-
-  .TMLinkLabel {
-    text-decoration: underline;
-    font-family: monospace;
-  }
-
-  .TMLinkLabel_Definition, .TMLinkLabel_Valid {
-    color: var(--freeter-componentColor40);//#40c040;
-  }
-
-  .TMLinkLabel_Invalid {
-    color: #ff0000;
-  }
-
-  .TMLinkTitle {
-    font-style:italic;
-  }
-
-  .TMLinkDestination, .TMAutolink {
-    text-decoration: underline;
-    color: var(--freeter-componentColor60);//#0000ff;
-  }
-
-  .TMHR {
-    position: relative;
-  }
-
-  .TMHR:before {
-    content: '';
-    position: absolute;
-    bottom: 50%;
-    left: 40%;
-    border-bottom: 2px solid var(--freeter-componentColor60);//#808080;
-    width: 20%;
-    z-index:0;
-  }
-
-  .TMHTML, .TMHTMLBlock {
-    font-family:monospace;
-    font-size:.9em;
-    color:var(--freeter-primary40);//#8000ff;
-  }
-
-  .TMHTMLBlock {
-    color:var(--freeter-primary30);//#6000c0;
-  }
-
+  h1, h2, h3, h4 { margin: 0.5em 0 0.25em; }
+  p { margin: 0.5em 0; }
+  code { background: var(--freeter-inputBackground); padding: 2px 4px; border-radius: 3px; font-size: 0.9em; }
+  pre { background: var(--freeter-inputBackground); padding: 8px; border-radius: 4px; overflow-x: auto; }
+  pre code { background: none; padding: 0; }
+  blockquote { border-left: 3px solid var(--freeter-primary, #4e9af1); margin: 0.5em 0; padding-left: 12px; color: var(--freeter-mutedText); }
+  ul, ol { padding-left: 24px; margin: 0.5em 0; }
+  a { color: var(--freeter-primary, #4e9af1); text-decoration: underline; }
+  img { max-width: 100%; }
+  table { border-collapse: collapse; width: 100%; margin: 0.5em 0; }
+  th, td { border: 1px solid var(--freeter-componentBorder); padding: 6px 10px; text-align: left; }
+  th { background: var(--freeter-inputBackground); font-weight: 600; }
 }
