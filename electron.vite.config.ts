@@ -1,10 +1,17 @@
 import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
 import react from '@vitejs/plugin-react'
 import createSvgSpritePlugin from 'vite-plugin-svg-sprite'
+import path from 'path'
 
 export default defineConfig({
   main: {
     plugins: [externalizeDepsPlugin()],
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, 'src/main'),
+        '@common': path.resolve(__dirname, 'src/common'),
+      }
+    },
     build: {
       outDir: 'dist/main',
       rollupOptions: {
@@ -16,6 +23,12 @@ export default defineConfig({
   },
   preload: {
     plugins: [externalizeDepsPlugin()],
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, 'src/renderer'),
+        '@common': path.resolve(__dirname, 'src/common'),
+      }
+    },
     build: {
       outDir: 'dist/preload',
       rollupOptions: {
@@ -27,6 +40,12 @@ export default defineConfig({
   },
   renderer: {
     root: 'src/renderer',
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, 'src/renderer'),
+        '@common': path.resolve(__dirname, 'src/common'),
+      }
+    },
     build: {
       outDir: 'dist/renderer'
     },

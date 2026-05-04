@@ -1,5 +1,7 @@
+import nesting from 'postcss-nesting'
+
 export default {
   plugins: [
-    require('postcss-nesting')(),
+    nesting()
   ]
 }
