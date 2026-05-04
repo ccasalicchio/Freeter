@@ -143,3 +143,11 @@ export type IpcSafeStorageEncryptRes = string;
 export const ipcSafeStorageDecryptChannel = makeIpcChannelName('safe-storage-decrypt');
 export type IpcSafeStorageDecryptArgs = [encryptedText: string];
 export type IpcSafeStorageDecryptRes = string;
+
+export const ipcExportProfileChannel = makeIpcChannelName('export-profile');
+export type IpcExportProfileArgs = [];
+export type IpcExportProfileRes = boolean;
+
+export const ipcImportProfileChannel = makeIpcChannelName('import-profile');
+export type IpcImportProfileArgs = [];
+export type IpcImportProfileRes = string | undefined;

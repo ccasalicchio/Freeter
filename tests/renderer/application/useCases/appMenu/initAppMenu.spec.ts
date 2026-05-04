@@ -51,6 +51,10 @@ async function setup(initState: AppState, opts?: {
     openAboutUseCase,
     openAppManagerUseCase,
     openProjectManagerUseCase,
+    profileProvider: {
+      exportProfile: jest.fn(),
+      importProfile: jest.fn(),
+    },
   });
   return {
     appStore,

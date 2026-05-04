@@ -74,6 +74,7 @@ import { createOpenAppUseCase } from '@/application/useCases/shell/openApp';
 import { createSafeStorageControllers } from '@/controllers/safeStorage';
 import { createSafeStorageEncryptUseCase, createSafeStorageDecryptUseCase } from '@/application/useCases/safeStorage/safeStorage';
 import { createSafeStorageProvider } from '@/infra/safeStorageProvider/safeStorageProvider';
+import { createProfileControllers } from '@/controllers/profile';
 
 let appWindow: BrowserWindow | null = null; // ref to the app window
 
@@ -213,7 +214,12 @@ if (!app.requestSingleInstanceLock()) {
       ...createTrayMenuControllers({ setTrayMenuUseCase }),
       ...createBrowserWindowControllers({ showBrowserWindowUseCase }),
       ...createTerminalControllers({ execCmdLinesInTerminalUseCase }),
-      ...createSafeStorageControllers({ safeStorageEncryptUseCase, safeStorageDecryptUseCase })
+      ...createSafeStorageControllers({ safeStorageEncryptUseCase, safeStorageDecryptUseCase }),
+      ...createProfileControllers({
+        appDataStorage,
+        widgetDataStorageManager,
+        getBrowserWindow: () => appWindow
+      })
     ])
 
     const [windowStore] = createWindowStore({

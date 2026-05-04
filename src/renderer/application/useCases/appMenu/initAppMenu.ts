@@ -12,6 +12,7 @@ import { ToggleMenuBarUseCase } from '@/application/useCases/toggleMenuBar';
 import { OpenApplicationSettingsUseCase } from '@/application/useCases/applicationSettings/openApplicationSettings';
 import { OpenAboutUseCase } from '@/application/useCases/about/openAbout';
 import { ShellProvider } from '@/application/interfaces/shellProvider';
+import { ProfileProvider } from '@/infra/profileProvider/profileProvider';
 import { OpenProjectManagerUseCase } from '@/application/useCases/projectManager/openProjectManager';
 import { OpenAppManagerUseCase } from '@/application/useCases/appManager/openAppManager';
 import { EditTogglePos, ProjectSwitcherPos } from '@/base/state/ui';
@@ -30,6 +31,7 @@ type Deps = {
   appMenu: AppMenuProvider;
   processProvider: ProcessProvider;
   shellProvider: ShellProvider;
+  profileProvider: ProfileProvider;
   toggleEditModeUseCase: ToggleEditModeUseCase;
   toggleMenuBarUseCase: ToggleMenuBarUseCase;
   toggleTopBarUseCase: ToggleTopBarUseCase;
@@ -47,6 +49,7 @@ export function createInitAppMenuUseCase({
   appMenu,
   processProvider,
   shellProvider,
+  profileProvider,
   toggleEditModeUseCase,
   toggleMenuBarUseCase,
   toggleTopBarUseCase,
@@ -83,6 +86,21 @@ export function createInitAppMenuUseCase({
     role: 'quit'
   }
 
+  const itemExportProfile: MenuItem = {
+    label: 'Export Profile…',
+    doAction: async () => { await profileProvider.exportProfile(); }
+  };
+
+  const itemImportProfile: MenuItem = {
+    label: 'Import Profile…',
+    doAction: async () => {
+      const result = await profileProvider.importProfile();
+      if (result) {
+        window.location.reload();
+      }
+    }
+  };
+
   const menuApp: MenuItem = {
     label: 'Freeter',
     submenu: [
@@ -103,6 +121,9 @@ export function createInitAppMenuUseCase({
   const menuFile: MenuItem = {
     label: '&File',
     submenu: [
+      itemExportProfile,
+      itemImportProfile,
+      itemSeparator,
       itemSettings,
       itemSeparator,
       itemQuit

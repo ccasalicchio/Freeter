@@ -108,6 +108,7 @@ import { createCloseAboutUseCase } from '@/application/useCases/about/closeAbout
 import { createOpenAboutUseCase } from '@/application/useCases/about/openAbout';
 import { createGetAboutInfoUseCase } from '@/application/useCases/about/getAboutInfo';
 import { createProductInfoProvider } from '@/infra/productInfoProvider/productInfoProvider';
+import { createProfileProvider } from '@/infra/profileProvider/profileProvider';
 import { createOpenSponsorshipUrlUseCase } from '@/application/useCases/about/openSponsorshipUrl';
 import { createTerminalProvider } from '@/infra/terminalProvider/terminalProvider';
 import { createShowContextMenuUseCase } from '@/application/useCases/contextMenu/showContextMenu';
@@ -334,11 +335,13 @@ async function createUseCases(store: ReturnType<typeof createStore>) {
   const appMenuProvider = createAppMenuProvider({
     clickAppMenuItemUseCase
   });
+  const profileProvider = createProfileProvider();
   const initAppMenuUseCase = createInitAppMenuUseCase({
     ...deps,
     appMenu: appMenuProvider,
     processProvider,
     shellProvider,
+    profileProvider,
     toggleEditModeUseCase,
     toggleMenuBarUseCase,
     toggleTopBarUseCase,
