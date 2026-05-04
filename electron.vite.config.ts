@@ -1,5 +1,6 @@
 import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
 import react from '@vitejs/plugin-react'
+import createSvgSpritePlugin from 'vite-plugin-svg-sprite'
 
 export default defineConfig({
   main: {
@@ -29,7 +30,13 @@ export default defineConfig({
     build: {
       outDir: 'dist/renderer'
     },
-    plugins: [react()],
+    plugins: [
+      react(),
+      createSvgSpritePlugin({
+        exportType: 'vanilla',
+        include: '**/icons/*.svg'
+      })
+    ],
     css: {
       modules: {
         localsConvention: 'camelCaseOnly'
