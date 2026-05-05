@@ -1,4 +1,5 @@
-import { Button, ReactComponent, WidgetReactComponentProps } from '@/widgets/appModules';
+import { Button, ContextMenuEvent, ReactComponent, WidgetReactComponentProps } from '@/widgets/appModules';
+import { Settings } from './settings';
 import * as styles from './widget.module.scss';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createActionBarItems } from '@/widgets/webpage/actionBar';
@@ -8,6 +9,7 @@ import { ContextMenuEvent as ElectronContextMenuEvent } from 'electron';
 import { createPartition } from '@/widgets/webpage/partition';
 import { reload } from '@/widgets/webpage/actions';
 import { WebpageExposedApi } from '@/widgets/interfaces';
+import { muteSvg, unmuteSvg } from './icons';
 
 interface WebviewProps extends WidgetReactComponentProps<Settings> {
   onRequireRestart: () => void;

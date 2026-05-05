@@ -7,7 +7,10 @@ import { Settings } from '@/widgets/timer/settings';
 
 export function fixtureSettings(settings: Partial<Settings>): Settings {
   return {
+    mode: 'timer',
     mins: 25,
+    customSecs: 60,
+    endDesktop: true,
     endSound: '',
     endSoundVol: 80,
     ...settings
