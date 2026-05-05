@@ -55,6 +55,7 @@ async function setup(initState: AppState, opts?: {
       exportProfile: jest.fn(),
       importProfile: jest.fn(),
     },
+    openCommandPaletteUseCase: jest.fn(),
   });
   return {
     appStore,

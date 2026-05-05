@@ -162,6 +162,7 @@ export interface ModalScreensDataState {
   projectManager: ProjectManagerState;
   widgetSettings: WidgetSettingsState;
   workflowSettings: WorkflowSettingsState;
+  commandPalette: void;
 }
 
 export type ModalScreenId = keyof ModalScreensDataState;
@@ -278,6 +279,7 @@ export function createUiState(): UiState {
         workflowSettings: {
           workflow: null
         },
+        commandPalette: undefined,
       },
       order: []
     },

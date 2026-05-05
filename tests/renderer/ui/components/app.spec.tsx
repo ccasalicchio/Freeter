@@ -50,7 +50,11 @@ async function setup(
     ApplicationSettings: mockApplicationSettings,
     AppManager: mockAppManager,
     About: mockAbout,
-    showContextMenuUseCase
+    showContextMenuUseCase,
+    closeCommandPaletteUseCase: jest.fn(),
+    openApplicationSettingsUseCase: jest.fn(),
+    openProjectManagerUseCase: jest.fn(),
+    openAppManagerUseCase: jest.fn(),
   });
 
   const App = createAppComponent({

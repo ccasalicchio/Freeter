@@ -17,6 +17,7 @@ const modalScreensDataState: ModalScreensDataState = {
   projectManager: fixtureProjectManager(),
   widgetSettings: fixtureWidgetSettings(),
   workflowSettings: fixtureWorkflowSettings(),
+  commandPalette: undefined,
 }
 
 const modalScreensState: ModalScreensState = {

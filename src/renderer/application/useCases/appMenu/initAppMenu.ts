@@ -19,6 +19,7 @@ import { EditTogglePos, ProjectSwitcherPos } from '@/base/state/ui';
 import { ToggleTopBarUseCase } from '@/application/useCases/toggleTopBar';
 import { SetProjectSwitcherPositionUseCase } from '@/application/useCases/projectSwitcher/setProjectSwitcherPosition';
 import { SetEditTogglePositionUseCase } from '@/application/useCases/setEditTogglePosition';
+import { OpenCommandPaletteUseCase } from '@/application/useCases/commandPalette/openCommandPalette';
 
 const urlDownload = 'https://freeter.io/v2/download';
 const urlTwitter = 'https://twitter.com/FreeterApp';
@@ -41,6 +42,7 @@ type Deps = {
   openAboutUseCase: OpenAboutUseCase;
   openProjectManagerUseCase: OpenProjectManagerUseCase;
   openAppManagerUseCase: OpenAppManagerUseCase;
+  openCommandPaletteUseCase: OpenCommandPaletteUseCase;
 }
 
 
@@ -59,6 +61,7 @@ export function createInitAppMenuUseCase({
   openAboutUseCase,
   openProjectManagerUseCase,
   openAppManagerUseCase,
+  openCommandPaletteUseCase,
 }: Deps) {
   const { isMac, isDevMode } = processProvider.getProcessInfo();
 
@@ -135,6 +138,12 @@ export function createInitAppMenuUseCase({
   ) => MenuItem = (editMode) => ({
     label: '&Edit',
     submenu: [
+      {
+        accelerator: 'CmdOrCtrl+P',
+        label: 'Command Palette',
+        doAction: async () => openCommandPaletteUseCase()
+      },
+      itemSeparator,
       {
         accelerator: 'CmdOrCtrl+E',
         label: `${editMode ? 'Disable' : 'Enable'} Edit Mode`,
