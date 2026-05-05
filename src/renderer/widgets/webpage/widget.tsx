@@ -1,13 +1,6 @@
-/*
- * Copyright: (c) 2024, Alex Kaul
- * GNU General Public License v3.0 or later (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
- */
-
-import { ContextMenuEvent, ReactComponent, WidgetReactComponentProps } from '@/widgets/appModules';
-import { Settings } from './settings';
+import { Button, ReactComponent, WidgetReactComponentProps } from '@/widgets/appModules';
 import * as styles from './widget.module.scss';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-// import { DidFailLoadEvent } from 'electron';
 import { createActionBarItems } from '@/widgets/webpage/actionBar';
 import { sanitizeUrl } from '@common/helpers/sanitizeUrl';
 import { createContextMenuFactory } from '@/widgets/webpage/contextMenu';
@@ -17,10 +10,6 @@ import { reload } from '@/widgets/webpage/actions';
 import { WebpageExposedApi } from '@/widgets/interfaces';
 
 interface WebviewProps extends WidgetReactComponentProps<Settings> {
-  /**
-   * Should be called when <Webview> tag requires a full restart by
-   * replacing it in DOM
-   */
   onRequireRestart: () => void;
 }
 
@@ -32,9 +21,7 @@ function Webview({settings, widgetApi, onRequireRestart, env, id}: WebviewProps)
   ])
 
   const initPartition = useRef(partition)
-
   const reqRestartIfChanged = useMemo(() => ([injectedJS, userAgent]), [injectedJS, userAgent])
-
   const initReqRestartIfChanged = useRef(reqRestartIfChanged)
 
   useEffect(() => {
@@ -49,6 +36,15 @@ function Webview({settings, widgetApi, onRequireRestart, env, id}: WebviewProps)
   const [webviewIsReady, setWebviewIsReady] = useState(false);
   const [autoReloadStopped, setAutoReloadStopped] = useState(false);
   const [cssInDom, setCssInDom] = useState<[string, string]|null>(null);
+  const [addressBarUrl, setAddressBarUrl] = useState(url);
+  const [showFindBar, setShowFindBar] = useState(false);
+  const [findText, setFindText] = useState('');
+  const [zoomFactor, setZoomFactor] = useState(1);
+  const [isMuted, setIsMuted] = useState(false);
+  const [findMatches, setFindMatches] = useState(0);
+  const [findActiveMatch, setFindActiveMatch] = useState(0);
+  const addressInputRef = useRef<HTMLInputElement>(null);
+  const findInputRef = useRef<HTMLInputElement>(null);
 
   const sanitUrl = useMemo(() => sanitizeUrl(url), [url]);
   const sanitUA = useMemo(() => userAgent.trim(), [userAgent]);
@@ -60,6 +56,21 @@ function Webview({settings, widgetApi, onRequireRestart, env, id}: WebviewProps)
     })
   }, [exposeApi, url])
 
+  useEffect(() => {
+    setAddressBarUrl(url);
+  }, [url]);
+
+  const handleAddressBarSubmit = useCallback((e: React.FormEvent) => {
+    e.preventDefault();
+    const inputUrl = addressBarUrl.trim();
+    if (inputUrl && webviewRef.current) {
+      const sanitized = sanitizeUrl(inputUrl);
+      if (sanitized) {
+        webviewRef.current.loadURL(sanitized);
+      }
+    }
+  }, [addressBarUrl]);
+
   const refreshActions = useCallback(
     () => updateActionBar(
       createActionBarItems(
@@ -68,16 +79,72 @@ function Webview({settings, widgetApi, onRequireRestart, env, id}: WebviewProps)
         url,
         autoReload,
         autoReloadStopped,
-        setAutoReloadStopped
+        setAutoReloadStopped,
+        zoomFactor,
+        isMuted,
+        setZoomFactor,
+        setIsMuted,
+        () => { setShowFindBar(prev => !prev); if (!showFindBar) { setTimeout(() => findInputRef.current?.focus(), 100); } }
       )
     ),
-    [autoReload, autoReloadStopped, updateActionBar, url, webviewIsReady, widgetApi]
+    [autoReload, autoReloadStopped, updateActionBar, url, webviewIsReady, widgetApi, zoomFactor, isMuted, showFindBar]
   );
+
+  useEffect(() => {
+    refreshActions();
+  }, [zoomFactor, isMuted, showFindBar, refreshActions]);
+
+  const handleFind = useCallback((text: string) => {
+    setFindText(text);
+    const wv = webviewRef.current;
+    if (!wv) {
+      return;
+    }
+    if (text) {
+      wv.findInPage(text, { findNext: true });
+    } else {
+      wv.stopFindInPage('clearSelection');
+      setFindMatches(0);
+      setFindActiveMatch(0);
+    }
+  }, []);
+
+  const handleFindNext = useCallback(() => {
+    if (findText && webviewRef.current) {
+      webviewRef.current.findInPage(findText, { findNext: true });
+    }
+  }, [findText]);
+
+  const handleFindPrev = useCallback(() => {
+    if (findText && webviewRef.current) {
+      webviewRef.current.findInPage(findText, { findNext: false, forward: false });
+    }
+  }, [findText]);
+
+  const handleZoomIn = useCallback(() => {
+    const newZoom = Math.min(zoomFactor + 0.25, 5);
+    setZoomFactor(newZoom);
+    webviewRef.current?.setZoomFactor(newZoom);
+  }, [zoomFactor]);
+
+  const handleZoomOut = useCallback(() => {
+    const newZoom = Math.max(zoomFactor - 0.25, 0.25);
+    setZoomFactor(newZoom);
+    webviewRef.current?.setZoomFactor(newZoom);
+  }, [zoomFactor]);
+
+  const handleToggleMute = useCallback(() => {
+    const wv = webviewRef.current;
+    if (wv) {
+      const newMuted = !wv.isAudioMuted();
+      wv.setAudioMuted(newMuted);
+      setIsMuted(newMuted);
+    }
+  }, []);
 
   const injectCSSInDOM = useCallback(
     async (css: string, force: boolean) => {
       if(webviewIsReady) {
-        // reinject not forced, css not changed
         if (!force && cssInDom && cssInDom[1] === css) {
           return;
         }
@@ -111,7 +178,6 @@ function Webview({settings, widgetApi, onRequireRestart, env, id}: WebviewProps)
         setAutoReloadStopped
       )
     )
-
     return undefined;
   }, [setContextMenuFactory, webviewIsReady, widgetApi, url, autoReload, autoReloadStopped])
 
@@ -128,11 +194,6 @@ function Webview({settings, widgetApi, onRequireRestart, env, id}: WebviewProps)
     const handleDidStopLoading = () => {
       setIsLoading(false);
     }
-
-    // Electron creates a 'context-menu' event for Webview element. We should turn it
-    // into a HTML-standard 'contextmenu' event to enable context menus. We also
-    // transfer ElectronContextMenuEvent.params as contextData to make it accessible
-    // in contextMenuFactory.
     const handleContextMenu = (e: ElectronContextMenuEvent) => {
       e.preventDefault();
       e.stopPropagation();
@@ -140,22 +201,21 @@ function Webview({settings, widgetApi, onRequireRestart, env, id}: WebviewProps)
       evt.contextData = e.params;
       webviewEl.dispatchEvent(evt);
     }
-    // const handleDidFailLoad = (e: DidFailLoadEvent) => {
-    //   console.log(e.errorDescription);
-    // };
+    const handleFoundInPage = (e: Electron.FoundInPageEvent & { result: Electron.FoundInPageResult }) => {
+      setFindMatches(e.result.matches);
+      setFindActiveMatch(e.result.activeMatchOrdinal);
+    };
 
-    // Add event listeners
     webviewEl.addEventListener('did-start-loading', handleDidStartLoading);
     webviewEl.addEventListener('did-stop-loading', handleDidStopLoading);
-    // webviewEl.addEventListener('did-fail-load', handleDidFailLoad);
-    webviewEl.addEventListener('context-menu', handleContextMenu)
+    webviewEl.addEventListener('context-menu', handleContextMenu);
+    webviewEl.addEventListener('found-in-page', handleFoundInPage as EventListener);
 
     return () => {
-      // Remove event listeners
       webviewEl.removeEventListener('did-start-loading', handleDidStartLoading);
       webviewEl.removeEventListener('did-stop-loading', handleDidStopLoading);
-      // webviewEl.removeEventListener('did-fail-load', handleDidFailLoad);
-      webviewEl.removeEventListener('context-menu', handleContextMenu)
+      webviewEl.removeEventListener('context-menu', handleContextMenu);
+      webviewEl.removeEventListener('found-in-page', handleFoundInPage as EventListener);
     };
   }, []);
 
@@ -179,12 +239,12 @@ function Webview({settings, widgetApi, onRequireRestart, env, id}: WebviewProps)
       if (injectedJS) {
         webviewEl.executeJavaScript(injectedJS);
       }
-      // webviewEl.classList.add('is-bg-visible');
     }
     const handleDidFinishLoad = () => {
       refreshActions();
     }
     const handleDidNavigate = () => {
+      setAddressBarUrl(webviewEl.getURL());
       refreshActions();
     }
     const handleDidFrameNavigate = () => {
@@ -194,7 +254,6 @@ function Webview({settings, widgetApi, onRequireRestart, env, id}: WebviewProps)
       refreshActions();
     }
 
-    // Add event listeners
     webviewEl.addEventListener('dom-ready', handleDomReady);
     webviewEl.addEventListener('did-navigate', handleDidNavigate);
     webviewEl.addEventListener('did-frame-navigate', handleDidFrameNavigate);
@@ -202,52 +261,102 @@ function Webview({settings, widgetApi, onRequireRestart, env, id}: WebviewProps)
     webviewEl.addEventListener('did-finish-load', handleDidFinishLoad);
 
     return () => {
-      // Remove event listeners
       webviewEl.removeEventListener('dom-ready', handleDomReady);
       webviewEl.removeEventListener('did-navigate', handleDidNavigate);
       webviewEl.removeEventListener('did-frame-navigate', handleDidFrameNavigate);
       webviewEl.removeEventListener('did-navigate-in-page', handleDidNavigateInPage);
       webviewEl.removeEventListener('did-finish-load', handleDidFinishLoad);
-          };
+    };
   }, [injectCSSInDOM, injectedCSS, injectedJS, refreshActions]);
 
   useEffect(() => {
     if (autoReload>0 && !autoReloadStopped) {
       const interval = setInterval(() => webviewRef.current && reload(webviewRef.current), autoReload*1000)
-
       return () => clearInterval(interval)
     }
     return undefined;
   }, [autoReload, autoReloadStopped])
 
-  return <>
-    <webview
-      ref={webviewRef}
-      // eslint-disable-next-line react/no-unknown-property
-      allowpopups={'' as unknown as boolean}
-      // eslint-disable-next-line react/no-unknown-property
-      partition={initPartition.current}
-      className={styles['webview']}
-      tabIndex={0} // this enables the tab-navigation to widget action bar
-      src={sanitUrl !== '' ? sanitUrl : undefined}
-      // eslint-disable-next-line react/no-unknown-property
-      useragent={sanitUA !== '' ? sanitUA : undefined}
-    ></webview>
-    {isLoading && <div className={styles['loading']}>Loading...</div>}
-  </>
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'f' && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      setShowFindBar(true);
+      setTimeout(() => findInputRef.current?.focus(), 100);
+    }
+    if (e.key === 'r' && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      if (webviewRef.current) {
+        reload(webviewRef.current);
+      }
+    }
+    if (e.key === 'l' && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      addressInputRef.current?.focus();
+      addressInputRef.current?.select();
+    }
+  }, []);
+
+  return (
+    <div className={styles['webview-container']} onKeyDown={handleKeyDown} tabIndex={-1}>
+      <form className={styles['address-bar']} onSubmit={handleAddressBarSubmit}>
+        <input
+          ref={addressInputRef}
+          className={styles['address-input']}
+          type="text"
+          value={addressBarUrl}
+          onChange={e => setAddressBarUrl(e.target.value)}
+          placeholder="Enter URL..."
+        />
+      </form>
+      {showFindBar && (
+        <div className={styles['find-bar']}>
+          <input
+            ref={findInputRef}
+            className={styles['find-input']}
+            type="text"
+            value={findText}
+            onChange={e => handleFind(e.target.value)}
+            placeholder="Find in page..."
+          />
+          <span className={styles['find-matches']}>{findActiveMatch}/{findMatches}</span>
+          <Button onClick={handleFindPrev} caption="▲" size="S" />
+          <Button onClick={handleFindNext} caption="▼" size="S" />
+          <Button onClick={() => { setShowFindBar(false); setFindText(''); webviewRef.current?.stopFindInPage('clearSelection'); }} caption="×" size="S" />
+        </div>
+      )}
+      <div className={styles['zoom-bar']}>
+        <Button onClick={handleZoomOut} caption="−" size="S" />
+        <span className={styles['zoom-level']}>{Math.round(zoomFactor * 100)}%</span>
+        <Button onClick={handleZoomIn} caption="+" size="S" />
+        <Button onClick={handleToggleMute} iconSvg={isMuted ? unmuteSvg : muteSvg} size="S" title={isMuted ? 'Unmute' : 'Mute'} />
+      </div>
+      <webview
+        ref={webviewRef}
+        // eslint-disable-next-line react/no-unknown-property
+        allowpopups={'' as unknown as boolean}
+        // eslint-disable-next-line react/no-unknown-property
+        partition={initPartition.current}
+        className={styles['webview']}
+        tabIndex={0}
+        src={sanitUrl !== '' ? sanitUrl : undefined}
+        // eslint-disable-next-line react/no-unknown-property
+        useragent={sanitUA !== '' ? sanitUA : undefined}
+      ></webview>
+      {isLoading && <div className={styles['loading']}>Loading...</div>}
+    </div>
+  )
 }
 
 export function WidgetComp(props: WidgetReactComponentProps<Settings>) {
   const {url} = props.settings;
   const [requireRestart, setRequireRestart] = useState(1);
-
   const doRestart = useCallback(() => setRequireRestart(requireRestart+1), [requireRestart])
 
   useEffect(()=> {
     if(!url) {
       const {updateActionBar, setContextMenuFactory} = props.widgetApi;
       setContextMenuFactory(createContextMenuFactory(null, props.widgetApi, url, 0, false, () => undefined));
-      updateActionBar(createActionBarItems(null, props.widgetApi, url, 0, false, () => undefined));
+      updateActionBar(createActionBarItems(null, props.widgetApi, url, 0, false, () => undefined, 1, false, () => {}, () => {}, () => {}));
     }
   }, [props.widgetApi, url]);
 
