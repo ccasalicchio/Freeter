@@ -3,30 +3,58 @@
  * GNU General Public License v3.0 or later (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
  */
 
+/**
+ * @fileoverview Widget API interfaces for Freeter widgets.
+ * These interfaces define the communication layer between widgets and the Freeter application.
+ */
+
 import { EntityId } from '@/base/entity';
 import { WidgetContextMenuFactory } from '@/base/widget';
 import { ActionBarItems } from './actionBar';
 import { ProcessInfo, SystemMetrics } from '@common/base/process';
 import { OpenDialogResult, OpenDirDialogConfig, OpenFileDialogConfig } from '@common/base/dialog';
 
+/**
+ * Common API methods available to all widgets.
+ * These are always present regardless of requiresApi configuration.
+ */
 interface WidgetApiCommon {
+  /** Update the action bar items displayed for this widget. */
   readonly updateActionBar: (actionBarItems: ActionBarItems) => void;
+  /** Set a factory function that creates context menu items for this widget. */
   readonly setContextMenuFactory: (factory: WidgetContextMenuFactory) => void;
-  readonly exposeApi: <T extends object>(api: T) => void; // exposes api for consumption by other widgets via WidgetAPI.widgets
+  /**
+   * Expose an API object for consumption by other widgets.
+   * Other widgets can access this via WidgetAPI.widgets.getWidgetsInCurrentWorkflow().
+   */
+  readonly exposeApi: <T extends object>(api: T) => void;
 }
 
-// Widget things available for use by other widgets via WidgetAPI.widgets
+/**
+ * Represents another widget's exposed API, retrieved via WidgetAPI.widgets.
+ */
 export interface WidgetApiWidget<T extends object = object> {
   id: EntityId;
   name: string;
-  api: Partial<T>; // api exposed by widget
+  /** The API exposed by the widget via exposeApi(). */
+  api: Partial<T>;
 }
+
+/**
+ * API modules available to widgets via the requiresApi configuration.
+ * Request access by adding module names to the WidgetType.requiresApi array.
+ */
 interface WidgetApiModules {
+  /** Clipboard operations for reading/writing text and bookmarks. */
   readonly clipboard: {
+    /** Write a bookmark (title + URL) to the system clipboard (macOS/Windows). */
     writeBookmark: (title: string, url: string) => Promise<void>;
+    /** Write plain text to the system clipboard. */
     writeText: (text: string) => Promise<void>;
+    /** Read plain text from the system clipboard. */
     readText: () => Promise<string>;
   };
+  /** Per-widget persistent key-value storage. Each widget has isolated storage. */
   readonly dataStorage: {
     getText: (key: string) => Promise<string | undefined>;
     setText: (key: string, value: string) => Promise<void>;

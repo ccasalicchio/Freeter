@@ -3,16 +3,26 @@
  * GNU General Public License v3.0 or later (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
  */
 
+/**
+ * @fileoverview
+ * IPC channel definitions for Freeter.
+ * Each channel has typed Args (arguments sent from renderer to main)
+ * and Res (response value sent from main to renderer).
+ * All channels are prefixed with 'freeter:' by makeIpcChannelName().
+ */
+
 import { MenuItemsIpc } from '@common/base/menu';
 import { ProcessInfo, SystemMetrics } from '@common/base/process';
 import { PluginManifest } from '@common/base/plugin';
 import { makeIpcChannelName } from '@common/ipc/ipc';
 import { MessageBoxConfig, MessageBoxResult, OpenDialogResult, OpenDirDialogConfig, OpenFileDialogConfig, SaveDialogResult, SaveFileDialogConfig } from '@common/base/dialog';
 
+/** Get a text value from application-level data storage. */
 export const ipcAppDataStorageGetTextChannel = makeIpcChannelName('app-data-storage-get-text');
 export type IpcAppDataStorageGetTextArgs = [key: string];
 export type IpcAppDataStorageGetTextRes = string | undefined;
 
+/** Set a text value in application-level data storage. */
 export const ipcAppDataStorageSetTextChannel = makeIpcChannelName('app-data-storage-set-text');
 export type IpcAppDataStorageSetTextArgs = [key: string, text: string];
 export type IpcAppDataStorageSetTextRes = void;
