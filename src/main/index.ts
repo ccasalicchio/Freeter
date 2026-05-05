@@ -75,6 +75,8 @@ import { createSafeStorageControllers } from '@/controllers/safeStorage';
 import { createSafeStorageEncryptUseCase, createSafeStorageDecryptUseCase } from '@/application/useCases/safeStorage/safeStorage';
 import { createSafeStorageProvider } from '@/infra/safeStorageProvider/safeStorageProvider';
 import { createProfileControllers } from '@/controllers/profile';
+import { createPluginControllers } from '@/controllers/plugin';
+import { createPluginProvider } from '@/infra/pluginProvider/pluginProvider';
 
 let appWindow: BrowserWindow | null = null; // ref to the app window
 
@@ -189,6 +191,8 @@ if (!app.requestSingleInstanceLock()) {
     const safeStorageEncryptUseCase = createSafeStorageEncryptUseCase({ safeStorageProvider });
     const safeStorageDecryptUseCase = createSafeStorageDecryptUseCase({ safeStorageProvider });
 
+    const pluginProvider = createPluginProvider();
+
     registerControllers(ipcMain, [
       ...createAppDataStorageControllers({ getTextFromAppDataStorageUseCase, setTextInAppDataStorageUseCase }),
       ...createWidgetDataStorageControllers({
@@ -215,6 +219,7 @@ if (!app.requestSingleInstanceLock()) {
       ...createBrowserWindowControllers({ showBrowserWindowUseCase }),
       ...createTerminalControllers({ execCmdLinesInTerminalUseCase }),
       ...createSafeStorageControllers({ safeStorageEncryptUseCase, safeStorageDecryptUseCase }),
+      ...createPluginControllers({ pluginProvider }),
       ...createProfileControllers({
         appDataStorage,
         widgetDataStorageManager,

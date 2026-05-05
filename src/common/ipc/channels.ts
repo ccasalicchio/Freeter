@@ -5,6 +5,7 @@
 
 import { MenuItemsIpc } from '@common/base/menu';
 import { ProcessInfo, SystemMetrics } from '@common/base/process';
+import { PluginManifest } from '@common/base/plugin';
 import { makeIpcChannelName } from '@common/ipc/ipc';
 import { MessageBoxConfig, MessageBoxResult, OpenDialogResult, OpenDirDialogConfig, OpenFileDialogConfig, SaveDialogResult, SaveFileDialogConfig } from '@common/base/dialog';
 
@@ -143,6 +144,14 @@ export type IpcSafeStorageEncryptRes = string;
 export const ipcSafeStorageDecryptChannel = makeIpcChannelName('safe-storage-decrypt');
 export type IpcSafeStorageDecryptArgs = [encryptedText: string];
 export type IpcSafeStorageDecryptRes = string;
+
+export const ipcGetPluginsChannel = makeIpcChannelName('get-plugins');
+export type IpcGetPluginsArgs = [];
+export type IpcGetPluginsRes = PluginManifest[];
+
+export const ipcLoadPluginChannel = makeIpcChannelName('load-plugin');
+export type IpcLoadPluginArgs = [pluginPath: string];
+export type IpcLoadPluginRes = string | undefined;
 
 export const ipcExportProfileChannel = makeIpcChannelName('export-profile');
 export type IpcExportProfileArgs = [];

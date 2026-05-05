@@ -1,8 +1,3 @@
-/*
- * Copyright: (c) 2024, Alex Kaul
- * GNU General Public License v3.0 or later (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
- */
-
 import { WidgetSettings, WidgetType } from '@/widgets/appModules'
 import commander from './commander';
 import fileOpener from './file-opener';
@@ -22,7 +17,7 @@ import calendar from './calendar';
 import codeSnippet from './code-snippet';
 import passwordVault from './password-vault';
 
-const widgetTypes = [
+const builtinWidgetTypes = [
   commander,
   fileOpener,
   linkOpener,
@@ -42,4 +37,19 @@ const widgetTypes = [
   passwordVault,
 ] as unknown as WidgetType<WidgetSettings>[];
 
-export default widgetTypes;
+let allWidgetTypes = [...builtinWidgetTypes];
+
+export function registerWidgetType(type: WidgetType<WidgetSettings>): void {
+  const existingIdx = allWidgetTypes.findIndex(t => t.id === type.id);
+  if (existingIdx >= 0) {
+    allWidgetTypes[existingIdx] = type;
+  } else {
+    allWidgetTypes.push(type);
+  }
+}
+
+export function getAllWidgetTypes(): WidgetType<WidgetSettings>[] {
+  return allWidgetTypes;
+}
+
+export default allWidgetTypes;
