@@ -1,7 +1,10 @@
 module.exports = {
-  appId: 'io.freeter.app',
-  productName: 'Freeter',
-  artifactName: '${productName}-${version}-${os}-${arch}.${ext}',
+  // v3 uses its own appId (and thus its own auto-derived MSI UpgradeCode) and
+  // product/install-dir name so it installs side-by-side with Freeter 1.x/2.x
+  // instead of upgrading them in place.
+  appId: 'io.freeter.app.v3',
+  productName: 'Freeter 3',
+  artifactName: 'Freeter3-${version}-${os}-${arch}.${ext}',
   directories: {
     output: 'release'
   },
@@ -47,6 +50,12 @@ module.exports = {
     ],
     icon: 'resources/win32/freeter.ico',
     publish: ['github'],
+  },
+  // Assisted (non-one-click) installer: installs into a "Freeter 3" folder
+  // (one-click MSIs would use the package.json name "freeter" — the same
+  // folder Freeter 2.x uses) and lets the user change the location.
+  msi: {
+    oneClick: false
   },
   linux: {
     target: [
