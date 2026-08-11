@@ -10,3 +10,49 @@
   left:0;
   right:0;
 }
+
+.settings-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--freeter-componentBorder);
+}
+
+.settings-tab {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--freeter-componentColor);
+  padding: 6px 12px;
+  cursor: pointer;
+  opacity: 0.7;
+
+  &.is-active {
+    border-bottom-color: var(--freeter-primary);
+    opacity: 1;
+  }
+}
+
+.theme-override-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+
+  button {
+    background: none;
+    border: 1px solid var(--freeter-componentBorder);
+    color: var(--freeter-componentColor);
+    border-radius: 2px;
+    cursor: pointer;
+    padding: 1px 8px;
+  }
+}
+
+.settings-tab-panel {
+  display: none;
+
+  &.is-active {
+    display: block;
+  }
+}

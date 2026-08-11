@@ -29,10 +29,10 @@ export function createAppComponent({
   useAppViewModel
 }: Deps) {
   function App() {
-    const {modalScreens, hasModalScreens, hasProjects, contextMenuHandler, uiThemeId, hasTopBar} = useAppViewModel();
+    const {modalScreens, hasModalScreens, hasProjects, contextMenuHandler, uiThemeId, themeOverrides, hasTopBar} = useAppViewModel();
     return (
       <div onContextMenu={contextMenuHandler}>
-        <UITheme themeId={uiThemeId} />
+        <UITheme themeId={uiThemeId} overrides={themeOverrides} />
         <FindBar />
         <div className={styles['main-screen']} data-testid="main-screen" {...{ inert: hasModalScreens ? true : undefined }}>
           {hasTopBar && <TopBar />}

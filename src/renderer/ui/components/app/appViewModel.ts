@@ -49,6 +49,7 @@ export function createAppViewModelHook({
       workflows,
       modalScreensOrder,
       uiTheme,
+      themeOverrides,
       hasTopBar
     ] = useAppState(state => [
       state.ui.editMode,
@@ -58,6 +59,7 @@ export function createAppViewModelHook({
       state.entities.workflows,
       state.ui.modalScreens.order,
       state.ui.appConfig.uiTheme,
+      state.ui.appConfig.themeOverrides,
       state.ui.topBar
     ])
 
@@ -144,6 +146,7 @@ export function createAppViewModelHook({
       hasModalScreens,
       contextMenuHandler,
       uiThemeId,
+      themeOverrides,
       hasTopBar
     }
   }

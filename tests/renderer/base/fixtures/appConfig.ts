@@ -12,7 +12,13 @@ const appConfig: AppConfig = {
     activateWorkflowsOnProjectSwitch: true,
     workflowInactiveAfter: -1
   },
-  uiTheme: 'light'
+  uiTheme: 'light',
+  autoBackup: {
+    enabled: false,
+    folder: '',
+    onClose: false
+  },
+  themeOverrides: {}
 }
 
 export const fixtureAppConfig = (testData?: Partial<AppConfig>): AppConfig => deepFreeze({
