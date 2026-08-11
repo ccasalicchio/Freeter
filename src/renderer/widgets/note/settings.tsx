@@ -5,6 +5,7 @@ export interface Settings {
   markdown: boolean;
   renderMode: 'source' | 'preview' | 'split';
   fontSize: number;
+  contentStyle: 'default' | 'document' | 'compact';
 }
 
 export const createSettingsState: CreateSettingsState<Settings> = (settings) => ({
@@ -13,6 +14,7 @@ export const createSettingsState: CreateSettingsState<Settings> = (settings) => 
   // single-pane preview by default; the widget action bar has View/Edit buttons
   renderMode: (settings.renderMode === 'source' || settings.renderMode === 'preview' || settings.renderMode === 'split') ? settings.renderMode : 'preview',
   fontSize: typeof settings.fontSize === 'number' ? settings.fontSize : 14,
+  contentStyle: (settings.contentStyle === 'document' || settings.contentStyle === 'compact') ? settings.contentStyle : 'default',
 })
 
 function SettingsEditorComp({settings, settingsApi}: SettingsEditorReactComponentProps<Settings>) {
@@ -63,6 +65,25 @@ function SettingsEditorComp({settings, settingsApi}: SettingsEditorReactComponen
             <option value={16}>16px</option>
             <option value={18}>18px</option>
             <option value={20}>20px</option>
+          </select>
+        </SettingBlock>
+      )}
+
+      {settings.markdown && (
+        <SettingBlock
+          titleForId='note-content-style'
+          title='Content Style'
+          moreInfo='Typography style of the rendered note.'
+        >
+          <select id="note-content-style" value={settings.contentStyle} onChange={e => {
+            updateSettings({
+              ...settings,
+              contentStyle: (e.target.value === 'document' || e.target.value === 'compact') ? e.target.value : 'default'
+            })
+          }}>
+            <option value='default'>Default</option>
+            <option value='document'>Document (serif, relaxed)</option>
+            <option value='compact'>Compact</option>
           </select>
         </SettingBlock>
       )}
