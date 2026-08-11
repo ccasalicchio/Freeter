@@ -48,9 +48,22 @@ interface Freeter1Tab {
 
 interface Freeter1Project {
   id: number;
-  settings: { name?: string;[key: string]: unknown };
+  settings: {
+    name?: string;
+    icon?: string;
+    iconColor?: string;
+    iconLink?: string;
+    iconType?: string;
+    [key: string]: unknown
+  };
   layout: { selectedTabId?: number; tabs: Freeter1Tab[] };
 }
+
+// Freeter 1 color names -> icon palette hex values
+const v1IconColors: Record<string, string> = {
+  red: '#E5484D', orange: '#F76B15', yellow: '#FFC53D', green: '#46A758',
+  cyan: '#00A2C7', blue: '#0090FF', purple: '#8E4EC6', pink: '#D6409F'
+};
 
 interface Freeter1AppPools {
   links?: { name?: string; urls?: string[] }[];
@@ -255,9 +268,15 @@ export function convertFreeter1Data(
         currentWorkflowId = workflowId;
       }
     }
+    const iconImage = typeof p.settings?.iconLink === 'string' ? p.settings.iconLink : '';
+    const iconColor = v1IconColors[String(p.settings?.iconColor ?? '')] ?? '';
     projects[projectId] = {
       id: projectId,
-      settings: { memSaver: {}, name: p.settings?.name || 'Imported Project' },
+      settings: {
+        memSaver: {},
+        name: p.settings?.name || 'Imported Project',
+        ...((iconImage || iconColor) ? { icon: { glyph: iconImage ? '' : 'folder', color: iconColor, image: iconImage } } : {})
+      },
       workflowIds,
       currentWorkflowId: currentWorkflowId || workflowIds[0] || ''
     };

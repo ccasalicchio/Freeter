@@ -1,0 +1,54 @@
+/*
+ * Copyright: (c) 2024, Alex Kaul
+ * GNU General Public License v3.0 or later (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+ */
+
+.icon-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.icon-cell {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--freeter-componentBorder);
+  border-radius: 4px;
+  background: none;
+  cursor: pointer;
+
+  svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+  }
+
+  &.is-selected {
+    border-color: var(--freeter-primary);
+    outline: 1px solid var(--freeter-primary);
+  }
+}
+
+.color-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+
+.color-cell {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid var(--freeter-componentBorder);
+  cursor: pointer;
+  padding: 0;
+
+  &.is-selected {
+    outline: 2px solid var(--freeter-primary);
+  }
+}

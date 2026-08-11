@@ -3,21 +3,25 @@
  * GNU General Public License v3.0 or later (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
  */
 
-import { Button, CreateSettingsState, List, ReactComponent, SettingsEditorReactComponentProps, addItemToList, delete14Svg, removeItemFromList, SettingBlock, SettingRow, SettingActions } from '@/widgets/appModules';
+import { Button, CreateSettingsState, IconPicker, List, ReactComponent, SettingsEditorReactComponentProps, addItemToList, delete14Svg, removeItemFromList, SettingBlock, SettingRow, SettingActions } from '@/widgets/appModules';
 import { useEffect, useRef, useState } from 'react';
 
-export type IconMode = 'default' | 'favicon' | 'custom';
+export type IconMode = 'default' | 'favicon' | 'custom' | 'glyph';
 
 export interface Settings {
   urls: List<string>,
   iconMode: IconMode,
   customIcon: string,
+  glyph: string,
+  glyphColor: string,
 }
 
 export const createSettingsState: CreateSettingsState<Settings> = (settings) => ({
   urls: Array.isArray(settings.urls) ? settings.urls.map(path=>typeof path==='string'?path:'') : [''],
-  iconMode: (settings.iconMode === 'favicon' || settings.iconMode === 'custom') ? settings.iconMode : 'default',
+  iconMode: (settings.iconMode === 'favicon' || settings.iconMode === 'custom' || settings.iconMode === 'glyph') ? settings.iconMode : 'default',
   customIcon: typeof settings.customIcon === 'string' ? settings.customIcon : '',
+  glyph: typeof settings.glyph === 'string' ? settings.glyph : 'link',
+  glyphColor: typeof settings.glyphColor === 'string' ? settings.glyphColor : '',
 })
 
 function SettingsEditorComp({settings, settingsApi}: SettingsEditorReactComponentProps<Settings>) {
@@ -87,12 +91,23 @@ function SettingsEditorComp({settings, settingsApi}: SettingsEditorReactComponen
       >
         <select id='link-icon-mode' value={settings.iconMode} onChange={e => updateSettings({
           ...settings,
-          iconMode: (e.target.value === 'favicon' || e.target.value === 'custom') ? e.target.value : 'default'
+          iconMode: (e.target.value === 'favicon' || e.target.value === 'custom' || e.target.value === 'glyph') ? e.target.value : 'default'
         })}>
           <option value='default'>Default Icon</option>
+          <option value='glyph'>Icon Gallery</option>
           <option value='favicon'>Site Favicon</option>
           <option value='custom'>Custom Image</option>
         </select>
+        {settings.iconMode === 'glyph' && (
+          <SettingRow>
+            <IconPicker
+              glyphId={settings.glyph}
+              color={settings.glyphColor}
+              onSelectGlyph={glyph => updateSettings({ ...settings, glyph })}
+              onSelectColor={glyphColor => updateSettings({ ...settings, glyphColor })}
+            />
+          </SettingRow>
+        )}
         {settings.iconMode === 'custom' && (
           <SettingRow>
             <input
