@@ -5,7 +5,6 @@
 
 import { ShowContextMenuUseCase } from '@/application/useCases/contextMenu/showContextMenu';
 import { contextMenuForTextInput } from '@/base/contextMenu';
-import { ModalScreenId } from '@/base/state/ui';
 import { resolveUiThemeId } from '@/base/uiTheme';
 import { UseAppState } from '@/ui/hooks/appState';
 import React, { ReactNode, createElement, useMemo } from 'react';
@@ -78,8 +77,6 @@ export function createAppViewModelHook({
 
     const paletteItems = useMemo((): PaletteItem[] => {
       const result: PaletteItem[] = [];
-      const { projects, workflows } = useAppState(state => state.entities);
-      const { projectIds } = useAppState(state => state.ui.projectSwitcher);
 
       for (const pId of projectIds) {
         const project = projects[pId];
@@ -112,11 +109,12 @@ export function createAppViewModelHook({
         { id: 'apps-mgr', label: 'Manage Apps', description: 'Open app manager', type: 'action', action: () => openAppManagerUseCase() },
       );
       return result;
-    }, []);
+    }, [projects, workflows, projectIds]);
 
     const modalScreens = modalScreensOrder.map((id, idx, arr) => {
       if (id === 'commandPalette') {
-        return { id, comp: createElement(CommandPalette, { items: paletteItems, onClose: () => closeCommandPaletteUseCase() }), isLast: idx === arr.length - 1 };
+        const comp = createElement(CommandPalette, { items: paletteItems, onClose: () => closeCommandPaletteUseCase() });
+        return { id, comp, isLast: idx === arr.length - 1 };
       }
       if (modalScreenComps[id]) {
         return { id, comp: modalScreenComps[id], isLast: idx === arr.length - 1 };

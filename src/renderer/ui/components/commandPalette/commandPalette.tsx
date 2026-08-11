@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import * as styles from './commandPalette.module.scss';
+import styles from './commandPalette.module.scss';
 
 export interface PaletteItem {
   id: string;
@@ -25,12 +25,11 @@ export function CommandPalette({ items, onClose }: CommandPaletteProps) {
   }, []);
 
   const filtered = useMemo(() => {
-    if (!search) return items;
+    if (!search) {return items;}
     const lower = search.toLowerCase();
     return items.filter(item =>
       item.label.toLowerCase().includes(lower) ||
-      item.description.toLowerCase().includes(lower)
-    );
+      item.description.toLowerCase().includes(lower));
   }, [items, search]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {

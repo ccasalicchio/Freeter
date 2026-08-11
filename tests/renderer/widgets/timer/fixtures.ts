@@ -9,7 +9,7 @@ export function fixtureSettings(settings: Partial<Settings>): Settings {
   return {
     mode: 'timer',
     mins: 25,
-    customSecs: 60,
+    customSecs: 0,
     endDesktop: true,
     endSound: '',
     endSoundVol: 80,

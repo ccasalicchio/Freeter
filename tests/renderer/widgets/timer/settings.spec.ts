@@ -28,14 +28,14 @@ describe('Timer Widget Settings', () => {
     setupAudioMock();
     setupSettingsSut(settingsEditorComp, settings);
 
-    expect(screen.getByRole('combobox', { name: /^timer$/i })).toHaveValue(settings.mins.toString());
+    expect(screen.getByRole('combobox', { name: /^duration$/i })).toHaveValue(settings.mins.toString());
   })
 
   it('should allow to update "mins" setting with an option select', async () => {
     const settings = fixtureSettings({ mins: 10 });
     setupAudioMock();
     const { userEvent, getSettings } = setupSettingsSut(settingsEditorComp, settings);
-    const select = screen.getByRole('combobox', { name: /^timer$/i })
+    const select = screen.getByRole('combobox', { name: /^duration$/i })
 
     await userEvent.selectOptions(select, '30');
     expect(getSettings()).toEqual({

@@ -1,4 +1,4 @@
-import { PluginManifest } from '@common/base/plugin';
+
 import { PluginManager, createPluginManager } from '@/infra/pluginProvider/pluginProvider';
 import { loadPluginWidgetType } from '@/infra/pluginProvider/pluginLoader';
 import { registerWidgetType } from '@/widgets';

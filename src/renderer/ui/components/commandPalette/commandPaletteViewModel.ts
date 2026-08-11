@@ -1,5 +1,6 @@
-import { useAppState } from '@/ui/hooks/appState';
+
 import { useCallback, useMemo, useState } from 'react';
+import { UseAppState } from '@/ui/hooks/appState';
 import { CloseCommandPaletteUseCase } from '@/application/useCases/commandPalette/closeCommandPalette';
 
 type Deps = {
@@ -60,12 +61,11 @@ export function createCommandPaletteViewModelHook({
         { id: 'apps', label: 'Manage Apps', description: 'Open app manager', type: 'action', action: () => {} },
       );
 
-      if (!search) return result;
+      if (!search) {return result;}
       const lower = search.toLowerCase();
       return result.filter(item =>
         item.label.toLowerCase().includes(lower) ||
-        item.description.toLowerCase().includes(lower)
-      );
+        item.description.toLowerCase().includes(lower));
     }, [appState, search]);
 
     const handleKeyDown = useCallback((e: React.KeyboardEvent) => {

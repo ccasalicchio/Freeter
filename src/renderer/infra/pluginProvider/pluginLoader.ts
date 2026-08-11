@@ -13,7 +13,7 @@ export async function loadPluginWidgetType(
 ): Promise<PluginWidgetType | null> {
   try {
     const code = await loadCode(manifest.path);
-    if (!code) return null;
+    if (!code) {return null;}
 
     const module = { exports: {} as Record<string, unknown> };
     const fn = new Function('module', 'exports', 'require', code);
@@ -21,7 +21,8 @@ export async function loadPluginWidgetType(
       throw new Error('require() not available in plugins');
     });
 
-    const widgetType = module.exports.default || module.exports.widgetType;
+    const widgetType = (module.exports.default || module.exports.widgetType) as
+      { id?: unknown; widgetComp?: unknown } | undefined;
     if (!widgetType || !widgetType.id || !widgetType.widgetComp) {
       return null;
     }

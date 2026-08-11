@@ -7,7 +7,7 @@ import { ipcExecCmdLinesInTerminalChannel } from '@common/ipc/channels';
 import { createTerminalProvider } from '@/infra/terminalProvider/terminalProvider';
 import { electronIpcRenderer } from '@/infra/mainApi/mainApi';
 
-jest.mock('@/infra/mainApi/mainApi');
+vi.mock('@/infra/mainApi/mainApi');
 
 describe('TerminalProvider', () => {
   beforeEach(() => jest.resetAllMocks())

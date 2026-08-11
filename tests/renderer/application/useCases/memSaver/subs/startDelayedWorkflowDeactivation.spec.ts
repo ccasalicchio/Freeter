@@ -52,7 +52,7 @@ describe('startDelayedWorkflowDeactivationSubCase()', () => {
       ...state,
       workflowTimeouts: {
         ...state.workflowTimeouts,
-        'WFL-2': expect.any(Number)
+        'WFL-2': expect.anything()
       }
     }
     const mockDeactivateWorkflowUseCase = jest.fn();

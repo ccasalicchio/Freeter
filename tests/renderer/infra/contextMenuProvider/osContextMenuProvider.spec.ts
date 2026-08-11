@@ -10,7 +10,7 @@ import { createOsContextMenuProvider } from '@/infra/contextMenuProvider/osConte
 import { electronIpcRenderer } from '@/infra/mainApi/mainApi';
 import { fixtureMenuItemA, fixtureMenuItemB, fixtureMenuItemC } from '@testscommon/base/fixtures/menu';
 
-jest.mock('@/infra/mainApi/mainApi');
+vi.mock('@/infra/mainApi/mainApi');
 
 function setup() {
   const clickContextMenuItemUseCase = jest.fn();

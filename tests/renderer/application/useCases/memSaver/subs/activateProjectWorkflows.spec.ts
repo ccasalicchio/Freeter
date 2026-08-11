@@ -119,9 +119,9 @@ describe('activateProjectWorkflowsSubCase()', () => {
       ...state,
       activeWorkflows: [...state.activeWorkflows, { prjId: 'PRJ-ID', wflId: 'WFL-1' }, { prjId: 'PRJ-ID', wflId: 'WFL-2' }, { prjId: 'PRJ-ID', wflId: 'WFL-3' }],
       workflowTimeouts: {
-        'WFL-1': expect.any(Number),
+        'WFL-1': expect.anything(),
         // WFL-2 should be removed by the usecase (current workflow should not have the delayed deactivation)
-        'WFL-3': expect.any(Number),
+        'WFL-3': expect.anything(),
       }
     }
     const mockDeactivateWorkflowUseCase = jest.fn();

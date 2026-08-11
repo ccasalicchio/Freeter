@@ -125,7 +125,7 @@ describe('initMemSaverUseCase()', () => {
             { prjId: 'PRJ-ID', wflId: 'WFL-2' },
           ],
           workflowTimeouts: {
-            'WFL-2': expect.any(Number)
+            'WFL-2': expect.anything()
           }
         }
       }

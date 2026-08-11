@@ -22,16 +22,16 @@ describe('Store', () => {
       });
     })
 
-    it('should call an onStoreReady callback, when the store is ready', done => {
+    it('should call an onStoreReady callback, when the store is ready', () => new Promise<void>((done, fail) => {
       const initState = { state: 'init state' };
       createStore({
         stateStorage: fixtureStateStorageWithValidData({})
       }, initState, s => s, s => s, () => {
         done();
       });
-    })
+    }))
 
-    it('should merge the state with the data loaded from StateStorage using the merge function, prepare the state for app use with the prepare function and remove isLoading', done => {
+    it('should merge the state with the data loaded from StateStorage using the merge function, prepare the state for app use with the prepare function and remove isLoading', () => new Promise<void>((done, fail) => {
       const initState = { state: 'init state', notPersKey: 'not persistent value', propReqPrep: '' };
       const persState = { state: 'persistent state' };
       const prepProps = { propReqPrep: 'prop after prep' };
@@ -50,12 +50,12 @@ describe('Store', () => {
           expect(prepare).toBeCalled();
           done();
         } catch (error) {
-          done(error);
+          fail(error);
         }
       });
-    })
+    }))
 
-    it('should keep init state, if StateStorage is empty', done => {
+    it('should keep init state, if StateStorage is empty', () => new Promise<void>((done, fail) => {
       const initState = { state: 'init state' };
       const [store] = createStore({
         stateStorage: fixtureStateStorageWithNoData(),
@@ -64,12 +64,12 @@ describe('Store', () => {
           expect(store.get()).toEqual(initState);
           done();
         } catch (error) {
-          done(error);
+          fail(error);
         }
       });
-    })
+    }))
 
-    it.skip('should keep init state, if StateStorage has invalid data', done => {
+    it.skip('should keep init state, if StateStorage has invalid data', () => new Promise<void>((done, fail) => {
       const initState = { state: 'init state' };
       const [store] = createStore({
         stateStorage: fixtureStateStorageWithInvalidData({ 'invalid': 'data' })
@@ -78,13 +78,13 @@ describe('Store', () => {
           expect(store.get()).toEqual(initState);
           done();
         } catch (error) {
-          done(error);
+          fail(error);
         }
       });
-    })
+    }))
   })
   describe('get', () => {
-    it('should return current app state', done => {
+    it('should return current app state', () => new Promise<void>((done, fail) => {
       const testState = { state: 'test state' };
 
       const [store] = createStore({
@@ -94,14 +94,14 @@ describe('Store', () => {
           expect(store.get()).toEqual(testState);
           done();
         } catch (e) {
-          done(e);
+          fail(e);
         }
       });
-    })
+    }))
   })
 
   describe('set', () => {
-    it('should not update state, when Store is not ready', done => {
+    it('should not update state, when Store is not ready', () => new Promise<void>((done, fail) => {
       const initState = { state: 'init state' }
       const [store] = createStore({
         stateStorage: fixtureStateStorageWithNoData(),
@@ -110,7 +110,7 @@ describe('Store', () => {
           expect(store.get()).toEqual(initState);
           done();
         } catch (e) {
-          done(e);
+          fail(e);
         }
       });
 
@@ -121,9 +121,9 @@ describe('Store', () => {
         ...initState,
         isLoading: true
       });
-    })
+    }))
 
-    it('should update the state in the store, when Store is ready', done => {
+    it('should update the state in the store, when Store is ready', () => new Promise<void>((done, fail) => {
       const initState = { state: 'init state' }
       const stateStorage = fixtureStateStorageWithNoData();
       stateStorage.saveState = jest.fn();
@@ -136,10 +136,10 @@ describe('Store', () => {
           expect(store.get()).toEqual(newState);
           done();
         } catch (e) {
-          done(e);
+          fail(e);
         }
       });
-    })
+    }))
 
     it('should not saveState in StateStorage, when Store is not ready', () => {
       const stateStorage = fixtureStateStorageWithNoData();
@@ -154,7 +154,7 @@ describe('Store', () => {
       expect(stateStorage.saveState).not.toBeCalled();
     })
 
-    it('should save AppState into StateStorage, when Store is ready', done => {
+    it('should save AppState into StateStorage, when Store is ready', () => new Promise<void>((done, fail) => {
       const stateStorage = fixtureStateStorageWithNoData();
       stateStorage.saveState = jest.fn();
       const [store] = createStore({
@@ -168,10 +168,10 @@ describe('Store', () => {
           expect(stateStorage.saveState).toBeCalledWith(newState);
           done();
         } catch (e) {
-          done(e);
+          fail(e);
         }
       })
-    })
+    }))
   })
 
   // it('should allow to subscribe to state changes', () => {

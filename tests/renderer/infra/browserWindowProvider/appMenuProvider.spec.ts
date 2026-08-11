@@ -7,7 +7,7 @@ import { createBrowserWindowProvider } from '@/infra/browserWindowProvider/brows
 import { electronIpcRenderer } from '@/infra/mainApi/mainApi';
 import { ipcShowBrowserWindowChannel } from '@common/ipc/channels';
 
-jest.mock('@/infra/mainApi/mainApi');
+vi.mock('@/infra/mainApi/mainApi');
 
 function setup() {
   const browserWindowProvider = createBrowserWindowProvider();

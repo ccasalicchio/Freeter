@@ -5,6 +5,7 @@
 
 import { BrowserWindowConstructorOptions, BrowserWindow as ElectronBrowserWindow, app } from 'electron';
 import { BrowserWindow } from '@/application/interfaces/browserWindow'
+import { logToFile } from '@/infra/logger/fileLog';
 import { GetWindowStateUseCase } from '@/application/useCases/browserWindow/getWindowState';
 import { SetWindowStateUseCase } from '@/application/useCases/browserWindow/setWindowState';
 
@@ -110,6 +111,22 @@ export function createRendererWindow(
   win.on('unmaximize', winStateUpdateHandler);
   win.on('enter-full-screen', winStateUpdateHandler);
   win.on('leave-full-screen', winStateUpdateHandler);
+
+  // surface renderer failures in the app log (warnings and errors only)
+  win.webContents.on('console-message', (_e, level, message, line, sourceId) => {
+    if (level >= 2) {
+      logToFile(level >= 3 ? 'error' : 'warn', `renderer console: ${message} (${sourceId}:${line})`);
+    }
+  });
+  win.webContents.on('did-fail-load', (_e, errorCode, errorDescription, validatedURL) => {
+    logToFile('error', `renderer did-fail-load ${errorCode} ${errorDescription} url=${validatedURL}`);
+  });
+  win.webContents.on('render-process-gone', (_e, details) => {
+    logToFile('error', `render-process-gone: ${details.reason} (exitCode ${details.exitCode})`);
+  });
+  win.webContents.on('did-finish-load', () => {
+    logToFile('info', 'renderer did-finish-load');
+  });
 
   // prevent leaving the app page (by dragging an image for example)
   win.webContents.on('will-navigate', evt => evt.preventDefault());

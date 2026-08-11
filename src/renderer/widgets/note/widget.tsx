@@ -1,6 +1,6 @@
 import { debounce } from '@/widgets/helpers';
 import { ReactComponent, WidgetReactComponentProps } from '@/widgets/appModules';
-import * as styles from './widget.module.scss';
+import styles from './widget.module.scss';
 import { Settings } from './settings';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createContextMenuFactory, textAreaContextId } from '@/widgets/note/contextMenu';
