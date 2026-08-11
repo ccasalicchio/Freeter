@@ -10,6 +10,7 @@ export function fixtureSettings(settings: Partial<Settings>): Settings {
     spellCheck: true,
     markdown: true,
     renderMode: 'split',
+    contentStyle: 'default',
     fontSize: 14,
     ...settings
   }

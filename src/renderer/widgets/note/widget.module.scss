@@ -89,3 +89,30 @@
   th, td { border: 1px solid var(--freeter-componentBorder); padding: 6px 10px; text-align: left; }
   th { background: var(--freeter-inputBackground); font-weight: 600; }
 }
+
+// nicer markdown typography (applies to both .preview and .split-preview)
+.preview, .split-preview {
+  h1 { font-size: 1.6em; border-bottom: 1px solid var(--freeter-componentBorder); padding-bottom: 0.2em; }
+  h2 { font-size: 1.35em; border-bottom: 1px solid var(--freeter-componentBorder); padding-bottom: 0.15em; }
+  h3 { font-size: 1.15em; }
+  hr { border: none; border-top: 1px solid var(--freeter-componentBorder); margin: 1em 0; }
+  li { margin: 0.15em 0; }
+  li > input[type='checkbox'] { margin-right: 6px; }
+  pre code.hljs { background: none; }
+}
+
+// Content Style variants (note settings)
+.style-document {
+  font-family: Georgia, 'Times New Roman', serif;
+  line-height: 1.75;
+
+  p { margin: 0.75em 0; }
+  h1, h2, h3, h4 { margin: 0.8em 0 0.4em; }
+}
+
+.style-compact {
+  line-height: 1.35;
+
+  p, ul, ol { margin: 0.25em 0; }
+  h1, h2, h3, h4 { margin: 0.35em 0 0.15em; }
+}

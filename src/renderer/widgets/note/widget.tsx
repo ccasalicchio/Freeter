@@ -8,6 +8,9 @@ import { createActionBarItems, NoteViewMode } from '@/widgets/note/actionBar';
 import { CodeMirrorEditor } from '@/widgets/note/codeMirrorEditor';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
+import clsx from 'clsx';
+import hljs from 'highlight.js';
+import 'highlight.js/styles/github-dark.css';
 
 const keyNote = 'note';
 
@@ -19,8 +22,10 @@ function WidgetComp({widgetApi, settings}: WidgetReactComponentProps<Settings>) 
   const [viewModeOverride, setViewModeOverride] = useState<NoteViewMode | null>(null);
   const previewRef = useRef<HTMLDivElement>(null);
 
+  // text components open in rendered view by default; 'source' opts into the
+  // editor. Split stays one toggle-click away rather than an entry state.
   const viewMode: NoteViewMode = viewModeOverride
-    ?? (settings.renderMode === 'source' ? 'edit' : settings.renderMode === 'split' ? 'split' : 'view');
+    ?? (settings.renderMode === 'source' ? 'edit' : 'view');
 
   const saveNote = useMemo(() => debounce((text: string) => dataStorage.setText(keyNote, text), 3000), [dataStorage]);
 
@@ -54,6 +59,9 @@ function WidgetComp({widgetApi, settings}: WidgetReactComponentProps<Settings>) 
     if (settings.markdown && viewMode !== 'edit' && previewRef.current) {
       const html = marked.parse(note) as string;
       previewRef.current.innerHTML = DOMPurify.sanitize(html);
+      previewRef.current.querySelectorAll('pre code').forEach(el => {
+        hljs.highlightElement(el as HTMLElement);
+      });
     }
   }, [note, settings.markdown, viewMode]);
 
@@ -65,7 +73,8 @@ function WidgetComp({widgetApi, settings}: WidgetReactComponentProps<Settings>) 
     return (
       <div
         ref={previewRef}
-        className={styles['preview']}
+        className={clsx(styles['preview'], styles[`style-${settings.contentStyle}`])}
+        style={{ fontSize: settings.fontSize }}
         data-widget-context={textAreaContextId}
       />
     );
@@ -82,7 +91,8 @@ function WidgetComp({widgetApi, settings}: WidgetReactComponentProps<Settings>) 
         </div>
         <div
           ref={previewRef}
-          className={styles['split-preview']}
+          className={clsx(styles['split-preview'], styles[`style-${settings.contentStyle}`])}
+          style={{ fontSize: settings.fontSize }}
           data-widget-context={textAreaContextId}
         />
       </div>
