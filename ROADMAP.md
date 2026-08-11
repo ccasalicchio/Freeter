@@ -2,6 +2,71 @@
 
 High-level milestone view for the Freeter v3 upgrade.
 
+---
+
+## Status — updated 2026-08-11
+
+### ✅ Done (verified working in the installed app; all merged to `master`)
+
+**Stability & infrastructure**
+- Packaged app starts and renders (fixed the electron-vite migration drift: icon
+  paths, dev-mode detection, preload path, missing deps, missing build defines,
+  init wiring, CSS-module access) — Windows MSI builds, installs, runs
+- "Freeter 3" identity: own name, userData, single-instance lock and data dir
+  (`appData/freeter3`) with one-time migration — v1, v2 and v3 run side-by-side
+- Diagnostics: app log (`freeter-data/logs/freeter.log`), Windows Event Log
+  reporting, fatal-error dialogs, renderer failure capture
+- Test suite repaired: Vitest projects, jest→vi migration — 231 files /
+  1359 tests green (was fully broken since May)
+- Tabbed Application Settings (General / Appearance / Backup)
+- Auto-backup: daily + on-close profile backups to a chosen folder (Browse…)
+- Launch at OS startup setting
+
+**Freeter 1 migration**
+- `.freeterdata` importer (File → Import Profile, auto-detected): projects,
+  tabs, widgets, layouts, note contents, to-dos, link icons
+- Global pools import as a "Freeter 1 Library" project (Links / Commands /
+  Searches / Timers / Tools); engine-id mapping, `site:` scopes, tools become
+  App Launcher tiles
+
+**Theming & icons**
+- 8 themes + Auto (match OS, the default); Theme Editor (per-color overrides)
+- Icon gallery: ~224 glyphs (IcoMoon-Free, Tabler, Bootstrap) with preset +
+  custom colors, used by link tiles, App Launcher and project icons
+- Projects: optional Root Folder (Browse…) and logo/icon (gallery or custom
+  image, root-relative paths supported), shown at the project switcher
+
+**Widgets & UX**
+- New **App Launcher** widget (exe + args + icon) — v1 app shortcuts
+- Link Opener: icon modes (gallery/favicon/custom), per-link browser choice
+- Note: View/Edit/Split toggle (View default), polished markdown (syntax
+  highlighting, themed typography, Content Style setting), clickable links
+- Global find-in-page (Ctrl+F) across all widgets; CodeMirror search in editors
+- Keyboard shortcuts: Ctrl/Cmd+1-9 projects, Alt+1-9 workflows, Ctrl/Cmd+E edit
+
+### 🔜 Pending (specced, not yet built)
+
+- **Freeter MCP server** — localhost streamable-HTTP, token-authed tools over
+  projects/notes/todos so AI clients can drive the dashboard
+  (see docs/developer-features-and-mcp-plan.md)
+- **Developer widgets**: webhook button (n8n/Zapier/Slack), git repo status,
+  CI status, PR/issue list, HTTP monitor, port watcher, snippet runner,
+  reminders (same doc, ranked)
+- **Settings → Shortcuts tab** (customizable keybindings; importer mapping of
+  v1 per-project/tab shortcut fields)
+- **File Explorer widget** (v1 parity; rules-based listing + file ops)
+- **Shelf bulk-pin** from the Freeter 1 Library
+- Icon polish: favicon offline caching, per-URL icons on multi-URL tiles
+- Auto-update / release channel wiring (electron-builder publish is configured
+  but unused); code signing for the MSI
+- Remaining roadmap phases below that have not shipped: enhanced Browser widget
+  (Phase 6 items: address bar, downloads, reader mode), multi-window,
+  per-project accent color (Phase 9 remainder), plugin discovery (Phase 10)
+
+See **[docs/v1-v2-parity-plan.md](docs/v1-v2-parity-plan.md)** and
+**[docs/developer-features-and-mcp-plan.md](docs/developer-features-and-mcp-plan.md)**
+for detailed specs of the pending items.
+
 For the full per-phase technical breakdown — IPC contracts, widget designs, security model, library choices, migration steps — see **[v3-plan.md](v3-plan.md)**.
 
 For the complete v2.7.1 feature inventory see **[README.md → Current Features](README.md#current-features-v271)**.
