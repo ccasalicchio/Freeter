@@ -88,7 +88,7 @@ export const darkTheme = {
   /**
    * In-App Notes
    */
-  inAppNoteColor: '#CCCCCC60',
+  inAppNoteColor: '#CCCCCCC0',
   inAppNoteIconColor: '#CCCCCC',
   inAppNoteNoProjectsBackground: '#181818',
   inAppNoteNoWorkflowsBackground: '#181818',

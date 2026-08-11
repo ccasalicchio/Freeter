@@ -60,7 +60,7 @@ export const gruvboxDarkTheme = {
   buttonPrimaryColor: '#FBF1C7',
   buttonPrimaryHoverBackground: '#828414',
   buttonPrimaryActiveBackground: '#828414',
-  inAppNoteColor: '#EBDBB260',
+  inAppNoteColor: '#EBDBB2C0',
   inAppNoteIconColor: '#EBDBB2',
   inAppNoteNoProjectsBackground: '#282828',
   inAppNoteNoWorkflowsBackground: '#282828',

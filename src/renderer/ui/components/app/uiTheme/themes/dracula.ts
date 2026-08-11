@@ -60,7 +60,7 @@ export const draculaTheme = {
   buttonPrimaryColor: '#FFFFFF',
   buttonPrimaryHoverBackground: '#A97EE3',
   buttonPrimaryActiveBackground: '#A97EE3',
-  inAppNoteColor: '#F8F8F260',
+  inAppNoteColor: '#F8F8F2C0',
   inAppNoteIconColor: '#F8F8F2',
   inAppNoteNoProjectsBackground: '#282A36',
   inAppNoteNoWorkflowsBackground: '#282A36',

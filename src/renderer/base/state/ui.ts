@@ -12,7 +12,7 @@ import { List } from '@/base/list';
 import { MemSaverWorkflowList } from '@/base/memSaver';
 import { Project } from '@/base/project';
 import { WidgetEntityDeps, WorkflowEntityDeps } from '@/base/state/entities';
-import { defaultUiThemeId } from '@/base/uiTheme';
+import { autoThemeId } from '@/base/uiTheme';
 import { Widget, WidgetInEnv } from '@/base/widget';
 import { WidgetLayoutItemWH, WidgetLayoutItemXY } from '@/base/widgetLayout';
 import { WidgetList } from '@/base/widgetList';
@@ -236,7 +236,8 @@ export function createUiState(): UiState {
         activateWorkflowsOnProjectSwitch: true,
         workflowInactiveAfter: -1
       },
-      uiTheme: defaultUiThemeId
+      // follow the OS light/dark preference by default (like VS Code)
+      uiTheme: autoThemeId
     },
     apps: {
       appIds: []

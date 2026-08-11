@@ -60,7 +60,7 @@ export const nordTheme = {
   buttonPrimaryColor: '#ECEFF4',
   buttonPrimaryHoverBackground: '#4C6E94',
   buttonPrimaryActiveBackground: '#4C6E94',
-  inAppNoteColor: '#D8DEE960',
+  inAppNoteColor: '#D8DEE9C0',
   inAppNoteIconColor: '#D8DEE9',
   inAppNoteNoProjectsBackground: '#2E3440',
   inAppNoteNoWorkflowsBackground: '#2E3440',
