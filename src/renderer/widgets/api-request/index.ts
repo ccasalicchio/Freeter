@@ -16,7 +16,7 @@ const widgetType: WidgetType<Settings> = {
   createSettingsState,
   settingsEditorComp,
   widgetComp,
-  requiresApi: ['dataStorage']
+  requiresApi: ['dataStorage', 'http']
 }
 
 export default widgetType;

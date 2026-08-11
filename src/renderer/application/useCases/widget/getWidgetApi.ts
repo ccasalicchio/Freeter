@@ -14,6 +14,7 @@ import { TerminalProvider } from '@/application/interfaces/terminalProvider';
 import { GetWidgetsInCurrentWorkflowUseCase } from '@/application/useCases/widget/widgetApiWidgets/getWidgetsInCurrentWorkflow';
 
 import { SafeStorageRenderer } from '@/infra/safeStorageProvider/safeStorageProvider';
+import { HttpProvider } from '@/infra/httpProvider/httpProvider';
 
 interface Deps {
   clipboardProvider: ClipboardProvider;
@@ -23,9 +24,11 @@ interface Deps {
   terminalProvider: TerminalProvider;
   getWidgetsInCurrentWorkflowUseCase: GetWidgetsInCurrentWorkflowUseCase;
   safeStorageProvider: SafeStorageRenderer;
+  httpProvider: HttpProvider;
 }
 function _createWidgetApiFactory({
   clipboardProvider,
+  httpProvider,
   processProvider,
   shellProvider,
   widgetDataStorageManager,
@@ -66,6 +69,9 @@ function _createWidgetApiFactory({
       process: () => ({
         getProcessInfo: () => processProvider.getProcessInfo(),
         getSystemMetrics: () => processProvider.getSystemMetrics()
+      }),
+      http: () => ({
+        request: (config) => httpProvider.request(config)
       }),
       shell: () => ({
         openApp: (appPath, args) => shellProvider.openApp(appPath, args),

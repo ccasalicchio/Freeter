@@ -1,5 +1,6 @@
 import { WidgetSettings, WidgetType } from '@/widgets/appModules'
 import appLauncher from './app-launcher';
+import webhookButton from './webhook-button';
 import commander from './commander';
 import fileOpener from './file-opener';
 import linkOpener from './link-opener';
@@ -20,6 +21,7 @@ import passwordVault from './password-vault';
 
 const builtinWidgetTypes = [
   appLauncher,
+  webhookButton,
   commander,
   fileOpener,
   linkOpener,

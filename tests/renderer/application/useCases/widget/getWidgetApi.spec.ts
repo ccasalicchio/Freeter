@@ -65,6 +65,7 @@ function setup() {
     terminalProvider,
     getWidgetsInCurrentWorkflowUseCase,
     safeStorageProvider,
+    httpProvider: { request: jest.fn(async () => ({ ok: true, status: 200, statusText: 'OK', body: '' })) },
   });
   return {
     clipboardProvider,

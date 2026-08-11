@@ -118,6 +118,10 @@ export function setupWidgetSut<T>(reactComp: ReactComponent<WidgetReactComponent
       openPath: jest.fn(),
       ...mockWidgetApi.shell
     },
+    http: {
+      request: jest.fn(async () => ({ ok: true, status: 200, statusText: 'OK', body: '' })),
+      ...mockWidgetApi.http
+    },
     terminal: {
       execCmdLines: jest.fn(),
       ...mockWidgetApi.terminal

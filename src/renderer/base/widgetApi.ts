@@ -12,6 +12,7 @@ import { EntityId } from '@/base/entity';
 import { WidgetContextMenuFactory } from '@/base/widget';
 import { ActionBarItems } from './actionBar';
 import { ProcessInfo, SystemMetrics } from '@common/base/process';
+import { HttpRequestConfig, HttpResponse } from '@common/base/http';
 import { OpenDialogResult, OpenDirDialogConfig, OpenFileDialogConfig } from '@common/base/dialog';
 
 /**
@@ -67,6 +68,9 @@ interface WidgetApiModules {
   readonly process: {
     getProcessInfo: () => ProcessInfo;
     getSystemMetrics: () => Promise<SystemMetrics>;
+  };
+  readonly http: {
+    request: (config: HttpRequestConfig) => Promise<HttpResponse>;
   };
   readonly shell: {
     openApp: (appPath: string, args?: string[]) => Promise<void>;

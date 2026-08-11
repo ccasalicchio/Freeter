@@ -15,6 +15,7 @@ import { MenuItemsIpc } from '@common/base/menu';
 import { ProcessInfo, SystemMetrics } from '@common/base/process';
 import { PluginManifest } from '@common/base/plugin';
 import { makeIpcChannelName } from '@common/ipc/ipc';
+import { HttpRequestConfig, HttpResponse } from '@common/base/http';
 import { MessageBoxConfig, MessageBoxResult, OpenDialogResult, OpenDirDialogConfig, OpenFileDialogConfig, SaveDialogResult, SaveFileDialogConfig } from '@common/base/dialog';
 
 /** Get a text value from application-level data storage. */
@@ -179,6 +180,11 @@ export type IpcFindInPageRes = void;
 export const ipcStopFindInPageChannel = makeIpcChannelName('stop-find-in-page');
 export type IpcStopFindInPageArgs = [];
 export type IpcStopFindInPageRes = void;
+
+/** Perform an HTTP request from the main process (no renderer CSP/CORS limits). */
+export const ipcHttpRequestChannel = makeIpcChannelName('http-request');
+export type IpcHttpRequestArgs = [config: HttpRequestConfig];
+export type IpcHttpRequestRes = HttpResponse;
 
 /** Enable/disable launching Freeter at OS startup. */
 export const ipcSetLoginItemSettingsChannel = makeIpcChannelName('set-login-item-settings');
