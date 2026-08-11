@@ -131,6 +131,38 @@ describe('convertFreeter1Data', () => {
     expect(state.obj.ui.projectSwitcher.currentProjectId).toBe('EX-P');
   })
 
+  it('converts the global pools into a "Freeter 1 Library" project', () => {
+    const withPools: Freeter1Data = {
+      ...fixture,
+      app: {
+        links: [{ name: 'Docs', urls: ['https://docs.example'] }],
+        commands: [{ name: 'Build', cmdLines: ['npm run build'] }],
+        searches: [{ name: 'PS Search', engine: 'google', qryTemplate: 'How to %QUERY% in ps' }],
+        timers: [{ name: 'Focus', mins: 25, endSound: 'bell', endSoundVolume: 70, endDesktop: true }],
+      }
+    };
+    const res = convertFreeter1Data(withPools, undefined, makeIdGen());
+    const state = JSON.parse(res.appJson);
+    const projects = Object.values(state.obj.entities.projects) as {
+      settings: { name: string }, workflowIds: string[]
+    }[];
+    const library = projects.find(p => p.settings.name === 'Freeter 1 Library');
+    expect(library).toBeDefined();
+    expect(library?.workflowIds).toHaveLength(4);
+
+    const workflows = Object.values(state.obj.entities.workflows) as { settings: { name: string } }[];
+    const names = workflows.map(w => w.settings.name);
+    expect(names).toEqual(expect.arrayContaining(['Links', 'Commands', 'Searches', 'Timers']));
+
+    const widgets = Object.values(state.obj.entities.widgets) as {
+      type: string, settings: Record<string, unknown>, coreSettings: { name: string }
+    }[];
+    const query = widgets.find(w => w.type === 'web-query');
+    expect(query?.settings.query).toBe('How to QUERY in ps');
+    const timer = widgets.find(w => w.coreSettings.name === 'Focus');
+    expect(timer?.settings.mins).toBe(25);
+  })
+
   it('converts unknown widget types to explanatory notes', () => {
     const res = convertFreeter1Data(fixture, undefined, makeIdGen());
     const state = JSON.parse(res.appJson);

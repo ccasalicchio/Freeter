@@ -4,6 +4,7 @@
  */
 
 import { join } from 'node:path';
+import { cpSync, existsSync } from 'node:fs';
 import { installFatalErrorHandlers, reportFatalError } from '@/infra/errorReporter/errorReporter';
 import { initFileLog, logToFile } from '@/infra/logger/fileLog';
 import { hostFreeterApp, schemeFreeterFile } from '@common/infra/network';
@@ -84,8 +85,24 @@ import { createPluginProvider } from '@/infra/pluginProvider/pluginProvider';
 
 let appWindow: BrowserWindow | null = null; // ref to the app window
 
-// plain-text app log: <appData>/freeter2/freeter-data/logs/freeter.log
-initFileLog(join(app.getPath('appData'), 'freeter2', 'freeter-data', 'logs', 'freeter.log'));
+// Distinct app identity so Freeter 3 runs side-by-side with Freeter 1.x/2.x:
+// its own userData dir (cache, single-instance lock) and its own data dir.
+app.setName('Freeter 3');
+app.setPath('userData', join(app.getPath('appData'), 'freeter3'));
+
+const dataDirRoot = join(app.getPath('appData'), 'freeter3', 'freeter-data');
+const v2DataDirRoot = join(app.getPath('appData'), 'freeter2', 'freeter-data');
+// one-time migration: adopt existing v2/imported data on first run
+if (!existsSync(dataDirRoot) && existsSync(v2DataDirRoot)) {
+  try {
+    cpSync(v2DataDirRoot, dataDirRoot, { recursive: true });
+  } catch {
+    // fall back to a fresh profile if the copy fails
+  }
+}
+
+// plain-text app log: <appData>/freeter3/freeter-data/logs/freeter.log
+initFileLog(join(dataDirRoot, 'logs', 'freeter.log'));
 installFatalErrorHandlers();
 
 if (!app.requestSingleInstanceLock()) {
@@ -139,11 +156,11 @@ if (!app.requestSingleInstanceLock()) {
     const ipcMainEventValidator = createIpcMainEventValidator(channelPrefix, hostFreeterApp);
     const ipcMain = createIpcMain(ipcMainEventValidator);
 
-    const appDataStorage = await createFileDataStorage('string', join(app.getPath('appData'), 'freeter2', 'freeter-data'));
+    const appDataStorage = await createFileDataStorage('string', dataDirRoot);
     const getTextFromAppDataStorageUseCase = createGetTextFromAppDataStorageUseCase({ appDataStorage });
     const setTextInAppDataStorageUseCase = createSetTextInAppDataStorageUseCase({ appDataStorage });
 
-    const getWidgetDataStoragePath = (id: string) => join(app.getPath('appData'), 'freeter2', 'freeter-data', 'widgets', id);
+    const getWidgetDataStoragePath = (id: string) => join(dataDirRoot, 'widgets', id);
     const widgetDataStorageManager = createObjectManager(
       (id) => createFileDataStorage('string', getWidgetDataStoragePath(id)),
       (fromId, toId) => copyFileDataStorage(getWidgetDataStoragePath(fromId), getWidgetDataStoragePath(toId))
