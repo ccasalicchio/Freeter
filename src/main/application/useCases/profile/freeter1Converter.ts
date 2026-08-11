@@ -52,9 +52,19 @@ interface Freeter1Project {
   layout: { selectedTabId?: number; tabs: Freeter1Tab[] };
 }
 
+interface Freeter1AppPools {
+  links?: { name?: string; urls?: string[] }[];
+  commands?: { name?: string; cmdLines?: string[] }[];
+  searches?: { name?: string; engine?: string; qryTemplate?: string; urlTemplate?: string }[];
+  timers?: { name?: string; mins?: number; endSound?: string; endSoundVolume?: number; endDesktop?: boolean }[];
+  tools?: { name?: string }[];
+  [key: string]: unknown;
+}
+
 export interface Freeter1Data {
   freeterVer?: string;
   projects: Freeter1Project[];
+  app?: Freeter1AppPools;
   [key: string]: unknown;
 }
 
@@ -254,6 +264,123 @@ export function convertFreeter1Data(
     projectIds.push(projectId);
     if (!firstProjectId) {
       firstProjectId = projectId;
+    }
+  }
+
+  // Freeter 1 global pools (links/commands/searches/timers — the toolbar
+  // "mini-apps") become a "Freeter 1 Library" project with one workflow per pool
+  const pools = data.app;
+  if (pools && typeof pools === 'object') {
+    const libraryWorkflows: { name: string; widgets: { widget: object; data: Record<string, string> | null }[] }[] = [];
+
+    const links = Array.isArray(pools.links) ? pools.links : [];
+    if (links.length > 0) {
+      libraryWorkflows.push({
+        name: 'Links',
+        widgets: links.map((l, i) => ({
+          widget: {
+            id: '', coreSettings: { name: l.name || `Link ${i + 1}` },
+            type: 'link-opener',
+            settings: { urls: Array.isArray(l.urls) ? l.urls.filter(u => typeof u === 'string') : [], iconMode: 'favicon', customIcon: '' }
+          },
+          data: null
+        }))
+      });
+    }
+
+    const commands = Array.isArray(pools.commands) ? pools.commands : [];
+    if (commands.length > 0) {
+      libraryWorkflows.push({
+        name: 'Commands',
+        widgets: commands.map((c, i) => ({
+          widget: {
+            id: '', coreSettings: { name: c.name || `Command ${i + 1}` },
+            type: 'commander',
+            settings: { cmds: Array.isArray(c.cmdLines) ? c.cmdLines.filter(x => typeof x === 'string') : [], cwd: '' }
+          },
+          data: null
+        }))
+      });
+    }
+
+    const searches = Array.isArray(pools.searches) ? pools.searches : [];
+    if (searches.length > 0) {
+      libraryWorkflows.push({
+        name: 'Searches',
+        widgets: searches.map((s, i) => ({
+          widget: {
+            id: '', coreSettings: { name: s.name || `Search ${i + 1}` },
+            type: 'web-query',
+            settings: {
+              engine: typeof s.engine === 'string' ? s.engine : '',
+              descr: s.name || '',
+              query: typeof s.qryTemplate === 'string' ? s.qryTemplate.replace(/%QUERY%/g, 'QUERY') : '',
+              url: typeof s.urlTemplate === 'string' ? s.urlTemplate.replace(/%QUERY%/g, 'QUERY') : ''
+            }
+          },
+          data: null
+        }))
+      });
+    }
+
+    const timers = Array.isArray(pools.timers) ? pools.timers : [];
+    if (timers.length > 0) {
+      libraryWorkflows.push({
+        name: 'Timers',
+        widgets: timers.map((t, i) => ({
+          widget: {
+            id: '', coreSettings: { name: t.name || `Timer ${i + 1}` },
+            type: 'timer',
+            settings: {
+              mode: 'timer',
+              mins: typeof t.mins === 'number' ? t.mins : 25,
+              customSecs: 0,
+              endSound: typeof t.endSound === 'string' ? t.endSound : '',
+              endSoundVol: typeof t.endSoundVolume === 'number' ? t.endSoundVolume : 80,
+              endDesktop: !!t.endDesktop
+            }
+          },
+          data: null
+        }))
+      });
+    }
+
+    if (libraryWorkflows.length > 0) {
+      const projectId = generateId();
+      const workflowIds: string[] = [];
+      for (const wf of libraryWorkflows) {
+        const workflowId = generateId();
+        const layout: object[] = [];
+        wf.widgets.forEach((entry, i) => {
+          const widgetId = generateId();
+          widgets[widgetId] = { ...entry.widget, id: widgetId };
+          if (entry.data && Object.keys(entry.data).length > 0) {
+            widgetsData.push({ id: widgetId, data: entry.data });
+          }
+          layout.push({
+            id: generateId(),
+            widgetId,
+            // 2x2 tiles, 6 per row
+            rect: { x: (i % 6) * 2, y: Math.floor(i / 6) * 2, w: 2, h: 2 }
+          });
+        });
+        workflows[workflowId] = {
+          id: workflowId,
+          layout,
+          settings: { memSaver: {}, name: wf.name }
+        };
+        workflowIds.push(workflowId);
+      }
+      projects[projectId] = {
+        id: projectId,
+        settings: { memSaver: {}, name: 'Freeter 1 Library' },
+        workflowIds,
+        currentWorkflowId: workflowIds[0] || ''
+      };
+      projectIds.push(projectId);
+      if (!firstProjectId) {
+        firstProjectId = projectId;
+      }
     }
   }
 

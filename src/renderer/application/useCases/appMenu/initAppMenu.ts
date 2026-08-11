@@ -105,7 +105,7 @@ export function createInitAppMenuUseCase({
   };
 
   const menuApp: MenuItem = {
-    label: 'Freeter',
+    label: 'Freeter 3',
     submenu: [
       itemAbout,
       itemSeparator,
