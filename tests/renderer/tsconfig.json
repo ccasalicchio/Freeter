@@ -2,10 +2,12 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "lib": ["dom", "dom.iterable", "esnext"],
-    "module": "ES6",
+    "module": "esnext",
+    "moduleResolution": "bundler",
     "target": "ES2021",
     "jsx": "react-jsx",
     "baseUrl": "../../",
+    "types": ["vitest/globals"],
     "paths": {
       "@/*": ["src/renderer/*"],
       "@common/*": ["src/common/*"],
@@ -13,8 +15,10 @@
       "@testscommon/*": ["tests/common/*"],
       "@utils/*": ["tests/utils/*"],
     },
-    "plugins": [{
-      "name": "typescript-plugin-css-modules"
-    }]
-  }
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "../src/renderer/shiki.d.ts"
+  ]
 }

@@ -6,9 +6,11 @@
 import { ShowContextMenuUseCase } from '@/application/useCases/contextMenu/showContextMenu';
 import { contextMenuForTextInput } from '@/base/contextMenu';
 import { ModalScreenId } from '@/base/state/ui';
-import { sanitizeUiThemeId } from '@/base/uiTheme';
+import { resolveUiThemeId } from '@/base/uiTheme';
 import { UseAppState } from '@/ui/hooks/appState';
-import React, { ReactNode, createElement } from 'react';
+import React, { ReactNode, createElement, useMemo } from 'react';
+import { CommandPalette, PaletteItem } from '@/ui/components/commandPalette/commandPalette';
+import { CloseCommandPaletteUseCase } from '@/application/useCases/commandPalette/closeCommandPalette';
 
 type Deps = {
   useAppState: UseAppState;
@@ -19,6 +21,10 @@ type Deps = {
   ApplicationSettings: React.FC;
   About: React.FC;
   showContextMenuUseCase: ShowContextMenuUseCase;
+  closeCommandPaletteUseCase: CloseCommandPaletteUseCase;
+  openApplicationSettingsUseCase: () => void;
+  openProjectManagerUseCase: () => void;
+  openAppManagerUseCase: () => void;
 }
 
 export function createAppViewModelHook({
@@ -30,6 +36,10 @@ export function createAppViewModelHook({
   ApplicationSettings,
   About,
   showContextMenuUseCase,
+  closeCommandPaletteUseCase,
+  openApplicationSettingsUseCase,
+  openProjectManagerUseCase,
+  openAppManagerUseCase,
 }: Deps) {
   function useViewModel() {
     const [
@@ -57,16 +67,57 @@ export function createAppViewModelHook({
     const currentWorkflow = workflows[projects[currentProjectId]?.currentWorkflowId || ''];
     const showPalette = editMode && !!currentWorkflow;
 
-    const modalScreenComps: Record<ModalScreenId, ReactNode> = {
+    const modalScreenComps: Record<string, ReactNode> = {
       about: createElement(About, {}),
       applicationSettings: createElement(ApplicationSettings, {}),
       appManager: createElement(AppManager, {}),
       projectManager: createElement(ProjectManager, {}),
       widgetSettings: createElement(WidgetSettings, {}),
-      workflowSettings: createElement(WorkflowSettings, {})
+      workflowSettings: createElement(WorkflowSettings, {}),
     }
 
+    const paletteItems = useMemo((): PaletteItem[] => {
+      const result: PaletteItem[] = [];
+      const { projects, workflows } = useAppState(state => state.entities);
+      const { projectIds } = useAppState(state => state.ui.projectSwitcher);
+
+      for (const pId of projectIds) {
+        const project = projects[pId];
+        if (project) {
+          result.push({
+            id: `prj-${project.id}`,
+            label: project.settings.name || 'Unnamed Project',
+            description: 'Switch to project',
+            type: 'project',
+            action: () => {},
+          });
+          for (const wId of project.workflowIds) {
+            const workflow = workflows[wId];
+            if (workflow) {
+              result.push({
+                id: `wfl-${workflow.id}`,
+                label: `${project.settings.name || 'Project'} › ${workflow.settings.name || 'Workflow'}`,
+                description: 'Switch to workflow',
+                type: 'workflow',
+                action: () => {},
+              });
+            }
+          }
+        }
+      }
+
+      result.push(
+        { id: 'settings', label: 'Settings', description: 'Open application settings', type: 'action', action: () => openApplicationSettingsUseCase() },
+        { id: 'projects-mgr', label: 'Manage Projects', description: 'Open project manager', type: 'action', action: () => openProjectManagerUseCase() },
+        { id: 'apps-mgr', label: 'Manage Apps', description: 'Open app manager', type: 'action', action: () => openAppManagerUseCase() },
+      );
+      return result;
+    }, []);
+
     const modalScreens = modalScreensOrder.map((id, idx, arr) => {
+      if (id === 'commandPalette') {
+        return { id, comp: createElement(CommandPalette, { items: paletteItems, onClose: () => closeCommandPaletteUseCase() }), isLast: idx === arr.length - 1 };
+      }
       if (modalScreenComps[id]) {
         return { id, comp: modalScreenComps[id], isLast: idx === arr.length - 1 };
       } else {
@@ -87,7 +138,7 @@ export function createAppViewModelHook({
       }
     }
 
-    const uiThemeId = sanitizeUiThemeId(uiTheme);
+    const uiThemeId = resolveUiThemeId(uiTheme);
     return {
       showPalette,
       hasProjects,

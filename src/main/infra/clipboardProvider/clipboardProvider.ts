@@ -9,6 +9,7 @@ import { ClipboardProvider } from '@/application/interfaces/clipboardProvider';
 export function createClipboardProvider(): ClipboardProvider {
   return {
     writeBookmark: (title, url) => (process.platform === 'darwin' || process.platform === 'win32') ? Electron.clipboard.writeBookmark(title, url) : Electron.clipboard.writeText(url),
-    writeText: (text) => Electron.clipboard.writeText(text)
+    writeText: (text) => Electron.clipboard.writeText(text),
+    readText: () => Electron.clipboard.readText()
   }
 }

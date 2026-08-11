@@ -1,81 +1,90 @@
-/*
- * Copyright: (c) 2024, Alex Kaul
- * GNU General Public License v3.0 or later (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
- */
-
 import { debounce } from '@/widgets/helpers';
 import { ReactComponent, WidgetReactComponentProps } from '@/widgets/appModules';
 import * as styles from './widget.module.scss';
 import { Settings } from './settings';
-import { ChangeEventHandler, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createContextMenuFactory, textAreaContextId } from '@/widgets/note/contextMenu';
 import { createActionBarItems } from '@/widgets/note/actionBar';
-import { Editor } from 'tiny-markdown-editor';
+import { CodeMirrorEditor } from '@/widgets/note/codeMirrorEditor';
+import { marked } from 'marked';
+import DOMPurify from 'dompurify';
 
 const keyNote = 'note';
 
 function WidgetComp({widgetApi, settings}: WidgetReactComponentProps<Settings>) {
   const {updateActionBar, setContextMenuFactory, dataStorage} = widgetApi;
-  const textAreaRef = useRef<HTMLTextAreaElement>(null);
-  const loadedNote = useRef('');
   const [isLoaded, setIsLoaded] = useState(false);
+  const [note, setNote] = useState('');
+  const previewRef = useRef<HTMLDivElement>(null);
+
+  const saveNote = useMemo(() => debounce((text: string) => dataStorage.setText(keyNote, text), 3000), [dataStorage]);
+
+  const handleChange = useCallback((newNote: string) => {
+    setNote(newNote);
+    saveNote(newNote);
+  }, [saveNote]);
+
+  useEffect(() => {
+    (async () => {
+      const loaded = await dataStorage.getText(keyNote) || '';
+      setNote(loaded);
+      setIsLoaded(true);
+    })();
+  }, [dataStorage]);
 
   useEffect(() => {
     if (isLoaded) {
-      updateActionBar(createActionBarItems(textAreaRef.current, widgetApi));
-      setContextMenuFactory(createContextMenuFactory(textAreaRef.current, widgetApi));
+      updateActionBar(createActionBarItems(note, widgetApi));
+      setContextMenuFactory(createContextMenuFactory(null, widgetApi));
     }
-  }, [isLoaded, updateActionBar, setContextMenuFactory, widgetApi]);
-
-  const saveNote = useMemo(() => debounce((note: string) => dataStorage.setText(keyNote, note), 3000), [dataStorage]);
-  const updNote = useCallback((note: string) => {
-    loadedNote.current = note;
-    saveNote(note);
-  }, [saveNote])
-
-  const loadNote = useCallback(async function () {
-    loadedNote.current = await dataStorage.getText(keyNote) || '';
-    setIsLoaded(true);
-  }, [dataStorage]);
-
-  const handleChange = useCallback<ChangeEventHandler<HTMLTextAreaElement>>((e) => {
-    const newNote = e.target.value;
-    updNote(newNote)
-  }, [updNote])
+  }, [isLoaded, note, updateActionBar, setContextMenuFactory, widgetApi]);
 
   useEffect(() => {
-    loadNote();
-  }, [loadNote])
-
-  useEffect(() => {
-    if (textAreaRef.current) {
-      if (settings.markdown) {
-        const tinyMDE = new Editor({textarea: textAreaRef.current});
-        tinyMDE.addEventListener('change', (e) => updNote(e.content));
-        (textAreaRef.current.nextSibling as HTMLElement).spellcheck = settings.spellCheck;
-      } else {
-        loadedNote.current = textAreaRef.current.value;
-        Array.from(textAreaRef.current.parentElement?.children || [])
-          .filter(child => child.classList.contains('TinyMDE'))
-          .forEach(child => child.remove());
-      }
+    if (settings.markdown && settings.renderMode !== 'source' && previewRef.current) {
+      const html = marked.parse(note) as string;
+      previewRef.current.innerHTML = DOMPurify.sanitize(html);
     }
-  })
+  }, [note, settings.markdown, settings.renderMode]);
+
+  if (!isLoaded) {
+    return <div className={styles['loading']}>Loading Note...</div>;
+  }
+
+  if (settings.markdown && settings.renderMode === 'preview') {
+    return (
+      <div
+        ref={previewRef}
+        className={styles['preview']}
+        data-widget-context={textAreaContextId}
+      />
+    );
+  }
+
+  if (settings.markdown && settings.renderMode === 'split') {
+    return (
+      <div className={styles['split-view']}>
+        <div className={styles['split-editor']}>
+          <CodeMirrorEditor
+            value={note}
+            onChange={handleChange}
+          />
+        </div>
+        <div
+          ref={previewRef}
+          className={styles['split-preview']}
+          data-widget-context={textAreaContextId}
+        />
+      </div>
+    );
+  }
 
   return (
-    isLoaded
-    ? <textarea
-        key={settings.markdown?'md':undefined} // resets element after disabling markdown
-        ref={textAreaRef}
-        className={styles['textarea']}
-        defaultValue={loadedNote.current}
-        onChange={handleChange}
-        placeholder='Write a note here'
-        data-widget-context={textAreaContextId}
-        spellCheck={settings.spellCheck}
-      ></textarea>
-    : <>Loading Note...</>
-  )
+    <CodeMirrorEditor
+      value={note}
+      onChange={handleChange}
+      className={styles['editor']}
+    />
+  );
 }
 
 export const widgetComp: ReactComponent<WidgetReactComponentProps<Settings>> = {

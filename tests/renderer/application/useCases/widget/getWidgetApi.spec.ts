@@ -21,9 +21,11 @@ function setup() {
   const clipboardProvider: jest.MockedObject<ClipboardProvider> = {
     writeBookmark: jest.fn(),
     writeText: jest.fn(),
+    readText: jest.fn(),
   }
   const processProvider: jest.MockedObject<ProcessProvider> = {
-    getProcessInfo: jest.fn()
+    getProcessInfo: jest.fn(),
+    getSystemMetrics: jest.fn()
   }
   const shellProvider = mockShellProvider({
     openApp: jest.fn(),
@@ -50,6 +52,10 @@ function setup() {
   }
 
   const getWidgetsInCurrentWorkflowUseCase = jest.fn();
+  const safeStorageProvider = {
+    encryptString: jest.fn(),
+    decryptString: jest.fn(),
+  };
 
   const getWidgetApiUseCase = createGetWidgetApiUseCase({
     clipboardProvider,
@@ -58,6 +64,7 @@ function setup() {
     widgetDataStorageManager,
     terminalProvider,
     getWidgetsInCurrentWorkflowUseCase,
+    safeStorageProvider,
   });
   return {
     clipboardProvider,
@@ -162,6 +169,9 @@ describe('getWidgetApiUseCase()', () => {
     widgetApi.clipboard.writeText('text');
     expect(clipboardProvider.writeText).toHaveBeenCalledTimes(1);
     expect(clipboardProvider.writeText).toHaveBeenCalledWith('text');
+
+    widgetApi.clipboard.readText();
+    expect(clipboardProvider.readText).toHaveBeenCalledTimes(1);
   })
 
   it('should correctly setup dataStorage module', async () => {

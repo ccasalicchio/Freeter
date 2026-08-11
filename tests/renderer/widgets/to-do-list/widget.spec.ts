@@ -44,9 +44,9 @@ describe('To-Do List Widget', () => {
   it('should get the state stored in DataStorage on start', async () => {
     const testState: ToDoListState = {
       items: [
-        { id: 1, isDone: false, text: 'Task 1' },
-        { id: 2, isDone: true, text: 'Task 2' },
-        { id: 3, isDone: false, text: 'Task 3' },
+        { id: 1, isDone: false, text: 'Task 1', dueDate: '', priority: 'none' },
+        { id: 2, isDone: true, text: 'Task 2', dueDate: '', priority: 'none' },
+        { id: 3, isDone: false, text: 'Task 3', dueDate: '', priority: 'none' },
       ],
       nextItemId: 99
     };
@@ -88,9 +88,9 @@ describe('To-Do List Widget', () => {
   it('should correctly render list items', async () => {
     const testState: ToDoListState = {
       items: [
-        { id: 1, isDone: false, text: 'Task 1' },
-        { id: 2, isDone: true, text: 'Task 2' },
-        { id: 3, isDone: false, text: 'Task 3' },
+        { id: 1, isDone: false, text: 'Task 1', dueDate: '', priority: 'none' },
+        { id: 2, isDone: true, text: 'Task 2', dueDate: '', priority: 'none' },
+        { id: 3, isDone: false, text: 'Task 3', dueDate: '', priority: 'none' },
       ],
       nextItemId: 99
     };
@@ -117,9 +117,9 @@ describe('To-Do List Widget', () => {
   it('should move completed tasks to bottom, when doneToBottom=true', async () => {
     const testState: ToDoListState = {
       items: [
-        { id: 1, isDone: false, text: 'Task 1' },
-        { id: 2, isDone: true, text: 'Task 2' },
-        { id: 3, isDone: false, text: 'Task 3' },
+        { id: 1, isDone: false, text: 'Task 1', dueDate: '', priority: 'none' },
+        { id: 2, isDone: true, text: 'Task 2', dueDate: '', priority: 'none' },
+        { id: 3, isDone: false, text: 'Task 3', dueDate: '', priority: 'none' },
       ],
       nextItemId: 99
     };
@@ -152,9 +152,9 @@ describe('To-Do List Widget', () => {
   it('should update the state in DataStorage when there are changes, after a 3 sec delay', async () => {
     const testState: ToDoListState = {
       items: [
-        { id: 1, isDone: false, text: 'Task 1' },
-        { id: 2, isDone: true, text: 'Task 2' },
-        { id: 3, isDone: false, text: 'Task 3' },
+        { id: 1, isDone: false, text: 'Task 1', dueDate: '', priority: 'none' },
+        { id: 2, isDone: true, text: 'Task 2', dueDate: '', priority: 'none' },
+        { id: 3, isDone: false, text: 'Task 3', dueDate: '', priority: 'none' },
       ],
       nextItemId: 99
     };

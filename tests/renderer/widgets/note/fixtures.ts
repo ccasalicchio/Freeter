@@ -9,6 +9,8 @@ export function fixtureSettings(settings: Partial<Settings>): Settings {
   return {
     spellCheck: true,
     markdown: true,
+    renderMode: 'split',
+    fontSize: 14,
     ...settings
   }
 }

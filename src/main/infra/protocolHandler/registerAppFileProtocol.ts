@@ -14,7 +14,7 @@ export function registerAppFileProtocol(devMode: boolean) {
   if (devMode) {
     fetchAppFile = pathname => net.fetch('http://localhost:4000' + pathname)
   } else {
-    fetchAppFile = pathname => net.fetch(pathToFileURL(join(__dirname, pathname)).toString())
+    fetchAppFile = pathname => net.fetch(pathToFileURL(join(__dirname, '..', 'renderer', pathname)).toString())
   }
   registerProtocol(
     schemeFreeterFile,

@@ -1,8 +1,3 @@
-/*
- * Copyright: (c) 2024, Alex Kaul
- * GNU General Public License v3.0 or later (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
- */
-
 import { CreateSettingsState, ReactComponent, SettingsEditorReactComponentProps, SettingBlock, SettingRow, SettingActions } from '@/widgets/appModules';
 import { glockenspielArpeggioId, timerEndSoundFiles, timerEndSoundFilesById } from '@/widgets/timer/audio/timer-end';
 import { playSvg } from '@/widgets/timer/icons';
@@ -10,9 +5,12 @@ import { useAudioFile } from '@/widgets/timer/useAudioFile';
 import { useCallback } from 'react';
 
 export interface Settings {
+  mode: 'timer' | 'stopwatch';
   mins: number;
+  customSecs: number;
   endSound: string;
   endSoundVol: number;
+  endDesktop: boolean;
 }
 
 interface SelectOption<T> {
@@ -25,6 +23,14 @@ for (let mins = 5; mins <= 90; mins += 5) {
   timerMinsOptions.push({
     label: mins + ' minutes',
     value: mins
+  });
+}
+
+const timerCustomOptions: SelectOption<number>[] = [];
+for (let secs = 10; secs <= 300; secs += 10) {
+  timerCustomOptions.push({
+    label: secs + ' seconds',
+    value: secs
   });
 }
 
@@ -61,7 +67,9 @@ for (let vol = 0; vol <= 100; vol += 10) {
 }
 
 export const createSettingsState: CreateSettingsState<Settings> = (settings) => ({
+  mode: (settings.mode === 'timer' || settings.mode === 'stopwatch') ? settings.mode : 'timer',
   mins: typeof settings.mins === 'number' ? settings.mins : 25,
+  customSecs: typeof settings.customSecs === 'number' ? settings.customSecs : 60,
   endDesktop: typeof settings.endDesktop === 'boolean' ? settings.endDesktop : true,
   endSound: isEndSoundValue(settings.endSound) ? settings.endSound : defaultEndSound,
   endSoundVol: typeof settings.endSoundVol === 'number' ? settings.endSoundVol : 70,
@@ -78,26 +86,61 @@ function SettingsEditorComp({settings, settingsApi}: SettingsEditorReactComponen
   return (
     <>
       <SettingBlock
-        titleForId='timer-mins'
-        title='Timer'
+        titleForId='timer-mode'
+        title='Mode'
       >
-        <select id="timer-mins" value={settings.mins} onChange={e => {
+        <select id="timer-mode" value={settings.mode} onChange={e => {
           updateSettings({
             ...settings,
-            mins: Number(e.target.value) || 5
+            mode: e.target.value as Settings['mode']
           })
         }}>
-          {
-            timerMinsOptions.map(opt=>(
-              <option
-                key={opt.value}
-                value={opt.value}
-              >
-                {opt.label}
-              </option>
-            ))
-          }
+          <option value="timer">Timer (countdown)</option>
+          <option value="stopwatch">Stopwatch (count up)</option>
         </select>
+      </SettingBlock>
+
+      {settings.mode === 'timer' && (
+        <SettingBlock
+          titleForId='timer-mins'
+          title='Duration'
+        >
+          <select id="timer-mins" value={settings.mins} onChange={e => {
+            updateSettings({
+              ...settings,
+              mins: Number(e.target.value) || 5
+            })
+          }}>
+            {
+              timerMinsOptions.map(opt=>(
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))
+            }
+          </select>
+          <div style={{marginTop: 4}}>
+            <label style={{fontSize: 11, color: 'var(--freeter-mutedText)'}}>
+              Custom seconds:
+              <select value={settings.customSecs} onChange={e => updateSettings({...settings, customSecs: Number(e.target.value) || 60})} style={{marginLeft: 4}}>
+                {timerCustomOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+              </select>
+            </label>
+          </div>
+        </SettingBlock>
+      )}
+
+      <SettingBlock
+        titleForId='timer-endDesktop'
+        title='Desktop Notification'
+      >
+        <div>
+          <label>
+            <input type="checkbox" id="timer-endDesktop" checked={settings.endDesktop} onChange={_=>updateSettings({
+              ...settings,
+              endDesktop: !settings.endDesktop
+            })}/>
+            {' '}Show notification when timer ends
+          </label>
+        </div>
       </SettingBlock>
 
       <SettingBlock
@@ -112,12 +155,7 @@ function SettingsEditorComp({settings, settingsApi}: SettingsEditorReactComponen
         }}>
           {
             endSoundOptions.map(opt=>(
-              <option
-                key={opt.value}
-                value={opt.value}
-              >
-                {opt.label}
-              </option>
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
             ))
           }
         </select>
@@ -136,12 +174,7 @@ function SettingsEditorComp({settings, settingsApi}: SettingsEditorReactComponen
           }}>
             {
               endSoundVolOptions.map(opt=>(
-                <option
-                  key={opt.value}
-                  value={opt.value}
-                >
-                  {opt.label}
-                </option>
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))
             }
           </select>
@@ -155,7 +188,6 @@ function SettingsEditorComp({settings, settingsApi}: SettingsEditorReactComponen
           />
         </SettingRow>
       </SettingBlock>
-
     </>
   )
 }

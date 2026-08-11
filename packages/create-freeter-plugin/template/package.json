@@ -1,0 +1,13 @@
+{
+  "name": "my-freeter-plugin",
+  "version": "1.0.0",
+  "description": "My Freeter plugin",
+  "main": "index.js",
+  "freeterPlugin": true,
+  "freeterWidget": {
+    "typeId": "my-plugin-widget",
+    "name": "My Plugin Widget",
+    "minW": 2,
+    "minH": 2
+  }
+}

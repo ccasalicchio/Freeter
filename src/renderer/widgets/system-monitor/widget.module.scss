@@ -1,0 +1,76 @@
+.viewport {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  padding: 8px;
+  gap: 8px;
+  box-sizing: border-box;
+}
+
+.metric {
+  flex-shrink: 0;
+}
+
+.metric-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.metric-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--freeter-headerColor);
+}
+
+.metric-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--freeter-buttonColor);
+}
+
+.metric-bar-bg {
+  width: 100%;
+  height: 8px;
+  background: var(--freeter-inputBackground, #2a2a4a);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.metric-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.metric-bar-fill.cpu {
+  background: #4e9af1;
+}
+
+.metric-bar-fill.mem {
+  background: #2ecc71;
+}
+
+.sparkline-container {
+  width: 100%;
+  height: 40px;
+  margin-top: 4px;
+}
+
+.sparkline-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--freeter-mutedText);
+  font-style: italic;
+  font-size: 13px;
+}

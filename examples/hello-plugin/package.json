@@ -1,0 +1,12 @@
+{
+  "name": "hello-freeter",
+  "version": "1.0.0",
+  "description": "A simple Hello World plugin for Freeter",
+  "freeterPlugin": true,
+  "freeterWidget": {
+    "typeId": "hello-world",
+    "name": "Hello World",
+    "minW": 2,
+    "minH": 2
+  }
+}

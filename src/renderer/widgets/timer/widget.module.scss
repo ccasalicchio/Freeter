@@ -1,24 +1,42 @@
-/*
- * Copyright: (c) 2024, Alex Kaul
- * GNU General Public License v3.0 or later (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
- */
-
- .timer-button, .timer-run-screen-mmss {
-  font-family: 'Roboto Condensed';
-  font-size: 24px;
-  font-weight: 600;
- }
-
- .timer-run-screen {
-  box-sizing: border-box;
+.timer-screen {
   display: flex;
-  padding: 6px;
-  height: 100%;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  gap: 8px;
 }
 
-.timer-run-screen-mmss {
-  margin-bottom: 6px;
+.progress-ring {
+  width: 80px;
+  height: 80px;
+  transform: rotate(-90deg);
+}
+
+.progress-ring-bg {
+  fill: none;
+  stroke: var(--freeter-inputBackground, #313131);
+  stroke-width: 6;
+}
+
+.progress-ring-fill {
+  fill: none;
+  stroke: var(--freeter-primary, #2488DB);
+  stroke-width: 6;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.5s ease;
+}
+
+.timer-mmss {
+  font-size: 32px;
+  font-weight: 300;
+  color: var(--freeter-componentColor);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 2px;
+}
+
+.timer-button {
+  max-width: 120px;
 }

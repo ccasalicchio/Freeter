@@ -23,3 +23,11 @@ export interface ProcessInfo {
   isLinux: boolean;
   isDevMode: boolean;
 }
+
+export interface SystemMetrics {
+  cpuUsage: number;
+  totalMem: number;
+  freeMem: number;
+  usedMem: number;
+  memUsagePercent: number;
+}

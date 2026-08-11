@@ -49,6 +49,7 @@ const appState: AppState = {
         projectManager: { currentProjectId: '', deleteProjectIds: null, projectIds: null, projects: null, duplicateProjectIds: null },
         widgetSettings: { widgetInEnv: null },
         workflowSettings: { workflow: null },
+        commandPalette: undefined,
       },
       order: []
     },

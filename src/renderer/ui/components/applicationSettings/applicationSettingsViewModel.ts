@@ -9,7 +9,7 @@ import { SaveApplicationSettingsUseCase } from '@/application/useCases/applicati
 import { UpdateApplicationSettingsUseCase } from '@/application/useCases/applicationSettings/updateApplicationSettings';
 import { AppConfig } from '@/base/appConfig';
 import { memSaverConfigAppActivateOnProjectSwitchOptions, memSaverConfigAppInactiveAfterOptions } from '@/base/memSaver';
-import { uiThemes } from '@/base/uiTheme';
+import { uiThemes, autoThemeId } from '@/base/uiTheme';
 import { UseAppState } from '@/ui/hooks/appState';
 import { useCallback } from 'react';
 
@@ -29,7 +29,7 @@ export function createApplicationSettingsViewModelHook({
   closeApplicationSettingsUseCase,
 }: Deps) {
   const hotkeyOptions = getMainHotkeyOptionsUseCase();
-  const uiThemeOptions = uiThemes;
+  const uiThemeOptions = [{ id: autoThemeId, name: 'Auto (match OS)' }, ...uiThemes];
   const inactiveAfterOptions = memSaverConfigAppInactiveAfterOptions;
   const activateOnProjectSwitchOptions = memSaverConfigAppActivateOnProjectSwitchOptions;
 

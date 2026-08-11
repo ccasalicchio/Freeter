@@ -13,6 +13,8 @@ import { ObjectManager } from '@common/base/objectManager';
 import { TerminalProvider } from '@/application/interfaces/terminalProvider';
 import { GetWidgetsInCurrentWorkflowUseCase } from '@/application/useCases/widget/widgetApiWidgets/getWidgetsInCurrentWorkflow';
 
+import { SafeStorageRenderer } from '@/infra/safeStorageProvider/safeStorageProvider';
+
 interface Deps {
   clipboardProvider: ClipboardProvider;
   widgetDataStorageManager: ObjectManager<DataStorageRenderer>;
@@ -20,6 +22,7 @@ interface Deps {
   shellProvider: ShellProvider;
   terminalProvider: TerminalProvider;
   getWidgetsInCurrentWorkflowUseCase: GetWidgetsInCurrentWorkflowUseCase;
+  safeStorageProvider: SafeStorageRenderer;
 }
 function _createWidgetApiFactory({
   clipboardProvider,
@@ -28,6 +31,7 @@ function _createWidgetApiFactory({
   widgetDataStorageManager,
   terminalProvider,
   getWidgetsInCurrentWorkflowUseCase,
+  safeStorageProvider,
 }: Deps, forPreview: boolean) {
   return createWidgetApiFactory(
     (_widgetId, updateActionBarHandler, setWidgetContextMenuFactoryHandler, exposeApiHandler) => ({
@@ -44,7 +48,8 @@ function _createWidgetApiFactory({
     {
       clipboard: () => ({
         writeBookmark: (title, url) => clipboardProvider.writeBookmark(title, url),
-        writeText: (text) => clipboardProvider.writeText(text)
+        writeText: (text) => clipboardProvider.writeText(text),
+        readText: () => clipboardProvider.readText()
       }),
       dataStorage: (widgetId) => {
         const widgetDataStorage = widgetDataStorageManager.getObject(widgetId);
@@ -59,7 +64,8 @@ function _createWidgetApiFactory({
         }
       },
       process: () => ({
-        getProcessInfo: () => processProvider.getProcessInfo()
+        getProcessInfo: () => processProvider.getProcessInfo(),
+        getSystemMetrics: () => processProvider.getSystemMetrics()
       }),
       shell: () => ({
         openApp: (appPath, args) => shellProvider.openApp(appPath, args),
@@ -71,6 +77,10 @@ function _createWidgetApiFactory({
       }),
       widgets: () => ({
         getWidgetsInCurrentWorkflow: (widgetTypeId) => getWidgetsInCurrentWorkflowUseCase(widgetTypeId)
+      }),
+      safeStorage: () => ({
+        encryptString: (plainText) => safeStorageProvider.encryptString(plainText),
+        decryptString: (encryptedText) => safeStorageProvider.decryptString(encryptedText)
       })
     }
   )

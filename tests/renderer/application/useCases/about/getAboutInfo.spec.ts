@@ -16,7 +16,8 @@ async function setup(opts?: {
   productInfo?: ProductInfo;
 }) {
   const processProviderMock: ProcessProvider = {
-    getProcessInfo: () => opts?.processInfo || fixtureProcessInfoLinux()
+    getProcessInfo: () => opts?.processInfo || fixtureProcessInfoLinux(),
+    getSystemMetrics: jest.fn()
   }
   const productInfoProviderMock: ProductInfoProvider = {
     getProductInfo: () => opts?.productInfo || fixtureProductInfo()

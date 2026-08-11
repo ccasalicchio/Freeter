@@ -3,20 +3,23 @@
  * GNU General Public License v3.0 or later (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
  */
 
-import { ipcWriteBookmarkIntoClipboardChannel, ipcWriteTextIntoClipboardChannel } from '@common/ipc/channels';
+import { ipcWriteBookmarkIntoClipboardChannel, ipcWriteTextIntoClipboardChannel, ipcReadTextFromClipboardChannel } from '@common/ipc/channels';
 import { createClipboardControllers } from '@/controllers/clipboard';
 import { fixtureIpcMainEvent } from '@tests/infra/mocks/ipcMain';
 
 function setup() {
   const writeBookmarkIntoClipboardUseCase = jest.fn();
   const writeTextIntoClipboardUseCase = jest.fn();
+  const readTextFromClipboardUseCase = jest.fn();
 
   const [
     writeBookmarkIntoClipboardController,
     writeTextIntoClipboardController,
+    readTextFromClipboardController,
   ] = createClipboardControllers({
     writeBookmarkIntoClipboardUseCase,
     writeTextIntoClipboardUseCase,
+    readTextFromClipboardUseCase,
   })
 
   return {
@@ -25,6 +28,9 @@ function setup() {
 
     writeTextIntoClipboardUseCase,
     writeTextIntoClipboardController,
+
+    readTextFromClipboardController,
+    readTextFromClipboardUseCase,
   }
 }
 
@@ -69,6 +75,24 @@ describe('ClipboardControllers', () => {
 
       expect(writeTextIntoClipboardUseCase).toBeCalledTimes(1);
       expect(writeTextIntoClipboardUseCase).toBeCalledWith(testText);
+    });
+  })
+
+  describe('readTextFromClipboard', () => {
+    it('should have a right channel name', () => {
+      const { channel } = setup().readTextFromClipboardController;
+
+      expect(channel).toBe(ipcReadTextFromClipboardChannel)
+    })
+
+    it('should call a right usecase', () => {
+      const { readTextFromClipboardController, readTextFromClipboardUseCase } = setup();
+      const { handle } = readTextFromClipboardController;
+      const event = fixtureIpcMainEvent();
+
+      handle(event);
+
+      expect(readTextFromClipboardUseCase).toBeCalledTimes(1);
     });
   })
 })

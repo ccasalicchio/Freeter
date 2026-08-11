@@ -21,7 +21,9 @@ function createToDoListItem(list: ToDoListState, text: string, idx?: number): [T
   const newItem: ToDoListItem = {
     id,
     text: text.replace(/\s+/g, ' '),
-    isDone: false
+    isDone: false,
+    dueDate: '',
+    priority: 'none',
   }
   const updList: ToDoListState = {
     nextItemId: id + 1,

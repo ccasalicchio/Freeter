@@ -4,20 +4,27 @@
  */
 
 import { Controller } from '@/controllers/controller';
-import { IpcGetProcessInfoArgs, ipcGetProcessInfoChannel, IpcGetProcessInfoRes } from '@common/ipc/channels';
+import { IpcGetProcessInfoArgs, ipcGetProcessInfoChannel, IpcGetProcessInfoRes, IpcGetSystemMetricsArgs, ipcGetSystemMetricsChannel, IpcGetSystemMetricsRes } from '@common/ipc/channels';
 import { GetProcessInfoUseCase } from '@/application/useCases/process/getProcessInfo';
+import { GetSystemMetricsUseCase } from '@/application/useCases/process/getSystemMetrics';
 
 type Deps = {
   getProcessInfoUseCase: GetProcessInfoUseCase;
+  getSystemMetricsUseCase: GetSystemMetricsUseCase;
 }
 
 export function createProcessControllers({
   getProcessInfoUseCase,
+  getSystemMetricsUseCase,
 }: Deps): [
     Controller<IpcGetProcessInfoArgs, IpcGetProcessInfoRes>,
+    Controller<IpcGetSystemMetricsArgs, IpcGetSystemMetricsRes>,
   ] {
   return [{
     channel: ipcGetProcessInfoChannel,
     handle: async (_event) => getProcessInfoUseCase()
+  }, {
+    channel: ipcGetSystemMetricsChannel,
+    handle: async () => getSystemMetricsUseCase()
   }]
 }

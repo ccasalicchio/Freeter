@@ -49,6 +49,15 @@ const engines: SettingsEngine[] = [
   {id: 'ovrs-imgs', name: 'Openverse (Images)', url: 'https://openverse.org/search/image?q=QUERY', descr: 'Search for images'},
   {id: 'wkpd', name: 'Wikipedia', url: 'https://en.wikipedia.org/w/index.php?search=QUERY', descr: 'Search Wikipedia'},
   {id: 'wfal', name: 'Wolfram|Alpha', url: 'https://www.wolframalpha.com/input?i=QUERY', descr: 'Calculate / Know about'},
+  {id: 'gh', name: 'GitHub', url: 'https://github.com/search?q=QUERY', descr: 'Search repositories'},
+  {id: 'gl', name: 'GitLab', url: 'https://gitlab.com/search?search=QUERY', descr: 'Search projects'},
+  {id: 'npm', name: 'npm', url: 'https://www.npmjs.com/search?q=QUERY', descr: 'Search packages'},
+  {id: 'pypi', name: 'PyPI', url: 'https://pypi.org/search/?q=QUERY', descr: 'Search Python packages'},
+  {id: 'mdn', name: 'MDN', url: 'https://developer.mozilla.org/en-US/search?q=QUERY', descr: 'Search documentation'},
+  {id: 'so', name: 'Stack Overflow', url: 'https://stackoverflow.com/search?q=QUERY', descr: 'Search Q&A'},
+  {id: 'reddit', name: 'Reddit', url: 'https://www.reddit.com/search/?q=QUERY', descr: 'Search posts'},
+  {id: 'yt', name: 'YouTube', url: 'https://www.youtube.com/results?search_query=QUERY', descr: 'Search videos'},
+  {id: 'hn', name: 'Hacker News', url: 'https://hn.algolia.com/?q=QUERY', descr: 'Search stories'},
 ]
 export const defaultEngine = engineDdgo;
 

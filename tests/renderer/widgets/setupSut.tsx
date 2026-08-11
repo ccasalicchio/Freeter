@@ -94,6 +94,7 @@ export function setupWidgetSut<T>(reactComp: ReactComponent<WidgetReactComponent
     clipboard: {
       writeBookmark: jest.fn(),
       writeText: jest.fn(),
+      readText: jest.fn(),
       ...mockWidgetApi.clipboard
     },
     dataStorage: {
@@ -108,6 +109,7 @@ export function setupWidgetSut<T>(reactComp: ReactComponent<WidgetReactComponent
     },
     process: {
       getProcessInfo: jest.fn(()=>fixtureProcessInfoLinux({browser: {name: 'Chrome', ver: '1.2.3'}, os: {name: 'linux', ver: '5.6.7'}})),
+      getSystemMetrics: jest.fn(),
       ...mockWidgetApi.process
     },
     shell: {
@@ -123,6 +125,11 @@ export function setupWidgetSut<T>(reactComp: ReactComponent<WidgetReactComponent
     widgets: {
       getWidgetsInCurrentWorkflow: jest.fn(),
       ...mockWidgetApi.widgets
+    },
+    safeStorage: {
+      encryptString: jest.fn(),
+      decryptString: jest.fn(),
+      ...mockWidgetApi.safeStorage
     }
   };
   return {

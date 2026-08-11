@@ -10,7 +10,8 @@ import { ProcessInfo } from '@common/base/process';
 const providerRetVal = 'provider return value';
 function setup() {
   const processProviderMock: ProcessProvider = {
-    getProcessInfo: jest.fn(() => providerRetVal as unknown as ProcessInfo)
+    getProcessInfo: jest.fn(() => providerRetVal as unknown as ProcessInfo),
+    getSystemMetrics: jest.fn()
   }
   const useCase = createGetProcessInfoUseCase({
     processProvider: processProviderMock

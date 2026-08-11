@@ -3,15 +3,26 @@
  * GNU General Public License v3.0 or later (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
  */
 
+/**
+ * @fileoverview
+ * IPC channel definitions for Freeter.
+ * Each channel has typed Args (arguments sent from renderer to main)
+ * and Res (response value sent from main to renderer).
+ * All channels are prefixed with 'freeter:' by makeIpcChannelName().
+ */
+
 import { MenuItemsIpc } from '@common/base/menu';
-import { ProcessInfo } from '@common/base/process';
+import { ProcessInfo, SystemMetrics } from '@common/base/process';
+import { PluginManifest } from '@common/base/plugin';
 import { makeIpcChannelName } from '@common/ipc/ipc';
 import { MessageBoxConfig, MessageBoxResult, OpenDialogResult, OpenDirDialogConfig, OpenFileDialogConfig, SaveDialogResult, SaveFileDialogConfig } from '@common/base/dialog';
 
+/** Get a text value from application-level data storage. */
 export const ipcAppDataStorageGetTextChannel = makeIpcChannelName('app-data-storage-get-text');
 export type IpcAppDataStorageGetTextArgs = [key: string];
 export type IpcAppDataStorageGetTextRes = string | undefined;
 
+/** Set a text value in application-level data storage. */
 export const ipcAppDataStorageSetTextChannel = makeIpcChannelName('app-data-storage-set-text');
 export type IpcAppDataStorageSetTextArgs = [key: string, text: string];
 export type IpcAppDataStorageSetTextRes = void;
@@ -76,9 +87,17 @@ export const ipcWriteTextIntoClipboardChannel = makeIpcChannelName('write-text-i
 export type IpcWriteTextIntoClipboardArgs = [text: string];
 export type IpcWriteTextIntoClipboardRes = void;
 
+export const ipcReadTextFromClipboardChannel = makeIpcChannelName('read-text-from-clipboard');
+export type IpcReadTextFromClipboardArgs = [];
+export type IpcReadTextFromClipboardRes = string;
+
 export const ipcGetProcessInfoChannel = makeIpcChannelName('get-process-info');
 export type IpcGetProcessInfoArgs = [];
 export type IpcGetProcessInfoRes = ProcessInfo;
+
+export const ipcGetSystemMetricsChannel = makeIpcChannelName('get-system-metrics');
+export type IpcGetSystemMetricsArgs = [];
+export type IpcGetSystemMetricsRes = SystemMetrics;
 
 export const ipcShowOsMessageBoxChannel = makeIpcChannelName('show-os-message-box');
 export type IpcShowOsMessageBoxArgs = [config: MessageBoxConfig];
@@ -127,3 +146,27 @@ export type IpcShowBrowserWindowRes = void;
 export const ipcExecCmdLinesInTerminalChannel = makeIpcChannelName('exec-cmd-lines-in-terminal');
 export type IpcExecCmdLinesInTerminalArgs = [cmdLines: ReadonlyArray<string>, cwd?: string];
 export type IpcExecCmdLinesInTerminalRes = void;
+
+export const ipcSafeStorageEncryptChannel = makeIpcChannelName('safe-storage-encrypt');
+export type IpcSafeStorageEncryptArgs = [plainText: string];
+export type IpcSafeStorageEncryptRes = string;
+
+export const ipcSafeStorageDecryptChannel = makeIpcChannelName('safe-storage-decrypt');
+export type IpcSafeStorageDecryptArgs = [encryptedText: string];
+export type IpcSafeStorageDecryptRes = string;
+
+export const ipcGetPluginsChannel = makeIpcChannelName('get-plugins');
+export type IpcGetPluginsArgs = [];
+export type IpcGetPluginsRes = PluginManifest[];
+
+export const ipcLoadPluginChannel = makeIpcChannelName('load-plugin');
+export type IpcLoadPluginArgs = [pluginPath: string];
+export type IpcLoadPluginRes = string | undefined;
+
+export const ipcExportProfileChannel = makeIpcChannelName('export-profile');
+export type IpcExportProfileArgs = [];
+export type IpcExportProfileRes = boolean;
+
+export const ipcImportProfileChannel = makeIpcChannelName('import-profile');
+export type IpcImportProfileArgs = [];
+export type IpcImportProfileRes = string | undefined;

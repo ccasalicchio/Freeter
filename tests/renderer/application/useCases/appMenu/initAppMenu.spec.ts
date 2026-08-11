@@ -22,7 +22,8 @@ async function setup(initState: AppState, opts?: {
     setAutoHide: jest.fn()
   }
   const processProviderMock: ProcessProvider = {
-    getProcessInfo: () => opts?.processInfo || fixtureProcessInfoLinux()
+    getProcessInfo: () => opts?.processInfo || fixtureProcessInfoLinux(),
+    getSystemMetrics: jest.fn()
   }
   const shellProviderMock = mockShellProvider({
     openExternal: jest.fn()
@@ -50,6 +51,11 @@ async function setup(initState: AppState, opts?: {
     openAboutUseCase,
     openAppManagerUseCase,
     openProjectManagerUseCase,
+    profileProvider: {
+      exportProfile: jest.fn(),
+      importProfile: jest.fn(),
+    },
+    openCommandPaletteUseCase: jest.fn(),
   });
   return {
     appStore,
