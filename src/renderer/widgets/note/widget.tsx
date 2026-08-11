@@ -27,6 +27,16 @@ function WidgetComp({widgetApi, settings}: WidgetReactComponentProps<Settings>) 
   const viewMode: NoteViewMode = viewModeOverride
     ?? (settings.renderMode === 'source' ? 'edit' : 'view');
 
+
+  const previewClickHandler = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const a = (e.target as HTMLElement | null)?.closest('a');
+    const href = a?.getAttribute('href');
+    if (href && /^(https?:|mailto:|file:)/i.test(href)) {
+      e.preventDefault();
+      widgetApi.shell.openExternalUrl(href);
+    }
+  }, [widgetApi]);
+
   const saveNote = useMemo(() => debounce((text: string) => dataStorage.setText(keyNote, text), 3000), [dataStorage]);
 
   const handleChange = useCallback((newNote: string) => {
@@ -76,6 +86,7 @@ function WidgetComp({widgetApi, settings}: WidgetReactComponentProps<Settings>) 
         className={clsx(styles['preview'], styles[`style-${settings.contentStyle}`])}
         style={{ fontSize: settings.fontSize }}
         data-widget-context={textAreaContextId}
+        onClick={previewClickHandler}
       />
     );
   }
@@ -94,6 +105,7 @@ function WidgetComp({widgetApi, settings}: WidgetReactComponentProps<Settings>) 
           className={clsx(styles['split-preview'], styles[`style-${settings.contentStyle}`])}
           style={{ fontSize: settings.fontSize }}
           data-widget-context={textAreaContextId}
+          onClick={previewClickHandler}
         />
       </div>
     );

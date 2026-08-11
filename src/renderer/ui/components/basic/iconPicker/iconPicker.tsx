@@ -5,7 +5,7 @@
 
 import styles from './iconPicker.module.scss';
 import clsx from 'clsx';
-import { glyphs } from '@/ui/assets/images/glyphs';
+import { glyphs, glyphSets } from '@/ui/assets/images/glyphs';
 import { SvgIcon } from '@/ui/components/basic/svgIcon';
 
 /** preset icon colors (Freeter 1 heritage palette + theme default) */
@@ -31,22 +31,27 @@ export interface IconPickerProps {
 export function IconPicker({ glyphId, color, onSelectGlyph, onSelectColor }: IconPickerProps) {
   return (
     <div>
-      <div className={styles['icon-grid']} role='listbox' aria-label='Icon'>
-        {glyphs.map(g => (
-          <button
-            key={g.id}
-            type='button'
-            role='option'
-            aria-selected={glyphId === g.id}
-            title={g.name}
-            className={clsx(styles['icon-cell'], glyphId === g.id && styles['is-selected'])}
-            style={color ? { color } : undefined}
-            onClick={() => onSelectGlyph(g.id)}
-          >
-            <SvgIcon svg={g.svg} />
-          </button>
-        ))}
-      </div>
+      {glyphSets.map(set => (
+        <div key={set}>
+          <div className={styles['set-label']}>{set}</div>
+          <div className={styles['icon-grid']} role='listbox' aria-label={`${set} icons`}>
+            {glyphs.filter(g => g.set === set).map(g => (
+              <button
+                key={g.id}
+                type='button'
+                role='option'
+                aria-selected={glyphId === g.id}
+                title={g.name}
+                className={clsx(styles['icon-cell'], glyphId === g.id && styles['is-selected'])}
+                style={color ? { color } : undefined}
+                onClick={() => onSelectGlyph(g.id)}
+              >
+                <SvgIcon svg={g.svg} />
+              </button>
+            ))}
+          </div>
+        </div>
+      ))}
       <div className={styles['color-row']} role='listbox' aria-label='Icon Color'>
         {iconColors.map(c => (
           <button

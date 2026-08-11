@@ -28,12 +28,18 @@ export function createProjectSwitcherComponent({
       handleChange,
     } = useProjectSwitcherViewModel();
 
-    const currentIcon = projects.find(p => p.id === currentProjectId)?.settings.icon;
+    const currentSettings = projects.find(p => p.id === currentProjectId)?.settings;
+    const currentIcon = currentSettings?.icon;
     const currentGlyph = currentIcon && !currentIcon.image ? glyphsById[currentIcon.glyph] : undefined;
+    // a relative logo path resolves against the project's root folder
+    let iconImageSrc = currentIcon?.image || '';
+    if (iconImageSrc && !/^([a-zA-Z]+:|\/|\\)/.test(iconImageSrc) && currentSettings?.rootFolder) {
+      iconImageSrc = 'file:///' + (currentSettings.rootFolder + '/' + iconImageSrc).replace(/\\/g, '/');
+    }
 
     return (<>
-      {currentIcon?.image && (
-        <img src={currentIcon.image} alt='' className={styles['project-icon']} />
+      {iconImageSrc && (
+        <img src={iconImageSrc} alt='' className={styles['project-icon']} />
       )}
       {currentGlyph && (
         <SvgIcon

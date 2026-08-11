@@ -4,6 +4,7 @@
  */
 
 import { CloseProjectManagerUseCase } from '@/application/useCases/projectManager/closeProjectManager';
+import { ShowOpenDirDialogUseCase } from '@/application/useCases/dialog/showOpenDirDialog';
 import { AddProjectInProjectManagerUseCase } from '@/application/useCases/projectManager/addProjectInProjectManager';
 import { SaveChangesInProjectManagerUseCase } from '@/application/useCases/projectManager/saveChangesInProjectManager';
 import { SwitchProjectInProjectManagerUseCase } from '@/application/useCases/projectManager/switchProjectInProjectManager';
@@ -29,6 +30,7 @@ type Deps = {
   updateProjectsOrderInProjectManagerUseCase: UpdateProjectsOrderInProjectManagerUseCase;
   updateProjectSettingsInProjectManagerUseCase: UpdateProjectSettingsInProjectManagerUseCase;
   closeProjectManagerUseCase: CloseProjectManagerUseCase;
+  showOpenDirDialogUseCase: ShowOpenDirDialogUseCase;
 }
 
 export function createProjectManagerViewModelHook({
@@ -41,6 +43,7 @@ export function createProjectManagerViewModelHook({
   updateProjectSettingsInProjectManagerUseCase,
   updateProjectsOrderInProjectManagerUseCase,
   closeProjectManagerUseCase,
+  showOpenDirDialogUseCase,
 }: Deps) {
   function useViewModel() {
     const {
@@ -156,9 +159,15 @@ export function createProjectManagerViewModelHook({
     const duplicateProjectAction: ProjectManagerListItemProjectAction = useCallback((projectId) => duplicateProjectInProjectManagerUseCase(projectId), [])
 
 
+    const browseDir = useCallback(async (): Promise<string | undefined> => {
+      const { canceled, filePaths } = await showOpenDirDialogUseCase({ defaultPath: '', multiSelect: false });
+      return (!canceled && filePaths[0]) ? filePaths[0] : undefined;
+    }, [])
+
     return {
       renderProjectManager,
       currentProjectSettings,
+      browseDir,
       currentProjectId,
       deleteProjectIds: deleteProjectIds || {},
       projectList,

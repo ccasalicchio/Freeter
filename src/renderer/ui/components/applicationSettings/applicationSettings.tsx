@@ -43,6 +43,7 @@ export function createApplicationSettingsComponent({
       updateSettings,
       onOkClickHandler,
       onCancelClickHandler,
+      browseDir,
       uiThemeOptions,
       inactiveAfterOptions,
       activateOnProjectSwitchOptions
@@ -208,6 +209,12 @@ export function createApplicationSettingsComponent({
                 autoBackup: { ...appConfig.autoBackup, folder: e.target.value }
               })}
             />
+            <button onClick={async () => {
+              const dir = await browseDir();
+              if (dir) {
+                updateSettings({ ...appConfig, autoBackup: { ...appConfig.autoBackup, folder: dir } });
+              }
+            }}>Browse…</button>
           </SettingBlock>
           <SettingBlock
             titleForId='auto-backup-on-close'
