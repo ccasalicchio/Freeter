@@ -4,7 +4,7 @@
  */
 
 import { App } from '@/base/app';
-import { AppConfig } from '@/base/appConfig';
+import { AppConfig, createDefaultAutoBackupConfig } from '@/base/appConfig';
 import { Entity, EntityId } from '@/base/entity';
 import { EntityCollection } from '@/base/entityCollection';
 import { EntityIdList } from '@/base/entityList';
@@ -237,7 +237,9 @@ export function createUiState(): UiState {
         workflowInactiveAfter: -1
       },
       // follow the OS light/dark preference by default (like VS Code)
-      uiTheme: autoThemeId
+      uiTheme: autoThemeId,
+      autoBackup: createDefaultAutoBackupConfig(),
+      themeOverrides: {}
     },
     apps: {
       appIds: []

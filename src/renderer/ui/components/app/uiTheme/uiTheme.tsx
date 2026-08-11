@@ -9,10 +9,13 @@ import { uiThemes } from '@/ui/components/app/uiTheme/themes';
 
 export interface UIThemeProps {
   themeId: UiThemeId;
+  /** user color overrides applied on top of the theme (Theme Editor) */
+  overrides?: Record<string, string>;
 }
 
 export const UITheme = ({
-  themeId
+  themeId,
+  overrides
 }: UIThemeProps) => {
   useEffect(() => {
     const theme = uiThemes[themeId];
@@ -20,6 +23,13 @@ export const UITheme = ({
       const value = theme[key as keyof typeof theme];
       document.documentElement.style.setProperty(`--freeter-${key}`, value);
     });
-  }, [themeId])
+    if (overrides) {
+      Object.entries(overrides).forEach(([key, value]) => {
+        if (typeof value === 'string' && value) {
+          document.documentElement.style.setProperty(`--freeter-${key}`, value);
+        }
+      });
+    }
+  }, [themeId, overrides])
   return <></>;
 }

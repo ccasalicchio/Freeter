@@ -78,6 +78,7 @@ import { createSafeStorageEncryptUseCase, createSafeStorageDecryptUseCase } from
 import { createSafeStorageProvider } from '@/infra/safeStorageProvider/safeStorageProvider';
 import { createProfileControllers } from '@/controllers/profile';
 import { createFindInPageControllers } from '@/controllers/findInPage';
+import { createAutoBackup } from '@/infra/autoBackup/autoBackup';
 import { createPluginControllers } from '@/controllers/plugin';
 import { createPluginProvider } from '@/infra/pluginProvider/pluginProvider';
 
@@ -147,6 +148,20 @@ if (!app.requestSingleInstanceLock()) {
       (id) => createFileDataStorage('string', getWidgetDataStoragePath(id)),
       (fromId, toId) => copyFileDataStorage(getWidgetDataStoragePath(fromId), getWidgetDataStoragePath(toId))
     );
+
+    // daily/on-close profile backups (configured in Application Settings)
+    const autoBackup = createAutoBackup(appDataStorage, widgetDataStorageManager);
+    autoBackup.start();
+    let onCloseBackupDone = false;
+    app.on('before-quit', evt => {
+      if (!onCloseBackupDone) {
+        evt.preventDefault();
+        autoBackup.runOnCloseIfEnabled().finally(() => {
+          onCloseBackupDone = true;
+          app.quit();
+        });
+      }
+    });
     const getTextFromWidgetDataStorageUseCase = createGetTextFromWidgetDataStorageUseCase({ widgetDataStorageManager });
     const setTextInWidgetDataStorageUseCase = createSetTextInWidgetDataStorageUseCase({ widgetDataStorageManager });
     const deleteInWidgetDataStorageUseCase = createDeleteInWidgetDataStorageUseCase({ widgetDataStorageManager });

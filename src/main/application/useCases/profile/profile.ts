@@ -60,20 +60,14 @@ function extractWidgetIds(appSettingsJson: string): string[] {
   }
 }
 
-export async function exportProfile(
+/** Builds a full profile backup object (app state + widget data). */
+export async function buildProfileBackup(
   appDataStorage: DataStorage,
-  widgetDataStorageManager: ObjectManager<DataStorage>,
-  writeFile: (path: string, data: string) => Promise<void>,
-  showSaveDialog: () => Promise<string | undefined>
-): Promise<boolean> {
+  widgetDataStorageManager: ObjectManager<DataStorage>
+): Promise<ProfileBackup | null> {
   const appSettingsJson = await appDataStorage.getText('app');
   if (!appSettingsJson) {
-    return false;
-  }
-
-  const filePath = await showSaveDialog();
-  if (!filePath) {
-    return false;
+    return null;
   }
 
   const widgetIds = extractWidgetIds(appSettingsJson);
@@ -86,7 +80,7 @@ export async function exportProfile(
     appSettings = appSettingsJson;
   }
 
-  const backup: ProfileBackup = {
+  return {
     version: 1,
     exportedAt: new Date().toISOString(),
     freeterVersion: '3.0.0',
@@ -95,6 +89,23 @@ export async function exportProfile(
     shelf: null,
     widgetsData,
   };
+}
+
+export async function exportProfile(
+  appDataStorage: DataStorage,
+  widgetDataStorageManager: ObjectManager<DataStorage>,
+  writeFile: (path: string, data: string) => Promise<void>,
+  showSaveDialog: () => Promise<string | undefined>
+): Promise<boolean> {
+  const backup = await buildProfileBackup(appDataStorage, widgetDataStorageManager);
+  if (!backup) {
+    return false;
+  }
+
+  const filePath = await showSaveDialog();
+  if (!filePath) {
+    return false;
+  }
 
   await writeFile(filePath, JSON.stringify(backup, null, 2));
   return true;
