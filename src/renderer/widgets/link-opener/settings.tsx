@@ -6,12 +6,18 @@
 import { Button, CreateSettingsState, List, ReactComponent, SettingsEditorReactComponentProps, addItemToList, delete14Svg, removeItemFromList, SettingBlock, SettingRow, SettingActions } from '@/widgets/appModules';
 import { useEffect, useRef, useState } from 'react';
 
+export type IconMode = 'default' | 'favicon' | 'custom';
+
 export interface Settings {
   urls: List<string>,
+  iconMode: IconMode,
+  customIcon: string,
 }
 
 export const createSettingsState: CreateSettingsState<Settings> = (settings) => ({
   urls: Array.isArray(settings.urls) ? settings.urls.map(path=>typeof path==='string'?path:'') : [''],
+  iconMode: (settings.iconMode === 'favicon' || settings.iconMode === 'custom') ? settings.iconMode : 'default',
+  customIcon: typeof settings.customIcon === 'string' ? settings.customIcon : '',
 })
 
 function SettingsEditorComp({settings, settingsApi}: SettingsEditorReactComponentProps<Settings>) {
@@ -72,6 +78,32 @@ function SettingsEditorComp({settings, settingsApi}: SettingsEditorReactComponen
             primary={true}
           ></Button>
         </div>
+      </SettingBlock>
+
+      <SettingBlock
+        titleForId='link-icon-mode'
+        title='Icon'
+        moreInfo='Default shows the built-in link icon. Site Favicon loads the icon of the first URL. Custom Image uses an image URL or local file path.'
+      >
+        <select id='link-icon-mode' value={settings.iconMode} onChange={e => updateSettings({
+          ...settings,
+          iconMode: (e.target.value === 'favicon' || e.target.value === 'custom') ? e.target.value : 'default'
+        })}>
+          <option value='default'>Default Icon</option>
+          <option value='favicon'>Site Favicon</option>
+          <option value='custom'>Custom Image</option>
+        </select>
+        {settings.iconMode === 'custom' && (
+          <SettingRow>
+            <input
+              id='link-custom-icon'
+              type='text'
+              value={settings.customIcon}
+              placeholder='Image URL or local file path'
+              onChange={e => updateSettings({ ...settings, customIcon: e.target.value })}
+            />
+          </SettingRow>
+        )}
       </SettingBlock>
     </>
   )

@@ -10,7 +10,8 @@ export interface Settings {
 export const createSettingsState: CreateSettingsState<Settings> = (settings) => ({
   spellCheck: typeof settings.spellCheck === 'boolean' ? settings.spellCheck : false,
   markdown: typeof settings.markdown === 'boolean' ? settings.markdown : true,
-  renderMode: (settings.renderMode === 'source' || settings.renderMode === 'preview' || settings.renderMode === 'split') ? settings.renderMode : 'split',
+  // single-pane preview by default; the widget action bar has View/Edit buttons
+  renderMode: (settings.renderMode === 'source' || settings.renderMode === 'preview' || settings.renderMode === 'split') ? settings.renderMode : 'preview',
   fontSize: typeof settings.fontSize === 'number' ? settings.fontSize : 14,
 })
 
