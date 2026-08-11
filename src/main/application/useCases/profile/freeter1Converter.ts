@@ -95,15 +95,22 @@ function convertWidget(w: Freeter1Widget, id: string): { widget: object; data: R
         widget: { ...core, type: 'note', settings: {} },
         data: { note: typeof w.text === 'string' ? w.text : '' }
       };
-    case 'link-opener':
+    case 'link-opener': {
+      const iconLink = typeof w.itemIconLink === 'string' ? w.itemIconLink : '';
       return {
         widget: {
           ...core,
           type: 'link-opener',
-          settings: { urls: Array.isArray(w.urls) ? w.urls.filter(u => typeof u === 'string') : [] }
+          settings: {
+            urls: Array.isArray(w.urls) ? w.urls.filter(u => typeof u === 'string') : [],
+            // Freeter 1 custom icon URLs carry over; standard icons use the default
+            iconMode: iconLink ? 'custom' : 'default',
+            customIcon: iconLink
+          }
         },
         data: null
       };
+    }
     case 'to-do-list': {
       const items = (Array.isArray(w.items) ? w.items : [])
         .filter(it => typeof it === 'object' && it !== null && typeof it.text === 'string')

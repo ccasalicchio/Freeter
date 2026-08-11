@@ -4,7 +4,7 @@ import styles from './widget.module.scss';
 import { Settings } from './settings';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createContextMenuFactory, textAreaContextId } from '@/widgets/note/contextMenu';
-import { createActionBarItems } from '@/widgets/note/actionBar';
+import { createActionBarItems, NoteViewMode } from '@/widgets/note/actionBar';
 import { CodeMirrorEditor } from '@/widgets/note/codeMirrorEditor';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
@@ -15,7 +15,12 @@ function WidgetComp({widgetApi, settings}: WidgetReactComponentProps<Settings>) 
   const {updateActionBar, setContextMenuFactory, dataStorage} = widgetApi;
   const [isLoaded, setIsLoaded] = useState(false);
   const [note, setNote] = useState('');
+  // runtime View/Edit toggle (action bar); null = follow settings.renderMode
+  const [viewModeOverride, setViewModeOverride] = useState<NoteViewMode | null>(null);
   const previewRef = useRef<HTMLDivElement>(null);
+
+  const viewMode: NoteViewMode | 'split' = viewModeOverride
+    ?? (settings.renderMode === 'source' ? 'edit' : settings.renderMode === 'split' ? 'split' : 'view');
 
   const saveNote = useMemo(() => debounce((text: string) => dataStorage.setText(keyNote, text), 3000), [dataStorage]);
 
@@ -34,23 +39,29 @@ function WidgetComp({widgetApi, settings}: WidgetReactComponentProps<Settings>) 
 
   useEffect(() => {
     if (isLoaded) {
-      updateActionBar(createActionBarItems(note, widgetApi));
+      updateActionBar(createActionBarItems(
+        note,
+        widgetApi,
+        settings.markdown,
+        viewMode === 'edit' ? 'edit' : 'view',
+        setViewModeOverride
+      ));
       setContextMenuFactory(createContextMenuFactory(null, widgetApi));
     }
-  }, [isLoaded, note, updateActionBar, setContextMenuFactory, widgetApi]);
+  }, [isLoaded, note, updateActionBar, setContextMenuFactory, widgetApi, settings.markdown, viewMode]);
 
   useEffect(() => {
-    if (settings.markdown && settings.renderMode !== 'source' && previewRef.current) {
+    if (settings.markdown && viewMode !== 'edit' && previewRef.current) {
       const html = marked.parse(note) as string;
       previewRef.current.innerHTML = DOMPurify.sanitize(html);
     }
-  }, [note, settings.markdown, settings.renderMode]);
+  }, [note, settings.markdown, viewMode]);
 
   if (!isLoaded) {
     return <div className={styles['loading']}>Loading Note...</div>;
   }
 
-  if (settings.markdown && settings.renderMode === 'preview') {
+  if (settings.markdown && viewMode === 'view') {
     return (
       <div
         ref={previewRef}
@@ -60,7 +71,7 @@ function WidgetComp({widgetApi, settings}: WidgetReactComponentProps<Settings>) 
     );
   }
 
-  if (settings.markdown && settings.renderMode === 'split') {
+  if (settings.markdown && viewMode === 'split') {
     return (
       <div className={styles['split-view']}>
         <div className={styles['split-editor']}>
