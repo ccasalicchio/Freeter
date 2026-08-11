@@ -5,6 +5,7 @@
 
 import { CloseProjectManagerUseCase } from '@/application/useCases/projectManager/closeProjectManager';
 import { ShowOpenDirDialogUseCase } from '@/application/useCases/dialog/showOpenDirDialog';
+import { ShowOpenFileDialogUseCase } from '@/application/useCases/dialog/showOpenFileDialog';
 import { AddProjectInProjectManagerUseCase } from '@/application/useCases/projectManager/addProjectInProjectManager';
 import { SaveChangesInProjectManagerUseCase } from '@/application/useCases/projectManager/saveChangesInProjectManager';
 import { SwitchProjectInProjectManagerUseCase } from '@/application/useCases/projectManager/switchProjectInProjectManager';
@@ -31,6 +32,7 @@ type Deps = {
   updateProjectSettingsInProjectManagerUseCase: UpdateProjectSettingsInProjectManagerUseCase;
   closeProjectManagerUseCase: CloseProjectManagerUseCase;
   showOpenDirDialogUseCase: ShowOpenDirDialogUseCase;
+  showOpenFileDialogUseCase: ShowOpenFileDialogUseCase;
 }
 
 export function createProjectManagerViewModelHook({
@@ -44,6 +46,7 @@ export function createProjectManagerViewModelHook({
   updateProjectsOrderInProjectManagerUseCase,
   closeProjectManagerUseCase,
   showOpenDirDialogUseCase,
+  showOpenFileDialogUseCase,
 }: Deps) {
   function useViewModel() {
     const {
@@ -164,10 +167,16 @@ export function createProjectManagerViewModelHook({
       return (!canceled && filePaths[0]) ? filePaths[0] : undefined;
     }, [])
 
+    const browseFile = useCallback(async (): Promise<string | undefined> => {
+      const { canceled, filePaths } = await showOpenFileDialogUseCase({ defaultPath: '', multiSelect: false });
+      return (!canceled && filePaths[0]) ? filePaths[0] : undefined;
+    }, [])
+
     return {
       renderProjectManager,
       currentProjectSettings,
       browseDir,
+      browseFile,
       currentProjectId,
       deleteProjectIds: deleteProjectIds || {},
       projectList,

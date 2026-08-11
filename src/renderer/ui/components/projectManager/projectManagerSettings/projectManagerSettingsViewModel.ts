@@ -11,6 +11,7 @@ export interface ProjectManagerSettingsProps {
   settings: ProjectSettings | null;
   updateSettings: (updSettings: ProjectSettings) => void;
   browseDir: () => Promise<string | undefined>;
+  browseFile: () => Promise<string | undefined>;
 }
 
 export function useProjectManagerSettingsViewModel(props: ProjectManagerSettingsProps) {
@@ -18,7 +19,8 @@ export function useProjectManagerSettingsViewModel(props: ProjectManagerSettings
     projectAddedTrigger,
     settings,
     updateSettings,
-    browseDir
+    browseDir,
+    browseFile
   } = props;
 
   const inactiveAfterOptions = memSaverConfigPrjInactiveAfterOptions;
@@ -43,6 +45,7 @@ export function useProjectManagerSettingsViewModel(props: ProjectManagerSettings
     settings,
     updateSettings,
     browseDir,
+    browseFile,
     inactiveAfterOptions,
     activateOnProjectSwitchOptions
   };

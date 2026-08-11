@@ -37,6 +37,8 @@ async function setup(
   const closeApplicationSettingsUseCase = jest.fn();
   const updateApplicationSettingsUseCase = jest.fn();
   const saveApplicationSettingsUseCase = jest.fn();
+  const showOpenDirDialogUseCase = jest.fn(async () => ({ canceled: true, filePaths: [] }));
+  const setLaunchAtStartupUseCase = jest.fn(async () => undefined);
 
   const useApplicationSettingsViewModel = createApplicationSettingsViewModelHook({
     useAppState,
@@ -44,6 +46,8 @@ async function setup(
     closeApplicationSettingsUseCase,
     updateApplicationSettingsUseCase,
     saveApplicationSettingsUseCase,
+    showOpenDirDialogUseCase,
+    setLaunchAtStartupUseCase,
   })
 
   const ApplicationSettings = createApplicationSettingsComponent({

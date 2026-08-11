@@ -17,6 +17,7 @@ export interface AppConfig {
   memSaver: MemSaverConfigApp;
   uiTheme: string;
   autoBackup: AutoBackupConfig;
+  launchAtStartup: boolean;
   /** per-variable overrides applied on top of the selected theme */
   themeOverrides: Record<string, string>;
 }

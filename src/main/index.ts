@@ -79,6 +79,7 @@ import { createSafeStorageEncryptUseCase, createSafeStorageDecryptUseCase } from
 import { createSafeStorageProvider } from '@/infra/safeStorageProvider/safeStorageProvider';
 import { createProfileControllers } from '@/controllers/profile';
 import { createFindInPageControllers } from '@/controllers/findInPage';
+import { createLoginItemControllers } from '@/controllers/loginItem';
 import { createAutoBackup } from '@/infra/autoBackup/autoBackup';
 import { createPluginControllers } from '@/controllers/plugin';
 import { createPluginProvider } from '@/infra/pluginProvider/pluginProvider';
@@ -165,6 +166,19 @@ if (!app.requestSingleInstanceLock()) {
       (id) => createFileDataStorage('string', getWidgetDataStoragePath(id)),
       (fromId, toId) => copyFileDataStorage(getWidgetDataStoragePath(fromId), getWidgetDataStoragePath(toId))
     );
+
+    // apply the persisted launch-at-startup preference
+    try {
+      const appJson = await appDataStorage.getText('app');
+      if (appJson) {
+        const launch = JSON.parse(appJson)?.obj?.ui?.appConfig?.launchAtStartup;
+        if (typeof launch === 'boolean') {
+          app.setLoginItemSettings({ openAtLogin: launch });
+        }
+      }
+    } catch {
+      // ignore malformed state
+    }
 
     // daily/on-close profile backups (configured in Application Settings)
     const autoBackup = createAutoBackup(appDataStorage, widgetDataStorageManager);
@@ -271,7 +285,8 @@ if (!app.requestSingleInstanceLock()) {
       }),
       ...createFindInPageControllers({
         getBrowserWindow: () => appWindow as unknown as ElectronBrowserWindow | null
-      })
+      }),
+      ...createLoginItemControllers()
     ])
 
     const [windowStore] = createWindowStore({

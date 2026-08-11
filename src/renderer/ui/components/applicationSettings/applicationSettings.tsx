@@ -91,6 +91,22 @@ export function createApplicationSettingsComponent({
           </SettingBlock>
 
           <SettingBlock
+            titleForId='launch-at-startup'
+            title='Launch At Startup'
+            moreInfo='Start Freeter automatically when you log into your computer.'
+          >
+            <div>
+              <label>
+                <input type='checkbox' id='launch-at-startup' checked={appConfig.launchAtStartup} onChange={_ => updateSettings({
+                  ...appConfig,
+                  launchAtStartup: !appConfig.launchAtStartup
+                })} />
+                {' Start Freeter when I log in'}
+              </label>
+            </div>
+          </SettingBlock>
+
+          <SettingBlock
             title='Memory Saver'
             moreInfo='Freeter frees up memory from inactive workflows.
                       This gives active workflows more computer resources and keeps Freeter

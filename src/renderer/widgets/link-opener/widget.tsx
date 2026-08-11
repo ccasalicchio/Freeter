@@ -40,7 +40,9 @@ function WidgetComp({settings, widgetApi}: WidgetReactComponentProps<Settings>) 
 
   return urls.length>0
     ? <Button
-        onClick={_ => urls.forEach(url => shell.openExternalUrl(url))}
+        onClick={_ => urls.forEach(url => settings.browserPath
+          ? shell.openApp(settings.browserPath, [url])
+          : shell.openExternalUrl(url))}
         iconSvg={glyphSvg || openLinkSvg}
         iconUrl={iconUrl || undefined}
         onIconError={() => setIconFailed(true)}

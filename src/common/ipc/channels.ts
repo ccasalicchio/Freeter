@@ -179,3 +179,8 @@ export type IpcFindInPageRes = void;
 export const ipcStopFindInPageChannel = makeIpcChannelName('stop-find-in-page');
 export type IpcStopFindInPageArgs = [];
 export type IpcStopFindInPageRes = void;
+
+/** Enable/disable launching Freeter at OS startup. */
+export const ipcSetLoginItemSettingsChannel = makeIpcChannelName('set-login-item-settings');
+export type IpcSetLoginItemSettingsArgs = [openAtLogin: boolean];
+export type IpcSetLoginItemSettingsRes = void;

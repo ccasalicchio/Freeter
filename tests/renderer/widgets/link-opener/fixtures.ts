@@ -12,6 +12,7 @@ export function fixtureSettings(settings: Partial<Settings>): Settings {
     customIcon: '',
     glyph: 'link',
     glyphColor: '',
+    browserPath: '',
     ...settings
   }
 }

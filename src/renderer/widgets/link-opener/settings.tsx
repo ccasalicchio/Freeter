@@ -14,6 +14,7 @@ export interface Settings {
   customIcon: string,
   glyph: string,
   glyphColor: string,
+  browserPath: string,
 }
 
 export const createSettingsState: CreateSettingsState<Settings> = (settings) => ({
@@ -22,6 +23,7 @@ export const createSettingsState: CreateSettingsState<Settings> = (settings) => 
   customIcon: typeof settings.customIcon === 'string' ? settings.customIcon : '',
   glyph: typeof settings.glyph === 'string' ? settings.glyph : 'link',
   glyphColor: typeof settings.glyphColor === 'string' ? settings.glyphColor : '',
+  browserPath: typeof settings.browserPath === 'string' ? settings.browserPath : '',
 })
 
 function SettingsEditorComp({settings, settingsApi}: SettingsEditorReactComponentProps<Settings>) {
@@ -119,6 +121,28 @@ function SettingsEditorComp({settings, settingsApi}: SettingsEditorReactComponen
             />
           </SettingRow>
         )}
+      </SettingBlock>
+
+      <SettingBlock
+        titleForId='link-browser-path'
+        title='Open With Browser (optional)'
+        moreInfo='Full path of a browser executable to open the links with. Leave empty to use the OS default browser.'
+      >
+        <SettingRow>
+          <input
+            id='link-browser-path'
+            type='text'
+            value={settings.browserPath}
+            placeholder='e.g. C:\Program Files\Google\Chrome\Application\chrome.exe'
+            onChange={e => updateSettings({ ...settings, browserPath: e.target.value })}
+          />
+          <Button caption='Browse…' onClick={async () => {
+            const { canceled, filePaths } = await settingsApi.dialog.showOpenFileDialog({ defaultPath: settings.browserPath, multiSelect: false });
+            if (!canceled && filePaths[0]) {
+              updateSettings({ ...settings, browserPath: filePaths[0] });
+            }
+          }} />
+        </SettingRow>
       </SettingBlock>
     </>
   )

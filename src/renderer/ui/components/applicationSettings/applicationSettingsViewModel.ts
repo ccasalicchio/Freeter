@@ -21,6 +21,7 @@ type Deps = {
   updateApplicationSettingsUseCase: UpdateApplicationSettingsUseCase;
   closeApplicationSettingsUseCase: CloseApplicationSettingsUseCase;
   showOpenDirDialogUseCase: ShowOpenDirDialogUseCase;
+  setLaunchAtStartupUseCase: (enabled: boolean) => Promise<void>;
 }
 
 export function createApplicationSettingsViewModelHook({
@@ -30,6 +31,7 @@ export function createApplicationSettingsViewModelHook({
   updateApplicationSettingsUseCase,
   closeApplicationSettingsUseCase,
   showOpenDirDialogUseCase,
+  setLaunchAtStartupUseCase,
 }: Deps) {
   const hotkeyOptions = getMainHotkeyOptionsUseCase();
   const uiThemeOptions = [{ id: autoThemeId, name: 'Auto (match OS)' }, ...uiThemes];
@@ -48,8 +50,11 @@ export function createApplicationSettingsViewModelHook({
     }, [])
 
     const onOkClickHandler = useCallback(() => {
+      if (appConfig) {
+        setLaunchAtStartupUseCase(appConfig.launchAtStartup);
+      }
       saveApplicationSettingsUseCase();
-    }, []);
+    }, [appConfig]);
 
     const onCancelClickHandler = useCallback(() => {
       closeApplicationSettingsUseCase();

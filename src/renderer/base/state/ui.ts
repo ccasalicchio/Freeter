@@ -239,6 +239,7 @@ export function createUiState(): UiState {
       // follow the OS light/dark preference by default (like VS Code)
       uiTheme: autoThemeId,
       autoBackup: createDefaultAutoBackupConfig(),
+      launchAtStartup: false,
       themeOverrides: {}
     },
     apps: {

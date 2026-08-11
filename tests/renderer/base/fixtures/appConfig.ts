@@ -18,6 +18,7 @@ const appConfig: AppConfig = {
     folder: '',
     onClose: false
   },
+  launchAtStartup: false,
   themeOverrides: {}
 }
 

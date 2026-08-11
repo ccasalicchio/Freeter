@@ -13,6 +13,7 @@ export function ProjectManagerSettings(props: ProjectManagerSettingsProps) {
   const {
     settings,
     browseDir,
+    browseFile,
     updateSettings,
     refNameInput,
     inactiveAfterOptions,
@@ -67,6 +68,12 @@ export function ProjectManagerSettings(props: ProjectManagerSettingsProps) {
           ...settings,
           icon: { glyph: settings.icon?.glyph ?? '', color: settings.icon?.color ?? '', image: e.target.value }
         })}/>
+        <Button caption='Browse…' onClick={async () => {
+          const file = await browseFile();
+          if (file) {
+            updateSettings({ ...settings, icon: { glyph: settings.icon?.glyph ?? '', color: settings.icon?.color ?? '', image: file } });
+          }
+        }} />
       </SettingBlock>
       <SettingBlock
         title='Memory Saver'

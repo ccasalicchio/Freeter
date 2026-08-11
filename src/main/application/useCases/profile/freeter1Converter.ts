@@ -59,6 +59,12 @@ interface Freeter1Project {
   layout: { selectedTabId?: number; tabs: Freeter1Tab[] };
 }
 
+// Freeter 1 search engine names -> v3 web-query engine ids
+const v1EngineIds: Record<string, string> = {
+  google: 'goog', bing: 'bing', duckduckgo: 'ddgo', wikipedia: 'wkpd',
+  wolframalpha: 'wfal', youtube: 'yt', github: 'gh', stackoverflow: 'so'
+};
+
 // Freeter 1 color names -> icon palette hex values
 const v1IconColors: Record<string, string> = {
   red: '#E5484D', orange: '#F76B15', yellow: '#FFC53D', green: '#46A758',
@@ -331,11 +337,31 @@ export function convertFreeter1Data(
             id: '', coreSettings: { name: s.name || `Search ${i + 1}` },
             type: 'web-query',
             settings: {
-              engine: typeof s.engine === 'string' ? s.engine : '',
+              engine: v1EngineIds[String(s.engine ?? '').toLowerCase()] ?? String(s.engine ?? ''),
               descr: s.name || '',
-              query: typeof s.qryTemplate === 'string' ? s.qryTemplate.replace(/%QUERY%/g, 'QUERY') : '',
+              // v1 site-scoped searches become a site: query template
+              query: [
+                (typeof (s as { site?: string }).site === 'string' && (s as { site?: string }).site) ? `site:${(s as { site?: string }).site}` : '',
+                typeof s.qryTemplate === 'string' ? s.qryTemplate.replace(/%QUERY%/g, 'QUERY') : ''
+              ].filter(Boolean).join(' '),
               url: typeof s.urlTemplate === 'string' ? s.urlTemplate.replace(/%QUERY%/g, 'QUERY') : ''
             }
+          },
+          data: null
+        }))
+      });
+    }
+
+    const tools = Array.isArray(pools.tools) ? pools.tools : [];
+    if (tools.length > 0) {
+      libraryWorkflows.push({
+        name: 'Tools',
+        widgets: tools.map((t, i) => ({
+          widget: {
+            id: '', coreSettings: { name: t.name || `Tool ${i + 1}` },
+            // v1 tools carried no paths in this format; import as ready-to-fill launchers
+            type: 'app-launcher',
+            settings: { appPath: '', args: '', glyph: 'rocket', glyphColor: '', customIcon: '' }
           },
           data: null
         }))
