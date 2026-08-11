@@ -80,6 +80,7 @@ import { createSafeStorageProvider } from '@/infra/safeStorageProvider/safeStora
 import { createProfileControllers } from '@/controllers/profile';
 import { createFindInPageControllers } from '@/controllers/findInPage';
 import { createLoginItemControllers } from '@/controllers/loginItem';
+import { createHttpRequestControllers } from '@/controllers/httpRequest';
 import { createAutoBackup } from '@/infra/autoBackup/autoBackup';
 import { createPluginControllers } from '@/controllers/plugin';
 import { createPluginProvider } from '@/infra/pluginProvider/pluginProvider';
@@ -286,7 +287,8 @@ if (!app.requestSingleInstanceLock()) {
       ...createFindInPageControllers({
         getBrowserWindow: () => appWindow as unknown as ElectronBrowserWindow | null
       }),
-      ...createLoginItemControllers()
+      ...createLoginItemControllers(),
+      ...createHttpRequestControllers()
     ])
 
     const [windowStore] = createWindowStore({

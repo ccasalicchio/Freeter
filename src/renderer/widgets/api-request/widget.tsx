@@ -11,7 +11,7 @@ const methods: HttpMethod[] = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
 
 function WidgetComp(props: WidgetReactComponentProps<Settings>) {
   const {widgetApi} = props;
-  const {dataStorage} = widgetApi;
+  const {dataStorage, http} = widgetApi;
   const [isLoaded, setIsLoaded] = useState(false);
   const [savedRequests, setSavedRequests] = useState<SavedRequest[]>([]);
   const [activeRequest, setActiveRequest] = useState<ActiveRequest>({
@@ -49,18 +49,21 @@ function WidgetComp(props: WidgetReactComponentProps<Settings>) {
           headers[h.key.trim()] = h.value;
         }
       }
-      const fetchOpts: RequestInit = { method: activeRequest.method, headers };
-      if (activeRequest.method !== 'GET' && activeRequest.method !== 'DELETE') {
-        fetchOpts.body = activeRequest.body;
+      // requests go through the main process: no renderer CSP/CORS limits
+      const res = await http.request({
+        url: activeRequest.url,
+        method: activeRequest.method,
+        headers,
+        body: (activeRequest.method !== 'GET' && activeRequest.method !== 'DELETE') ? activeRequest.body : undefined,
+      });
+      if (res.error) {
+        throw new Error(res.error);
       }
-      const res = await fetch(activeRequest.url, fetchOpts);
-      const resHeaders = Array.from(res.headers.entries()).map(([k, v]) => `${k}: ${v}`).join('\n');
-      const resBody = await res.text();
       setResponse({
         status: res.status,
         statusText: res.statusText,
-        headers: resHeaders,
-        body: resBody,
+        headers: '',
+        body: res.body,
       });
     } catch (err) {
       setResponse({
@@ -72,7 +75,7 @@ function WidgetComp(props: WidgetReactComponentProps<Settings>) {
     } finally {
       setIsSending(false);
     }
-  }, [activeRequest]);
+  }, [activeRequest, http]);
 
   const handleSaveCurrent = useCallback(() => {
     const name = prompt('Name this request:');
