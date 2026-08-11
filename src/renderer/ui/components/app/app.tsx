@@ -17,6 +17,7 @@ type Deps = {
   TopBar: React.FC;
   WorkflowSwitcher: React.FC;
   Worktable: React.FC;
+  FindBar: React.FC;
   useAppViewModel: AppViewModelHook;
 }
 
@@ -24,6 +25,7 @@ export function createAppComponent({
   TopBar,
   WorkflowSwitcher,
   Worktable,
+  FindBar,
   useAppViewModel
 }: Deps) {
   function App() {
@@ -31,6 +33,7 @@ export function createAppComponent({
     return (
       <div onContextMenu={contextMenuHandler}>
         <UITheme themeId={uiThemeId} />
+        <FindBar />
         <div className={styles['main-screen']} data-testid="main-screen" {...{ inert: hasModalScreens ? true : undefined }}>
           {hasTopBar && <TopBar />}
           <WorkflowSwitcher />

@@ -170,3 +170,12 @@ export type IpcExportProfileRes = boolean;
 export const ipcImportProfileChannel = makeIpcChannelName('import-profile');
 export type IpcImportProfileArgs = [];
 export type IpcImportProfileRes = string | undefined;
+
+/** Find text on the current page (native Chromium find with highlights). */
+export const ipcFindInPageChannel = makeIpcChannelName('find-in-page');
+export type IpcFindInPageArgs = [text: string, forward: boolean, findNext: boolean];
+export type IpcFindInPageRes = void;
+
+export const ipcStopFindInPageChannel = makeIpcChannelName('stop-find-in-page');
+export type IpcStopFindInPageArgs = [];
+export type IpcStopFindInPageRes = void;

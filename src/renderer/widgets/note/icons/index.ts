@@ -5,12 +5,14 @@
 
 import copyFullTextSvg from './copy-full-text.svg';
 import editNoteSvg from './edit-note.svg';
+import splitNoteSvg from './split-note.svg';
 import viewNoteSvg from './view-note.svg';
 import widgetSvg from './widget.svg';
 
 export {
   copyFullTextSvg,
   editNoteSvg,
+  splitNoteSvg,
   viewNoteSvg,
   widgetSvg
 }

@@ -6,9 +6,27 @@
 import { ActionBarItems } from '@/base/actionBar';
 import { canCopyFullText, copyFullText, labelCopyFullText } from './actions';
 import { WidgetApi } from '@/widgets/appModules';
-import { copyFullTextSvg, editNoteSvg, viewNoteSvg } from './icons';
+import { copyFullTextSvg, editNoteSvg, splitNoteSvg, viewNoteSvg } from './icons';
 
-export type NoteViewMode = 'view' | 'edit';
+export type NoteViewMode = 'view' | 'edit' | 'split';
+
+const nextMode: Record<NoteViewMode, NoteViewMode> = {
+  view: 'edit',
+  edit: 'split',
+  split: 'view'
+};
+
+const modeIcon: Record<NoteViewMode, string> = {
+  view: viewNoteSvg,
+  edit: editNoteSvg,
+  split: splitNoteSvg
+};
+
+const modeTitle: Record<NoteViewMode, string> = {
+  view: 'Switch to Rendered View',
+  edit: 'Switch to Editor',
+  split: 'Switch to Split View'
+};
 
 export function createActionBarItems(
   noteText: string,
@@ -17,24 +35,15 @@ export function createActionBarItems(
   viewMode: NoteViewMode,
   setViewMode: (mode: NoteViewMode) => void
 ): ActionBarItems {
+  const next = nextMode[viewMode];
   return [
-    ...(markdownOn ? [
-      viewMode === 'view'
-        ? {
-          enabled: true,
-          icon: editNoteSvg,
-          id: 'EDIT-NOTE',
-          title: 'Edit Note',
-          doAction: async () => setViewMode('edit')
-        }
-        : {
-          enabled: true,
-          icon: viewNoteSvg,
-          id: 'VIEW-NOTE',
-          title: 'View Rendered Note',
-          doAction: async () => setViewMode('view')
-        }
-    ] : []),
+    ...(markdownOn ? [{
+      enabled: true,
+      icon: modeIcon[next],
+      id: 'TOGGLE-NOTE-VIEW',
+      title: modeTitle[next],
+      doAction: async () => setViewMode(next)
+    }] : []),
     {
       enabled: canCopyFullText(),
       icon: copyFullTextSvg,
