@@ -77,6 +77,7 @@ import { createSafeStorageControllers } from '@/controllers/safeStorage';
 import { createSafeStorageEncryptUseCase, createSafeStorageDecryptUseCase } from '@/application/useCases/safeStorage/safeStorage';
 import { createSafeStorageProvider } from '@/infra/safeStorageProvider/safeStorageProvider';
 import { createProfileControllers } from '@/controllers/profile';
+import { createFindInPageControllers } from '@/controllers/findInPage';
 import { createPluginControllers } from '@/controllers/plugin';
 import { createPluginProvider } from '@/infra/pluginProvider/pluginProvider';
 
@@ -234,6 +235,9 @@ if (!app.requestSingleInstanceLock()) {
         widgetDataStorageManager,
         // the composition root knows the runtime window is a real Electron
         // BrowserWindow; the appWindow ref is typed as the narrow app interface
+        getBrowserWindow: () => appWindow as unknown as ElectronBrowserWindow | null
+      }),
+      ...createFindInPageControllers({
         getBrowserWindow: () => appWindow as unknown as ElectronBrowserWindow | null
       })
     ])

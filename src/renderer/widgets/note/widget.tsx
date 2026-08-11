@@ -19,7 +19,7 @@ function WidgetComp({widgetApi, settings}: WidgetReactComponentProps<Settings>) 
   const [viewModeOverride, setViewModeOverride] = useState<NoteViewMode | null>(null);
   const previewRef = useRef<HTMLDivElement>(null);
 
-  const viewMode: NoteViewMode | 'split' = viewModeOverride
+  const viewMode: NoteViewMode = viewModeOverride
     ?? (settings.renderMode === 'source' ? 'edit' : settings.renderMode === 'split' ? 'split' : 'view');
 
   const saveNote = useMemo(() => debounce((text: string) => dataStorage.setText(keyNote, text), 3000), [dataStorage]);
@@ -43,7 +43,7 @@ function WidgetComp({widgetApi, settings}: WidgetReactComponentProps<Settings>) 
         note,
         widgetApi,
         settings.markdown,
-        viewMode === 'edit' ? 'edit' : 'view',
+        viewMode,
         setViewModeOverride
       ));
       setContextMenuFactory(createContextMenuFactory(null, widgetApi));

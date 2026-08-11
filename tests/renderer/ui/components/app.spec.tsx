@@ -61,6 +61,7 @@ async function setup(
     TopBar: mockTopBar,
     WorkflowSwitcher: mockWorkflowSwitcher,
     Worktable: mockWorktable,
+    FindBar: () => null,
     useAppViewModel,
   })
   const comp = render(

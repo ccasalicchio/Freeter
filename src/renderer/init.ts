@@ -109,6 +109,8 @@ import { createOpenAboutUseCase } from '@/application/useCases/about/openAbout';
 import { createGetAboutInfoUseCase } from '@/application/useCases/about/getAboutInfo';
 import { createProductInfoProvider } from '@/infra/productInfoProvider/productInfoProvider';
 import { createProfileProvider } from '@/infra/profileProvider/profileProvider';
+import { createFindInPageProvider } from '@/infra/findInPageProvider/findInPageProvider';
+import { createFindBarComponent } from '@/ui/components/findBar/findBar';
 import { createCloseCommandPaletteUseCase } from '@/application/useCases/commandPalette/closeCommandPalette';
 import { createOpenCommandPaletteUseCase } from '@/application/useCases/commandPalette/openCommandPalette';
 import { createOpenSponsorshipUrlUseCase } from '@/application/useCases/about/openSponsorshipUrl';
@@ -674,10 +676,14 @@ function createUI(stateHooks: ReturnType<typeof createUiHooks>, useCases: Awaite
     // closeCommandPalette/open* use cases come in via the deps spread
   });
 
+  const findInPageProvider = createFindInPageProvider();
+  const FindBar = createFindBarComponent({ findInPageProvider });
+
   const App = createAppComponent({
     TopBar,
     WorkflowSwitcher,
     Worktable,
+    FindBar,
     useAppViewModel,
   });
 

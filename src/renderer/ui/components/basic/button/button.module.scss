@@ -18,6 +18,11 @@ $fontSizeL: 16px;
   box-sizing: border-box;
   white-space: nowrap;
   border: $borderSize solid transparent;
+  // sprite icons without explicit fills follow the themed button color,
+  // keeping contrast correct in light and dark themes
+  .button-icon {
+    fill: currentColor;
+  }
   &:not(.primary) {
     background-color: var(--freeter-buttonBackground);
     color: var(--freeter-buttonColor);
