@@ -10,9 +10,11 @@ export interface SvgIconProps extends Pick<React.SVGProps<SVGSVGElement>, 'class
 export const SvgIcon = (props: SvgIconProps) => {
   const {svg, ...rest} = props;
 
+  // the svg-sprite plugin exports bare symbol ids; <use> needs a fragment ref
+  const href = svg.startsWith('#') ? svg : `#${svg}`;
   return (
     <svg {...rest}>
-      <use href={svg}></use>
+      <use href={href}></use>
     </svg>
   )
 }
