@@ -6,6 +6,8 @@
 import { ProjectSwitcherViewModelHook } from '@/ui/components/projectSwitcher/projectSwitcherViewModel';
 import clsx from 'clsx';
 import styles from './projectSwitcher.module.scss';
+import { SvgIcon } from '@/ui/components/basic/svgIcon';
+import { glyphsById } from '@/ui/assets/images/glyphs';
 
 type Deps = {
   useProjectSwitcherViewModel: ProjectSwitcherViewModelHook
@@ -26,7 +28,20 @@ export function createProjectSwitcherComponent({
       handleChange,
     } = useProjectSwitcherViewModel();
 
-    return (
+    const currentIcon = projects.find(p => p.id === currentProjectId)?.settings.icon;
+    const currentGlyph = currentIcon && !currentIcon.image ? glyphsById[currentIcon.glyph] : undefined;
+
+    return (<>
+      {currentIcon?.image && (
+        <img src={currentIcon.image} alt='' className={styles['project-icon']} />
+      )}
+      {currentGlyph && (
+        <SvgIcon
+          svg={currentGlyph.svg}
+          className={styles['project-icon']}
+          style={currentIcon?.color ? { color: currentIcon.color, fill: currentIcon.color } : undefined}
+        />
+      )}
       <select
         value={currentProjectId}
         className={clsx(styles['project-switcher'], className)}
@@ -44,7 +59,7 @@ export function createProjectSwitcherComponent({
           ))
         }
       </select>
-    )
+    </>)
   }
 
   return ProjectSwitcher;

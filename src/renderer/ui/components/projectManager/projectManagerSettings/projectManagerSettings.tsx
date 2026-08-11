@@ -7,6 +7,7 @@ import { convertStrToUndBool, convertStrToUndNum, convertUndBoolToStr, convertUn
 import { sanitizePartialMemSaverConfig } from '@/base/memSaver';
 import { ProjectManagerSettingsProps, useProjectManagerSettingsViewModel } from '@/ui/components/projectManager/projectManagerSettings/projectManagerSettingsViewModel';
 import { SettingBlock } from '@/widgets/appModules';
+import { IconPicker } from '@/ui/components/basic/iconPicker/iconPicker';
 
 export function ProjectManagerSettings(props: ProjectManagerSettingsProps) {
   const {
@@ -27,6 +28,37 @@ export function ProjectManagerSettings(props: ProjectManagerSettingsProps) {
         <input id="name" type="text" ref={refNameInput} value={settings.name} onChange={e => updateSettings({
           ...settings,
           name: e.target.value
+        })}/>
+      </SettingBlock>
+      <SettingBlock
+        titleForId='project-root-folder'
+        title='Root Folder (optional)'
+        moreInfo='Base folder of this project. Used as the starting point for project-related file paths.'
+      >
+        <input id="project-root-folder" type="text" value={settings.rootFolder ?? ''} placeholder='e.g. C:\Projects\my-project' onChange={e => updateSettings({
+          ...settings,
+          rootFolder: e.target.value
+        })}/>
+      </SettingBlock>
+      <SettingBlock
+        title='Project Icon (optional)'
+        moreInfo='Pick a gallery icon and color, or set a custom image URL/path (the image wins when both are set).'
+      >
+        <IconPicker
+          glyphId={settings.icon?.glyph ?? ''}
+          color={settings.icon?.color ?? ''}
+          onSelectGlyph={glyph => updateSettings({
+            ...settings,
+            icon: { glyph, color: settings.icon?.color ?? '', image: settings.icon?.image ?? '' }
+          })}
+          onSelectColor={color => updateSettings({
+            ...settings,
+            icon: { glyph: settings.icon?.glyph ?? '', color, image: settings.icon?.image ?? '' }
+          })}
+        />
+        <input type="text" aria-label='Custom project image' value={settings.icon?.image ?? ''} placeholder='Custom image URL or local path (optional)' onChange={e => updateSettings({
+          ...settings,
+          icon: { glyph: settings.icon?.glyph ?? '', color: settings.icon?.color ?? '', image: e.target.value }
         })}/>
       </SettingBlock>
       <SettingBlock

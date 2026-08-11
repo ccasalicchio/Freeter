@@ -74,8 +74,9 @@ export default defineConfig({
       react(),
       createSvgSpritePlugin({
         exportType: 'vanilla',
-        // appIcons/ holds the UI chrome icons; icons/ holds widget icons
-        include: ['**/icons/*.svg', '**/appIcons/*.svg'],
+        // appIcons/ holds the UI chrome icons; icons/ holds widget icons;
+        // glyphs/ holds the user-selectable icon gallery (IcoMoon-Free)
+        include: ['**/icons/*.svg', '**/appIcons/*.svg', '**/glyphs/*.svg'],
         // widget icon files are all named widget.svg — a content hash keeps
         // their sprite symbol ids unique (fixes "#icon-widget repeatedly
         // registered" and every widget sharing one icon)

@@ -10,6 +10,8 @@ export function fixtureSettings(settings: Partial<Settings>): Settings {
     urls: ['some://url1', 'some://url2'],
     iconMode: 'default',
     customIcon: '',
+    glyph: 'link',
+    glyphColor: '',
     ...settings
   }
 }

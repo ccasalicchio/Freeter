@@ -26,5 +26,7 @@ export { browse14Svg, delete14Svg, manage14Svg } from '@/ui/assets/images/appIco
 export { mapIdListToEntityList } from '@/base/entityList';
 export { addItemToList, moveItemInList, removeItemFromList } from '@/base/list';
 export { ActionBar } from '@/ui/components/basic/actionBar';
+export { IconPicker, iconColors } from '@/ui/components/basic/iconPicker/iconPicker';
+export { glyphs, glyphsById } from '@/ui/assets/images/glyphs';
 export { Button } from '@/ui/components/basic/button';
 export { SettingActions, SettingBlock, SettingRow } from '@/ui/components/basic/settingsScreen/setting';
