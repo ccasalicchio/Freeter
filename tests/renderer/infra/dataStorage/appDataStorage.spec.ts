@@ -7,7 +7,7 @@ import { ipcAppDataStorageClearChannel, ipcAppDataStorageDeleteChannel, ipcAppDa
 import { createAppDataStorage } from '@/infra/dataStorage/appDataStorage';
 import { electronIpcRenderer } from '@/infra/mainApi/mainApi';
 
-jest.mock('@/infra/mainApi/mainApi');
+vi.mock('@/infra/mainApi/mainApi');
 
 describe('AppDataStorage', () => {
   beforeEach(() => jest.resetAllMocks())

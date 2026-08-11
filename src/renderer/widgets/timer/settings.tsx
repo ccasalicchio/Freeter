@@ -27,7 +27,7 @@ for (let mins = 5; mins <= 90; mins += 5) {
 }
 
 const timerCustomOptions: SelectOption<number>[] = [];
-for (let secs = 10; secs <= 300; secs += 10) {
+for (let secs = 0; secs <= 300; secs += 10) {
   timerCustomOptions.push({
     label: secs + ' seconds',
     value: secs
@@ -69,7 +69,7 @@ for (let vol = 0; vol <= 100; vol += 10) {
 export const createSettingsState: CreateSettingsState<Settings> = (settings) => ({
   mode: (settings.mode === 'timer' || settings.mode === 'stopwatch') ? settings.mode : 'timer',
   mins: typeof settings.mins === 'number' ? settings.mins : 25,
-  customSecs: typeof settings.customSecs === 'number' ? settings.customSecs : 60,
+  customSecs: typeof settings.customSecs === 'number' ? settings.customSecs : 0,
   endDesktop: typeof settings.endDesktop === 'boolean' ? settings.endDesktop : true,
   endSound: isEndSoundValue(settings.endSound) ? settings.endSound : defaultEndSound,
   endSoundVol: typeof settings.endSoundVol === 'number' ? settings.endSoundVol : 70,
@@ -120,7 +120,7 @@ function SettingsEditorComp({settings, settingsApi}: SettingsEditorReactComponen
           <div style={{marginTop: 4}}>
             <label style={{fontSize: 11, color: 'var(--freeter-mutedText)'}}>
               Custom seconds:
-              <select value={settings.customSecs} onChange={e => updateSettings({...settings, customSecs: Number(e.target.value) || 60})} style={{marginLeft: 4}}>
+              <select value={settings.customSecs} onChange={e => updateSettings({...settings, customSecs: Number(e.target.value)})} style={{marginLeft: 4}}>
                 {timerCustomOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
               </select>
             </label>

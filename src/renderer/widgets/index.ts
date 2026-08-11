@@ -37,7 +37,7 @@ const builtinWidgetTypes = [
   passwordVault,
 ] as unknown as WidgetType<WidgetSettings>[];
 
-let allWidgetTypes = [...builtinWidgetTypes];
+const allWidgetTypes = [...builtinWidgetTypes];
 
 export function registerWidgetType(type: WidgetType<WidgetSettings>): void {
   const existingIdx = allWidgetTypes.findIndex(t => t.id === type.id);

@@ -6,7 +6,10 @@
 import widgets from '@/widgets';
 import { registry } from '@/registry/registry';
 
-jest.mock('@/widgets')
+vi.mock('@/widgets', () => {
+  const widgetTypes: unknown[] = [];
+  return { default: widgetTypes, getAllWidgetTypes: () => widgetTypes };
+})
 
 describe('Registry', () => {
   describe('getWidgetTypes()', () => {

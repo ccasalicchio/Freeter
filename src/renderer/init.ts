@@ -108,6 +108,7 @@ import { createCloseAboutUseCase } from '@/application/useCases/about/closeAbout
 import { createOpenAboutUseCase } from '@/application/useCases/about/openAbout';
 import { createGetAboutInfoUseCase } from '@/application/useCases/about/getAboutInfo';
 import { createProductInfoProvider } from '@/infra/productInfoProvider/productInfoProvider';
+import { createProfileProvider } from '@/infra/profileProvider/profileProvider';
 import { createCloseCommandPaletteUseCase } from '@/application/useCases/commandPalette/closeCommandPalette';
 import { createOpenCommandPaletteUseCase } from '@/application/useCases/commandPalette/openCommandPalette';
 import { createOpenSponsorshipUrlUseCase } from '@/application/useCases/about/openSponsorshipUrl';
@@ -337,8 +338,8 @@ async function createUseCases(store: ReturnType<typeof createStore>) {
     clickAppMenuItemUseCase
   });
   const profileProvider = createProfileProvider();
-  const closeCommandPaletteUseCase = createCloseCommandPaletteUseCase({ appStore });
-  const openCommandPaletteUseCase = createOpenCommandPaletteUseCase({ appStore });
+  const closeCommandPaletteUseCase = createCloseCommandPaletteUseCase(deps);
+  const openCommandPaletteUseCase = createOpenCommandPaletteUseCase(deps);
   const initAppMenuUseCase = createInitAppMenuUseCase({
     ...deps,
     appMenu: appMenuProvider,
@@ -512,6 +513,9 @@ async function createUseCases(store: ReturnType<typeof createStore>) {
     initTrayMenuUseCase,
     initMainShortcutUseCase,
 
+    openCommandPaletteUseCase,
+    closeCommandPaletteUseCase,
+
     getMainHotkeyOptionsUseCase,
     openApplicationSettingsUseCase,
     closeApplicationSettingsUseCase,
@@ -667,10 +671,7 @@ function createUI(stateHooks: ReturnType<typeof createUiHooks>, useCases: Awaite
     ApplicationSettings,
     AppManager,
     About,
-    closeCommandPaletteUseCase,
-    openApplicationSettingsUseCase,
-    openProjectManagerUseCase,
-    openAppManagerUseCase,
+    // closeCommandPalette/open* use cases come in via the deps spread
   });
 
   const App = createAppComponent({

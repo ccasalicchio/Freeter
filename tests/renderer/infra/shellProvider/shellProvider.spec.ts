@@ -7,7 +7,7 @@ import { ipcShellOpenAppChannel, ipcShellOpenExternalUrlChannel, ipcShellOpenPat
 import { createShellProvider } from '@/infra/shellProvider/shellProvider';
 import { electronIpcRenderer } from '@/infra/mainApi/mainApi';
 
-jest.mock('@/infra/mainApi/mainApi');
+vi.mock('@/infra/mainApi/mainApi');
 
 describe('ShellProvider', () => {
   beforeEach(() => jest.resetAllMocks())

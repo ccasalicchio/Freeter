@@ -5,7 +5,7 @@
 
 import { debounce } from '@/widgets/helpers';
 import { ActionBar, ActionBarItems, ReactComponent, WidgetReactComponentProps, delete14Svg, moveItemInList } from '@/widgets/appModules';
-import * as styles from './widget.module.scss';
+import styles from './widget.module.scss';
 import { Settings } from './settings';
 import { DragEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createContextMenuFactory } from '@/widgets/to-do-list/contextMenu';
@@ -42,9 +42,14 @@ function WidgetComp({widgetApi, settings}: WidgetReactComponentProps<Settings>) 
     const loadedData = await dataStorage.getJson(dataKey) as ToDoListState|undefined;
     if (typeof loadedData === 'object' && loadedData && Array.isArray(loadedData.items) && typeof loadedData.nextItemId === 'number') {
       const sanitizedData: ToDoListState = {
-        items: loadedData.items.map(({id, text, isDone }) => {
+        items: loadedData.items.map(({id, text, isDone, dueDate, priority }) => {
           if(typeof id === 'number' && typeof text === 'string' && typeof isDone === 'boolean') {
-            return { id, text, isDone }
+            return {
+              id, text, isDone,
+              // v3 fields; keep values from older data missing them
+              dueDate: typeof dueDate === 'string' ? dueDate : '',
+              priority: (priority === 'low' || priority === 'medium' || priority === 'high') ? priority : 'none'
+            }
           } else {
             return undefined;
           }

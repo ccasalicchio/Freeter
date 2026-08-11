@@ -8,7 +8,7 @@ import { createAppStore } from '@/data/appStore';
 import { createStore } from '@common/data/store';
 import { StateStorage } from '@common/data/stateStorage';
 
-jest.mock('@common/data/store');
+vi.mock('@common/data/store');
 const mockedCreateStore = jest.mocked(createStore);
 
 beforeEach(() => {

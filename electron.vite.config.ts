@@ -2,6 +2,26 @@ import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
 import react from '@vitejs/plugin-react'
 import createSvgSpritePlugin from 'vite-plugin-svg-sprite'
 import path from 'path'
+import { readFileSync } from 'node:fs'
+import { execSync } from 'node:child_process'
+
+const pkg = JSON.parse(readFileSync(path.resolve(__dirname, 'package.json'), 'utf-8'))
+const backers = JSON.parse(readFileSync(path.resolve(__dirname, 'backers.json'), 'utf-8'))
+let commitHash = ''
+try {
+  commitHash = execSync('git rev-parse --short HEAD', { cwd: __dirname }).toString().trim()
+} catch {
+  // git may be unavailable in CI tarball builds
+}
+
+// Compile-time globals declared in src/renderer/infra/globals.ts
+// (ported from the webpack DefinePlugin config)
+const rendererDefines = {
+  VERSION: JSON.stringify(pkg.version),
+  BUILT_AT: JSON.stringify(new Date().toISOString()),
+  COMMIT_HASH: JSON.stringify(commitHash),
+  BACKERS: JSON.stringify(backers),
+}
 
 export default defineConfig({
   main: {
@@ -40,6 +60,7 @@ export default defineConfig({
   },
   renderer: {
     root: 'src/renderer',
+    define: rendererDefines,
     resolve: {
       alias: {
         '@': path.resolve(__dirname, 'src/renderer'),
@@ -58,7 +79,9 @@ export default defineConfig({
     ],
     css: {
       modules: {
-        localsConvention: 'camelCaseOnly'
+        // components access classes both ways (styles.widget and
+        // styles['is-drop-area']) — camelCaseOnly would drop the kebab keys
+        localsConvention: 'camelCase'
       }
     }
   }

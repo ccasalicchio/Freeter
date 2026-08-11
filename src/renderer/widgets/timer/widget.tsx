@@ -1,7 +1,7 @@
 import { Button, ReactComponent, WidgetReactComponentProps } from '@/widgets/appModules';
 import { Settings } from './settings';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import * as styles from './widget.module.scss';
+import styles from './widget.module.scss';
 import { useAudioFile } from '@/widgets/timer/useAudioFile';
 import { timerEndSoundFilesById } from '@/widgets/timer/audio/timer-end';
 
@@ -30,7 +30,6 @@ function WidgetComp({settings}: WidgetReactComponentProps<Settings>) {
   const tick = useCallback(() => {
     if (isStopwatch) {
       const elapsed = Date.now() - startMsecs;
-      setMmss(msecsToMMSS(elapsed));
       setMmss(msecsToMMSS(elapsed));
     } else {
       const msecsLeft = endMsecs - Date.now();

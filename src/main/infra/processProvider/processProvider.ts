@@ -1,8 +1,15 @@
+import { app } from 'electron';
 import { ProcessProvider } from '@/application/interfaces/processProvider';
 import { ProcessInfoOsName } from '@common/base/process';
 import * as os from 'node:os';
 
-function getCpuUsage(): number {
+interface CpuUsage {
+  totalIdle: number;
+  totalTick: number;
+  count: number;
+}
+
+function getCpuUsage(): CpuUsage {
   const cpus = os.cpus();
   let totalIdle = 0;
   let totalTick = 0;
@@ -43,7 +50,10 @@ export function createProcessProvider(): ProcessProvider {
       isLinux: process.platform === 'linux',
       isMac: process.platform === 'darwin',
       isWin: process.platform === 'win32',
-      isDevMode: process.env.NODE_ENV !== 'production'
+      // A packaged app is never in dev mode, regardless of NODE_ENV —
+      // installed builds launch without NODE_ENV and must not try to load
+      // the renderer from the dev server.
+      isDevMode: !app.isPackaged && process.env.NODE_ENV !== 'production'
     }),
     getSystemMetrics: () => {
       const currCpu = getCpuUsage();

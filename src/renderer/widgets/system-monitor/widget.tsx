@@ -1,5 +1,5 @@
 import { ReactComponent, WidgetReactComponentProps } from '@/widgets/appModules';
-import * as styles from './widget.module.scss';
+import styles from './widget.module.scss';
 import { Settings } from './settings';
 import { useCallback, useEffect, useRef, useState } from 'react';
 

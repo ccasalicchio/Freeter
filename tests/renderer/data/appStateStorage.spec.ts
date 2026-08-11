@@ -8,7 +8,7 @@ import { createPersistentAppState, currentAppStateVersion, migrateAppState } fro
 import { createAppStateStorage } from '@/data/appStateStorage'
 import { DataStorageJson } from '@common/application/interfaces/dataStorage';
 
-jest.mock('@common/data/stateStorage');
+vi.mock('@common/data/stateStorage');
 const mockedCreateStateStorage = jest.mocked(createStateStorage);
 
 beforeEach(() => {

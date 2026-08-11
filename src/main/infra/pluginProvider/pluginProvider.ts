@@ -15,7 +15,9 @@ async function scanPluginsDir(): Promise<PluginManifest[]> {
   try {
     const entries = await fs.readdir(pluginsDir, { withFileTypes: true });
     for (const entry of entries) {
-      if (!entry.isDirectory()) continue;
+      if (!entry.isDirectory()) {
+        continue;
+      }
       const pkgPath = path.join(pluginsDir, entry.name, 'package.json');
       try {
         const pkgRaw = await fs.readFile(pkgPath, 'utf-8');

@@ -1,6 +1,6 @@
 import { Button, ContextMenuEvent, ReactComponent, WidgetReactComponentProps } from '@/widgets/appModules';
 import { Settings } from './settings';
-import * as styles from './widget.module.scss';
+import styles from './widget.module.scss';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createActionBarItems } from '@/widgets/webpage/actionBar';
 import { sanitizeUrl } from '@common/helpers/sanitizeUrl';

@@ -8,7 +8,7 @@ import { createOsDialogProvider } from '@/infra/dialogProvider/osDialogProvider'
 import { electronIpcRenderer } from '@/infra/mainApi/mainApi';
 import { MessageBoxConfig, OpenDirDialogConfig, OpenFileDialogConfig, SaveFileDialogConfig } from '@common/base/dialog';
 
-jest.mock('@/infra/mainApi/mainApi');
+vi.mock('@/infra/mainApi/mainApi');
 
 function setup() {
   const dialogProvider = createOsDialogProvider();

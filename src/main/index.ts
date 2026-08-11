@@ -4,10 +4,12 @@
  */
 
 import { join } from 'node:path';
+import { installFatalErrorHandlers, reportFatalError } from '@/infra/errorReporter/errorReporter';
+import { initFileLog, logToFile } from '@/infra/logger/fileLog';
 import { hostFreeterApp, schemeFreeterFile } from '@common/infra/network';
 import { channelPrefix } from '@common/ipc/ipc';
 import { createIpcMain } from '@/infra/ipcMain/ipcMain';
-import { app } from 'electron';
+import { app, BrowserWindow as ElectronBrowserWindow } from 'electron';
 import { createRendererWindow } from '@/infra/browserWindow/browserWindow';
 import { createIpcMainEventValidator } from '@/infra/ipcMain/ipcMainEventValidator';
 import { registerAppFileProtocol } from '@/infra/protocolHandler/registerAppFileProtocol';
@@ -79,6 +81,10 @@ import { createPluginControllers } from '@/controllers/plugin';
 import { createPluginProvider } from '@/infra/pluginProvider/pluginProvider';
 
 let appWindow: BrowserWindow | null = null; // ref to the app window
+
+// plain-text app log: <appData>/freeter2/freeter-data/logs/freeter.log
+initFileLog(join(app.getPath('appData'), 'freeter2', 'freeter-data', 'logs', 'freeter.log'));
+installFatalErrorHandlers();
 
 if (!app.requestSingleInstanceLock()) {
   // there is another instance of the app running
@@ -175,7 +181,10 @@ if (!app.requestSingleInstanceLock()) {
 
     const setMainShortcutUseCase = createSetMainShortcutUseCase({ globalShortcutProvider });
 
-    const trayProvider = createTrayProvider(join(app.getAppPath(), 'assets', 'app-icons', '16.png'));
+    // Assets are bundled next to the compiled main script (dist/main/assets),
+    // both in the packaged asar and in local prod runs — app.getAppPath()
+    // points at the app root, where no assets/ dir exists.
+    const trayProvider = createTrayProvider(join(__dirname, 'assets', 'app-icons', '16.png'));
     const setTrayMenuUseCase = createSetTrayMenuUseCase({ trayProvider });
     const initTrayUseCase = createInitTrayUseCase({ trayProvider, setTrayMenuUseCase });
 
@@ -223,7 +232,9 @@ if (!app.requestSingleInstanceLock()) {
       ...createProfileControllers({
         appDataStorage,
         widgetDataStorageManager,
-        getBrowserWindow: () => appWindow
+        // the composition root knows the runtime window is a real Electron
+        // BrowserWindow; the appWindow ref is typed as the narrow app interface
+        getBrowserWindow: () => appWindow as unknown as ElectronBrowserWindow | null
       })
     ])
 
@@ -242,10 +253,12 @@ if (!app.requestSingleInstanceLock()) {
     }, () => {
       const getWindowStateUseCase = createGetWindowStateUseCase({ windowStore })
       const setWindowStateUseCase = createSetWindowStateUseCase({ windowStore })
+      logToFile('info', 'creating app window');
       appWindow = createRendererWindow(
-        `${__dirname}/preload.js`,
+        // preload is built to dist/preload, next to dist/main (__dirname)
+        join(__dirname, '..', 'preload', 'preload.js'),
         `${schemeFreeterFile}://${hostFreeterApp}/index.html`,
-        isLinux ? join(app.getAppPath(), 'assets', 'app-icons', '256.png') : undefined,
+        isLinux ? join(__dirname, 'assets', 'app-icons', '256.png') : undefined,
         uaOriginal,
         {
           getWindowStateUseCase,
@@ -265,6 +278,6 @@ if (!app.requestSingleInstanceLock()) {
 
       initTrayUseCase(appWindow);
     })
-  });
+  }).catch(err => reportFatalError('startup', err));
 
 }
