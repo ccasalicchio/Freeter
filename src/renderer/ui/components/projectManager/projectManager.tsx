@@ -27,6 +27,7 @@ export function createProjectManagerComponent({
       draggingOverProjectId,
       updateSettings,
       browseDir,
+      browseFile,
       onOkClick,
       onCancelClick,
       onListItemClick,
@@ -70,6 +71,7 @@ export function createProjectManagerComponent({
             settings={currentProjectSettings}
             updateSettings={updateSettings}
             browseDir={browseDir}
+            browseFile={browseFile}
             projectAddedTrigger={projectAddedTrigger}
           ></ProjectManagerSettings>
         </div>

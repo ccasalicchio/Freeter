@@ -1,4 +1,5 @@
 import { WidgetSettings, WidgetType } from '@/widgets/appModules'
+import appLauncher from './app-launcher';
 import commander from './commander';
 import fileOpener from './file-opener';
 import linkOpener from './link-opener';
@@ -18,6 +19,7 @@ import codeSnippet from './code-snippet';
 import passwordVault from './password-vault';
 
 const builtinWidgetTypes = [
+  appLauncher,
   commander,
   fileOpener,
   linkOpener,

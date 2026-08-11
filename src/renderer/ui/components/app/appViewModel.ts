@@ -7,7 +7,7 @@ import { ShowContextMenuUseCase } from '@/application/useCases/contextMenu/showC
 import { contextMenuForTextInput } from '@/base/contextMenu';
 import { resolveUiThemeId } from '@/base/uiTheme';
 import { UseAppState } from '@/ui/hooks/appState';
-import React, { ReactNode, createElement, useMemo } from 'react';
+import React, { ReactNode, createElement, useEffect, useMemo } from 'react';
 import { CommandPalette, PaletteItem } from '@/ui/components/commandPalette/commandPalette';
 import { CloseCommandPaletteUseCase } from '@/application/useCases/commandPalette/closeCommandPalette';
 
@@ -21,6 +21,9 @@ type Deps = {
   About: React.FC;
   showContextMenuUseCase: ShowContextMenuUseCase;
   closeCommandPaletteUseCase: CloseCommandPaletteUseCase;
+  switchProjectUseCase: (projectId: string) => void;
+  switchWorkflowUseCase: (projectId: string, workflowId: string) => void;
+  toggleEditModeUseCase: () => void;
   openApplicationSettingsUseCase: () => void;
   openProjectManagerUseCase: () => void;
   openAppManagerUseCase: () => void;
@@ -36,6 +39,9 @@ export function createAppViewModelHook({
   About,
   showContextMenuUseCase,
   closeCommandPaletteUseCase,
+  switchProjectUseCase,
+  switchWorkflowUseCase,
+  toggleEditModeUseCase,
   openApplicationSettingsUseCase,
   openProjectManagerUseCase,
   openAppManagerUseCase,
@@ -76,6 +82,36 @@ export function createAppViewModelHook({
       widgetSettings: createElement(WidgetSettings, {}),
       workflowSettings: createElement(WorkflowSettings, {}),
     }
+
+    // keyboard shortcuts: Ctrl/Cmd+1..9 projects, Alt+1..9 workflows, Ctrl/Cmd+E edit mode
+    useEffect(() => {
+      const onKeyDown = (e: KeyboardEvent) => {
+        if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && e.key.toLowerCase() === 'e') {
+          e.preventDefault();
+          toggleEditModeUseCase();
+          return;
+        }
+        const num = Number(e.key);
+        if (!Number.isInteger(num) || num < 1 || num > 9) {
+          return;
+        }
+        if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey) {
+          const projectId = projectIds[num - 1];
+          if (projectId) {
+            e.preventDefault();
+            switchProjectUseCase(projectId);
+          }
+        } else if (e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey) {
+          const workflowId = projects[currentProjectId]?.workflowIds[num - 1];
+          if (workflowId) {
+            e.preventDefault();
+            switchWorkflowUseCase(currentProjectId, workflowId);
+          }
+        }
+      };
+      window.addEventListener('keydown', onKeyDown);
+      return () => window.removeEventListener('keydown', onKeyDown);
+    }, [projectIds, projects, currentProjectId]);
 
     const paletteItems = useMemo((): PaletteItem[] => {
       const result: PaletteItem[] = [];
