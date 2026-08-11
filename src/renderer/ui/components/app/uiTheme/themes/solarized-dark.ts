@@ -60,7 +60,7 @@ export const solarizedDarkTheme = {
   buttonPrimaryColor: '#FDF6E3',
   buttonPrimaryHoverBackground: '#207AB8',
   buttonPrimaryActiveBackground: '#207AB8',
-  inAppNoteColor: '#93A1A160',
+  inAppNoteColor: '#93A1A1C0',
   inAppNoteIconColor: '#93A1A1',
   inAppNoteNoProjectsBackground: '#002B36',
   inAppNoteNoWorkflowsBackground: '#002B36',

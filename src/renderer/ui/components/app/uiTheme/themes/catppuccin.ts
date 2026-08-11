@@ -60,7 +60,7 @@ export const catppuccinTheme = {
   buttonPrimaryColor: '#1E1E2E',
   buttonPrimaryHoverBackground: '#A6B0E8',
   buttonPrimaryActiveBackground: '#A6B0E8',
-  inAppNoteColor: '#CDD6F460',
+  inAppNoteColor: '#CDD6F4C0',
   inAppNoteIconColor: '#CDD6F4',
   inAppNoteNoProjectsBackground: '#313244',
   inAppNoteNoWorkflowsBackground: '#313244',

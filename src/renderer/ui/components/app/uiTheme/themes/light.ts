@@ -88,7 +88,7 @@ export const lightTheme = {
   /**
    * In-App Notes
    */
-  inAppNoteColor: '#3B3B3B60',
+  inAppNoteColor: '#3B3B3BC0',
   inAppNoteIconColor: '#3B3B3B',
   inAppNoteNoProjectsBackground: '#F8F8F8',
   inAppNoteNoWorkflowsBackground: '#F8F8F8',
