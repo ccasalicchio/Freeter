@@ -4,6 +4,7 @@
  */
 
 import { CloseApplicationSettingsUseCase } from '@/application/useCases/applicationSettings/closeApplicationSettings';
+import { ShowOpenDirDialogUseCase } from '@/application/useCases/dialog/showOpenDirDialog';
 import { GetMainHotkeyOptionsUseCase } from '@/application/useCases/applicationSettings/getMainHotkeyOptions';
 import { SaveApplicationSettingsUseCase } from '@/application/useCases/applicationSettings/saveApplicationSettings';
 import { UpdateApplicationSettingsUseCase } from '@/application/useCases/applicationSettings/updateApplicationSettings';
@@ -19,6 +20,7 @@ type Deps = {
   saveApplicationSettingsUseCase: SaveApplicationSettingsUseCase;
   updateApplicationSettingsUseCase: UpdateApplicationSettingsUseCase;
   closeApplicationSettingsUseCase: CloseApplicationSettingsUseCase;
+  showOpenDirDialogUseCase: ShowOpenDirDialogUseCase;
 }
 
 export function createApplicationSettingsViewModelHook({
@@ -27,6 +29,7 @@ export function createApplicationSettingsViewModelHook({
   saveApplicationSettingsUseCase,
   updateApplicationSettingsUseCase,
   closeApplicationSettingsUseCase,
+  showOpenDirDialogUseCase,
 }: Deps) {
   const hotkeyOptions = getMainHotkeyOptionsUseCase();
   const uiThemeOptions = [{ id: autoThemeId, name: 'Auto (match OS)' }, ...uiThemes];
@@ -52,10 +55,16 @@ export function createApplicationSettingsViewModelHook({
       closeApplicationSettingsUseCase();
     }, []);
 
+    const browseDir = useCallback(async (): Promise<string | undefined> => {
+      const { canceled, filePaths } = await showOpenDirDialogUseCase({ defaultPath: '', multiSelect: false });
+      return (!canceled && filePaths[0]) ? filePaths[0] : undefined;
+    }, []);
+
     return {
       appConfig,
       hotkeyOptions,
       updateSettings,
+      browseDir,
       onOkClickHandler,
       onCancelClickHandler,
       uiThemeOptions,

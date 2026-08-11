@@ -144,6 +144,7 @@ import { createUpdateAppsOrderInAppManagerUseCase } from '@/application/useCases
 import { createCloseAppManagerUseCase } from '@/application/useCases/appManager/closeAppManager';
 import { createOpenAppManagerUseCase } from '@/application/useCases/appManager/openAppManager';
 import { createShowOpenFileDialogUseCase } from '@/application/useCases/dialog/showOpenFileDialog';
+import { createShowOpenDirDialogUseCase } from '@/application/useCases/dialog/showOpenDirDialog';
 import { createInitMemSaverUseCase } from '@/application/useCases/memSaver/initMemSaver';
 import { createDeactivateWorkflowUseCase } from '@/application/useCases/memSaver/deactivateWorkflow';
 import { createToggleTopBarUseCase } from '@/application/useCases/toggleTopBar';
@@ -250,6 +251,10 @@ async function createUseCases(store: ReturnType<typeof createStore>) {
   });
 
   const showOpenFileDialogUseCase = createShowOpenFileDialogUseCase({
+    ...deps,
+    dialog: osDialogProvider
+  })
+  const showOpenDirDialogUseCase = createShowOpenDirDialogUseCase({
     ...deps,
     dialog: osDialogProvider
   })
@@ -487,6 +492,7 @@ async function createUseCases(store: ReturnType<typeof createStore>) {
     showWidgetContextMenuUseCase,
 
     showOpenFileDialogUseCase,
+    showOpenDirDialogUseCase,
 
     getWidgetApiUseCase,
     deleteWidgetUseCase,

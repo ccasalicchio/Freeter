@@ -6,12 +6,13 @@
 import { convertStrToUndBool, convertStrToUndNum, convertUndBoolToStr, convertUndNumToStr } from '@/base/convTypes';
 import { sanitizePartialMemSaverConfig } from '@/base/memSaver';
 import { ProjectManagerSettingsProps, useProjectManagerSettingsViewModel } from '@/ui/components/projectManager/projectManagerSettings/projectManagerSettingsViewModel';
-import { SettingBlock } from '@/widgets/appModules';
+import { Button, SettingBlock } from '@/widgets/appModules';
 import { IconPicker } from '@/ui/components/basic/iconPicker/iconPicker';
 
 export function ProjectManagerSettings(props: ProjectManagerSettingsProps) {
   const {
     settings,
+    browseDir,
     updateSettings,
     refNameInput,
     inactiveAfterOptions,
@@ -39,6 +40,12 @@ export function ProjectManagerSettings(props: ProjectManagerSettingsProps) {
           ...settings,
           rootFolder: e.target.value
         })}/>
+        <Button caption='Browse…' onClick={async () => {
+          const dir = await browseDir();
+          if (dir) {
+            updateSettings({ ...settings, rootFolder: dir });
+          }
+        }} />
       </SettingBlock>
       <SettingBlock
         title='Project Icon (optional)'
