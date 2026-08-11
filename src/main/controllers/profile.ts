@@ -38,7 +38,11 @@ function createShowOpenDialog(getBrowserWindow: () => BrowserWindow | null) {
     }
     const { canceled, filePaths } = await import('electron').then(e => e.dialog.showOpenDialog(win, {
       title: 'Import Freeter Profile',
-      filters: [{ name: 'Freeter Backup', extensions: ['json'] }],
+      filters: [
+        { name: 'Freeter Backup / Freeter 1 Data', extensions: ['json', 'freeterdata'] },
+        { name: 'Freeter Backup', extensions: ['json'] },
+        { name: 'Freeter 1 Data File', extensions: ['freeterdata'] }
+      ],
       properties: ['openFile'],
     }));
     if (canceled || !filePaths || filePaths.length === 0) {

@@ -1,5 +1,7 @@
 import { DataStorage } from '@common/application/interfaces/dataStorage';
 import { ObjectManager } from '@common/base/objectManager';
+import { randomUUID } from 'node:crypto';
+import { convertFreeter1Data, isFreeter1Data } from '@/application/useCases/profile/freeter1Converter';
 
 interface WidgetDataBackup {
   [key: string]: string;
@@ -110,13 +112,33 @@ export async function importProfile(
   }
 
   const content = await readFile(filePath);
-  let backup: ProfileBackup;
+  let parsed: unknown;
   try {
-    backup = JSON.parse(content);
+    parsed = JSON.parse(content);
   } catch {
     return undefined;
   }
 
+  // Freeter 1 data file (.freeterdata): convert to v3 state, merging into
+  // the current profile, then let the renderer reload with the result
+  if (isFreeter1Data(parsed)) {
+    const existingAppJson = await appDataStorage.getText('app');
+    const converted = convertFreeter1Data(parsed, existingAppJson, randomUUID);
+    for (const wd of converted.widgetsData) {
+      try {
+        const storage = await widgetDataStorageManager.getObject(wd.id);
+        for (const [key, val] of Object.entries(wd.data)) {
+          await storage.setText(key, val);
+        }
+      } catch {
+        // skip widgets whose storage can't be written
+      }
+    }
+    await appDataStorage.setText('app', converted.appJson);
+    return converted.appJson;
+  }
+
+  const backup = parsed as ProfileBackup;
   if (!backup || backup.version !== 1) {
     return undefined;
   }
