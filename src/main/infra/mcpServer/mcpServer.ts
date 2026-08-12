@@ -19,7 +19,8 @@ import { DataStorage } from '@common/application/interfaces/dataStorage';
 import { ObjectManager } from '@common/base/objectManager';
 import { logToFile } from '@/infra/logger/fileLog';
 import {
-  parseAppState, listProjects, listWorkflows, listWidgets, getWidget, createWidgetInState
+  parseAppState, listProjects, listWorkflows, listWidgets, getWidget, createWidgetInState,
+  switchProjectInState, switchWorkflowInState, searchNames, listContentWidgets
 } from '@/infra/mcpServer/mcpState';
 
 export interface McpServerConfig {
@@ -199,6 +200,56 @@ export function createFreeterMcpServer({ appDataStorage, widgetDataStorageManage
       }
       await writeState(state);
       return textResult(`Created ${type} widget "${name}" (id ${res.widgetId}).`);
+    });
+
+
+    server.registerTool('freeter_search', {
+      description: 'Searches the whole dashboard: project/workflow/widget names plus the contents of notes and to-do lists. Returns hits with locations and widget ids.',
+      inputSchema: { query: z.string().describe('Case-insensitive text to search for') }
+    }, async ({ query }) => {
+      const state = await readState();
+      if (!state) {
+        return errorResult('Freeter has no saved state yet.');
+      }
+      const nameHits = searchNames(state, query);
+      const contentHits: object[] = [];
+      const q = query.toLowerCase();
+      for (const w of listContentWidgets(state)) {
+        try {
+          const storage = await widgetDataStorageManager.getObject(w.id);
+          const raw = await storage.getText(w.type === 'note' ? 'note' : 'todo');
+          if (raw && raw.toLowerCase().includes(q)) {
+            contentHits.push({ kind: `${w.type}-content`, widgetId: w.id, name: w.name, projectName: w.projectName, workflowName: w.workflowName });
+          }
+        } catch {
+          // unreadable widget data: skip
+        }
+      }
+      return textResult({ nameMatches: nameHits, contentMatches: contentHits });
+    });
+
+    server.registerTool('freeter_switch_project', {
+      description: 'Switches the visible project (dashboard). Get ids from freeter_list_projects.',
+      inputSchema: { projectId: z.string().describe('Project id') }
+    }, async ({ projectId }) => {
+      const state = await readState();
+      if (!state || !switchProjectInState(state, projectId)) {
+        return errorResult(`Project "${projectId}" not found. Use freeter_list_projects to get valid ids.`);
+      }
+      await writeState(state);
+      return textResult('Switched project.');
+    });
+
+    server.registerTool('freeter_switch_workflow', {
+      description: 'Switches to a workflow (tab), also switching to its project. Get ids from freeter_list_workflows.',
+      inputSchema: { workflowId: z.string().describe('Workflow id') }
+    }, async ({ workflowId }) => {
+      const state = await readState();
+      if (!state || !switchWorkflowInState(state, workflowId)) {
+        return errorResult(`Workflow "${workflowId}" not found. Use freeter_list_workflows to get valid ids.`);
+      }
+      await writeState(state);
+      return textResult('Switched workflow.');
     });
 
     return server;

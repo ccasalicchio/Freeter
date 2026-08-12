@@ -16,7 +16,7 @@ type Deps = {
   useApplicationSettingsViewModel: ApplicationSettingsViewModelHook;
 }
 
-type SettingsTab = 'general' | 'appearance' | 'backup' | 'ai';
+type SettingsTab = 'general' | 'appearance' | 'shortcuts' | 'backup' | 'ai';
 
 const themeOverrideVars: { key: string; name: string }[] = [
   { key: 'background', name: 'Background' },
@@ -56,6 +56,7 @@ export function createApplicationSettingsComponent({
     const tabs: { id: SettingsTab; name: string }[] = [
       { id: 'general', name: 'General' },
       { id: 'appearance', name: 'Appearance' },
+      { id: 'shortcuts', name: 'Shortcuts' },
       { id: 'backup', name: 'Backup' },
       { id: 'ai', name: 'AI / MCP' },
     ];
@@ -195,6 +196,49 @@ export function createApplicationSettingsComponent({
           </SettingBlock>
         </div>
 
+
+        <div className={clsx(styles['settings-tab-panel'], tab === 'shortcuts' && styles['is-active'])}>
+          <SettingBlock
+            titleForId='shortcut-project'
+            title='Switch Project'
+            moreInfo='Keyboard shortcut for switching to projects 1-9.'
+          >
+            <select id='shortcut-project' value={appConfig.shortcuts.projectSwitch} onChange={e => updateSettings({
+              ...appConfig,
+              shortcuts: { ...appConfig.shortcuts, projectSwitch: (e.target.value === 'ctrl+shift' || e.target.value === 'off') ? e.target.value : 'ctrl' }
+            })}>
+              <option value='ctrl'>Ctrl/Cmd + 1..9</option>
+              <option value='ctrl+shift'>Ctrl/Cmd + Shift + 1..9</option>
+              <option value='off'>Disabled</option>
+            </select>
+          </SettingBlock>
+          <SettingBlock
+            titleForId='shortcut-workflow'
+            title='Switch Workflow'
+            moreInfo='Keyboard shortcut for switching to workflows 1-9 of the current project.'
+          >
+            <select id='shortcut-workflow' value={appConfig.shortcuts.workflowSwitch} onChange={e => updateSettings({
+              ...appConfig,
+              shortcuts: { ...appConfig.shortcuts, workflowSwitch: (e.target.value === 'alt+shift' || e.target.value === 'off') ? e.target.value : 'alt' }
+            })}>
+              <option value='alt'>Alt + 1..9</option>
+              <option value='alt+shift'>Alt + Shift + 1..9</option>
+              <option value='off'>Disabled</option>
+            </select>
+          </SettingBlock>
+          <SettingBlock
+            titleForId='shortcut-edit'
+            title='Toggle Edit Mode'
+          >
+            <select id='shortcut-edit' value={appConfig.shortcuts.editModeToggle} onChange={e => updateSettings({
+              ...appConfig,
+              shortcuts: { ...appConfig.shortcuts, editModeToggle: e.target.value === 'off' ? 'off' : 'ctrl+e' }
+            })}>
+              <option value='ctrl+e'>Ctrl/Cmd + E</option>
+              <option value='off'>Disabled</option>
+            </select>
+          </SettingBlock>
+        </div>
         <div className={clsx(styles['settings-tab-panel'], tab === 'backup' && styles['is-active'])}>
           <SettingBlock
             titleForId='auto-backup-enabled'

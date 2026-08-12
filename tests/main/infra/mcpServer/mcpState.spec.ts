@@ -3,7 +3,7 @@
  * GNU General Public License v3.0 or later (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
  */
 
-import { parseAppState, listProjects, listWorkflows, listWidgets, createWidgetInState, AppStateDoc } from '@/infra/mcpServer/mcpState';
+import { parseAppState, listProjects, listWorkflows, listWidgets, createWidgetInState, switchProjectInState, switchWorkflowInState, searchNames, AppStateDoc } from '@/infra/mcpServer/mcpState';
 
 function fixtureState(): AppStateDoc {
   return {
@@ -65,5 +65,25 @@ describe('mcpState', () => {
     expect(layout).toHaveLength(2);
     expect(layout[1].rect.y).toBe(2);
     expect(createWidgetInState(state, 'NOPE', 'note', 'x', {}, () => 'y')).toBeNull();
+  })
+})
+
+describe('mcpState v2', () => {
+  it('switches project and workflow', () => {
+    const state = fixtureState();
+    expect(switchProjectInState(state, 'P2')).toBe(true);
+    expect(state.obj.ui.projectSwitcher?.currentProjectId).toBe('P2');
+    expect(switchProjectInState(state, 'NOPE')).toBe(false);
+
+    expect(switchWorkflowInState(state, 'W1')).toBe(true);
+    expect(state.obj.ui.projectSwitcher?.currentProjectId).toBe('P1');
+    expect(state.obj.entities.projects['P1'].currentWorkflowId).toBe('W1');
+    expect(switchWorkflowInState(state, 'NOPE')).toBe(false);
+  })
+
+  it('searches names across projects, workflows and widgets', () => {
+    const hits = searchNames(fixtureState(), 'note');
+    expect(hits).toEqual([expect.objectContaining({ kind: 'widget', id: 'WID1', name: 'My Note' })]);
+    expect(searchNames(fixtureState(), 'alpha')[0]).toEqual(expect.objectContaining({ kind: 'project', id: 'P1' }));
   })
 })
