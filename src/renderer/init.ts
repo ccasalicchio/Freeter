@@ -112,6 +112,7 @@ import { createProfileProvider } from '@/infra/profileProvider/profileProvider';
 import { createFindInPageProvider } from '@/infra/findInPageProvider/findInPageProvider';
 import { createLoginItemProvider } from '@/infra/loginItemProvider/loginItemProvider';
 import { createHttpProvider } from '@/infra/httpProvider/httpProvider';
+import { createMcpConfigProvider } from '@/infra/mcpConfigProvider/mcpConfigProvider';
 import { createFindBarComponent } from '@/ui/components/findBar/findBar';
 import { createCloseCommandPaletteUseCase } from '@/application/useCases/commandPalette/closeCommandPalette';
 import { createOpenCommandPaletteUseCase } from '@/application/useCases/commandPalette/openCommandPalette';
@@ -262,6 +263,8 @@ async function createUseCases(store: ReturnType<typeof createStore>) {
   })
   const loginItemProvider = createLoginItemProvider();
   const setLaunchAtStartupUseCase = loginItemProvider.setLaunchAtStartup;
+  const mcpConfigProvider = createMcpConfigProvider();
+  const applyMcpConfigUseCase = mcpConfigProvider.applyMcpConfig;
 
   const getWidgetsInCurrentWorkflowUseCase = createGetWidgetsInCurrentWorkflowUseCase(deps);
 
@@ -499,6 +502,7 @@ async function createUseCases(store: ReturnType<typeof createStore>) {
     showOpenFileDialogUseCase,
     showOpenDirDialogUseCase,
     setLaunchAtStartupUseCase,
+    applyMcpConfigUseCase,
 
     getWidgetApiUseCase,
     deleteWidgetUseCase,

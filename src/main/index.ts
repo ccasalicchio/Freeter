@@ -81,6 +81,8 @@ import { createProfileControllers } from '@/controllers/profile';
 import { createFindInPageControllers } from '@/controllers/findInPage';
 import { createLoginItemControllers } from '@/controllers/loginItem';
 import { createHttpRequestControllers } from '@/controllers/httpRequest';
+import { createMcpConfigControllers } from '@/controllers/mcpConfig';
+import { createFreeterMcpServer } from '@/infra/mcpServer/mcpServer';
 import { createAutoBackup } from '@/infra/autoBackup/autoBackup';
 import { createPluginControllers } from '@/controllers/plugin';
 import { createPluginProvider } from '@/infra/pluginProvider/pluginProvider';
@@ -184,6 +186,22 @@ if (!app.requestSingleInstanceLock()) {
     // daily/on-close profile backups (configured in Application Settings)
     const autoBackup = createAutoBackup(appDataStorage, widgetDataStorageManager);
     autoBackup.start();
+
+    // localhost MCP server for AI clients (Settings > AI / MCP)
+    const mcpServer = createFreeterMcpServer({
+      appDataStorage,
+      widgetDataStorageManager,
+      reloadRenderer: () => (appWindow as unknown as ElectronBrowserWindow | null)?.reload()
+    });
+    try {
+      const appJson = await appDataStorage.getText('app');
+      const mcpCfg = appJson ? JSON.parse(appJson)?.obj?.ui?.appConfig?.mcp : undefined;
+      if (mcpCfg && typeof mcpCfg === 'object') {
+        mcpServer.start({ enabled: !!mcpCfg.enabled, port: Number(mcpCfg.port) || 39587, token: String(mcpCfg.token ?? '') });
+      }
+    } catch {
+      // malformed state: leave the MCP server off
+    }
     let onCloseBackupDone = false;
     app.on('before-quit', evt => {
       if (!onCloseBackupDone) {
@@ -288,7 +306,10 @@ if (!app.requestSingleInstanceLock()) {
         getBrowserWindow: () => appWindow as unknown as ElectronBrowserWindow | null
       }),
       ...createLoginItemControllers(),
-      ...createHttpRequestControllers()
+      ...createHttpRequestControllers(),
+      ...createMcpConfigControllers({
+        applyMcpConfig: (config) => mcpServer.start(config)
+      })
     ])
 
     const [windowStore] = createWindowStore({

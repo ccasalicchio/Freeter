@@ -1,0 +1,129 @@
+/*
+ * Copyright: (c) 2024, Alex Kaul
+ * GNU General Public License v3.0 or later (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+ */
+
+/**
+ * Pure helpers over the persisted app state JSON ({ver, obj}) used by the
+ * MCP server tools. Kept SDK-free so they are unit-testable.
+ */
+
+interface EntityBase { id: string }
+interface ProjectEntity extends EntityBase {
+  settings: { name?: string };
+  workflowIds: string[];
+  currentWorkflowId: string;
+}
+interface WorkflowEntity extends EntityBase {
+  settings: { name?: string };
+  layout: { id: string; widgetId: string; rect: { x: number; y: number; w: number; h: number } }[];
+}
+interface WidgetEntity extends EntityBase {
+  type: string;
+  coreSettings: { name?: string };
+  settings: Record<string, unknown>;
+}
+
+export interface AppStateDoc {
+  ver: number;
+  obj: {
+    entities: {
+      projects: Record<string, ProjectEntity>;
+      workflows: Record<string, WorkflowEntity>;
+      widgets: Record<string, WidgetEntity>;
+      [key: string]: unknown;
+    };
+    ui: { projectSwitcher?: { projectIds?: string[]; currentProjectId?: string;[key: string]: unknown };[key: string]: unknown };
+    [key: string]: unknown;
+  };
+}
+
+export function parseAppState(json: string | undefined): AppStateDoc | null {
+  if (!json) {
+    return null;
+  }
+  try {
+    const parsed = JSON.parse(json);
+    if (parsed && typeof parsed.ver === 'number' && parsed.obj?.entities) {
+      return parsed as AppStateDoc;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+export function listProjects(state: AppStateDoc) {
+  const order = state.obj.ui.projectSwitcher?.projectIds ?? Object.keys(state.obj.entities.projects);
+  const currentId = state.obj.ui.projectSwitcher?.currentProjectId ?? '';
+  return order
+    .map(id => state.obj.entities.projects[id])
+    .filter(Boolean)
+    .map(p => ({
+      id: p.id,
+      name: p.settings.name ?? '',
+      workflowCount: p.workflowIds.length,
+      isCurrent: p.id === currentId
+    }));
+}
+
+export function listWorkflows(state: AppStateDoc, projectId: string) {
+  const project = state.obj.entities.projects[projectId];
+  if (!project) {
+    return null;
+  }
+  return project.workflowIds
+    .map(id => state.obj.entities.workflows[id])
+    .filter(Boolean)
+    .map(w => ({
+      id: w.id,
+      name: w.settings.name ?? '',
+      widgetCount: w.layout.length,
+      isCurrent: w.id === project.currentWorkflowId
+    }));
+}
+
+export function listWidgets(state: AppStateDoc, workflowId: string) {
+  const workflow = state.obj.entities.workflows[workflowId];
+  if (!workflow) {
+    return null;
+  }
+  return workflow.layout
+    .map(item => {
+      const w = state.obj.entities.widgets[item.widgetId];
+      return w ? { id: w.id, type: w.type, name: w.coreSettings.name ?? '', rect: item.rect } : null;
+    })
+    .filter((w): w is NonNullable<typeof w> => w !== null);
+}
+
+export function getWidget(state: AppStateDoc, widgetId: string) {
+  return state.obj.entities.widgets[widgetId] ?? null;
+}
+
+/** places a new widget below the lowest row of the workflow layout */
+export function createWidgetInState(
+  state: AppStateDoc,
+  workflowId: string,
+  type: string,
+  name: string,
+  settings: Record<string, unknown>,
+  generateId: () => string
+): { widgetId: string } | null {
+  const workflow = state.obj.entities.workflows[workflowId];
+  if (!workflow) {
+    return null;
+  }
+  const widgetId = generateId();
+  state.obj.entities.widgets[widgetId] = {
+    id: widgetId,
+    type,
+    coreSettings: { name },
+    settings
+  };
+  const maxY = workflow.layout.reduce((m, item) => Math.max(m, item.rect.y + item.rect.h), 0);
+  workflow.layout = [
+    ...workflow.layout,
+    { id: generateId(), widgetId, rect: { x: 0, y: maxY, w: 4, h: 4 } }
+  ];
+  return { widgetId };
+}

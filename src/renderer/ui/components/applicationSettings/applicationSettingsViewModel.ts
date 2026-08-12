@@ -22,6 +22,7 @@ type Deps = {
   closeApplicationSettingsUseCase: CloseApplicationSettingsUseCase;
   showOpenDirDialogUseCase: ShowOpenDirDialogUseCase;
   setLaunchAtStartupUseCase: (enabled: boolean) => Promise<void>;
+  applyMcpConfigUseCase: (config: AppConfig['mcp']) => Promise<void>;
 }
 
 export function createApplicationSettingsViewModelHook({
@@ -32,6 +33,7 @@ export function createApplicationSettingsViewModelHook({
   closeApplicationSettingsUseCase,
   showOpenDirDialogUseCase,
   setLaunchAtStartupUseCase,
+  applyMcpConfigUseCase,
 }: Deps) {
   const hotkeyOptions = getMainHotkeyOptionsUseCase();
   const uiThemeOptions = [{ id: autoThemeId, name: 'Auto (match OS)' }, ...uiThemes];
@@ -52,6 +54,7 @@ export function createApplicationSettingsViewModelHook({
     const onOkClickHandler = useCallback(() => {
       if (appConfig) {
         setLaunchAtStartupUseCase(appConfig.launchAtStartup);
+        applyMcpConfigUseCase(appConfig.mcp);
       }
       saveApplicationSettingsUseCase();
     }, [appConfig]);

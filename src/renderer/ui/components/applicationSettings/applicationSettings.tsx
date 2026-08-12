@@ -16,7 +16,7 @@ type Deps = {
   useApplicationSettingsViewModel: ApplicationSettingsViewModelHook;
 }
 
-type SettingsTab = 'general' | 'appearance' | 'backup';
+type SettingsTab = 'general' | 'appearance' | 'backup' | 'ai';
 
 const themeOverrideVars: { key: string; name: string }[] = [
   { key: 'background', name: 'Background' },
@@ -57,6 +57,7 @@ export function createApplicationSettingsComponent({
       { id: 'general', name: 'General' },
       { id: 'appearance', name: 'Appearance' },
       { id: 'backup', name: 'Backup' },
+      { id: 'ai', name: 'AI / MCP' },
     ];
 
     return (<SettingsScreen title='Application Settings' onOkClick={onOkClickHandler} onCancelClick={onCancelClickHandler}>
@@ -246,6 +247,62 @@ export function createApplicationSettingsComponent({
                 {' Back up when the app closes'}
               </label>
             </div>
+          </SettingBlock>
+        </div>
+
+        <div className={clsx(styles['settings-tab-panel'], tab === 'ai' && styles['is-active'])}>
+          <SettingBlock
+            titleForId='mcp-enabled'
+            title='MCP Server'
+            moreInfo='Expose a local MCP endpoint so AI assistants (Claude Code, Claude Desktop, and other MCP clients) can read and update your projects, notes and to-dos. The server only listens on this computer (127.0.0.1) and requires the token below.'
+          >
+            <div>
+              <label>
+                <input type='checkbox' id='mcp-enabled' checked={appConfig.mcp.enabled} onChange={_ => updateSettings({
+                  ...appConfig,
+                  mcp: {
+                    ...appConfig.mcp,
+                    enabled: !appConfig.mcp.enabled,
+                    token: appConfig.mcp.token || crypto.randomUUID()
+                  }
+                })} />
+                {' Enable the MCP server'}
+              </label>
+            </div>
+          </SettingBlock>
+          <SettingBlock
+            titleForId='mcp-port'
+            title='Port'
+          >
+            <input type='number' id='mcp-port' value={appConfig.mcp.port} onChange={e => updateSettings({
+              ...appConfig,
+              mcp: { ...appConfig.mcp, port: Number.parseInt(e.target.value) || 39587 }
+            })} />
+          </SettingBlock>
+          <SettingBlock
+            titleForId='mcp-token'
+            title='Access Token'
+            moreInfo='Clients must send this as a Bearer token. Regenerate to revoke access.'
+          >
+            <input type='text' id='mcp-token' readOnly value={appConfig.mcp.token} placeholder='(generated when enabled)' />
+            <button onClick={() => updateSettings({
+              ...appConfig,
+              mcp: { ...appConfig.mcp, token: crypto.randomUUID() }
+            })}>Regenerate</button>
+          </SettingBlock>
+          <SettingBlock
+            title='Client Configuration'
+            moreInfo='Add this to your MCP client. For Claude Code: claude mcp add freeter --transport http http://127.0.0.1:PORT/mcp --header "Authorization: Bearer TOKEN" (replace PORT and TOKEN).'
+          >
+            <textarea readOnly rows={6} value={JSON.stringify({
+              mcpServers: {
+                freeter: {
+                  type: 'http',
+                  url: `http://127.0.0.1:${appConfig.mcp.port}/mcp`,
+                  headers: { Authorization: `Bearer ${appConfig.mcp.token || '<enable to generate token>'}` }
+                }
+              }
+            }, null, 2)} />
           </SettingBlock>
         </div>
       </div>
