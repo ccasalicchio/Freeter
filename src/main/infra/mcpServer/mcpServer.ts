@@ -20,7 +20,7 @@ import { ObjectManager } from '@common/base/objectManager';
 import { logToFile } from '@/infra/logger/fileLog';
 import {
   parseAppState, listProjects, listWorkflows, listWidgets, getWidget, createWidgetInState,
-  switchProjectInState, switchWorkflowInState, searchNames, listContentWidgets
+  switchProjectInState, switchWorkflowInState, reorderWorkflowsInState, searchNames, listContentWidgets
 } from '@/infra/mcpServer/mcpState';
 
 export interface McpServerConfig {
@@ -184,10 +184,17 @@ export function createFreeterMcpServer({ appDataStorage, widgetDataStorageManage
     });
 
     server.registerTool('freeter_create_widget', {
-      description: 'Creates a widget in a workflow. Supported types: note (content via freeter_write_note afterwards), to-do-list, link-opener (settings: {"urls": ["https://…"]}), webhook-button (settings: {"url": "https://…"}).',
+      description: 'Creates a widget in a workflow. Common types and settings: note (content via freeter_write_note afterwards), to-do-list, link-opener {"urls": [...]}, webhook-button {"url"}, http-monitor {"url","method","intervalSecs","expectStatus"}, file-explorer {"folderPath","showHidden","sortBy","refreshSecs"}, git-status {"repoPath","refreshSecs"}, github-ci/github-prs {"repo","token","refreshSecs"}, app-launcher {"appPath","args"}, webpage {"url"}, timer, commander {"cmdLines","cwd"}.',
       inputSchema: {
         workflowId: z.string().describe('Workflow id to add the widget to'),
-        type: z.enum(['note', 'to-do-list', 'link-opener', 'webhook-button']).describe('Widget type'),
+        type: z.enum([
+          'note', 'to-do-list', 'link-opener', 'webhook-button',
+          'file-explorer', 'http-monitor', 'app-launcher', 'git-status',
+          'github-ci', 'github-prs', 'webpage', 'web-query', 'commander',
+          'timer', 'image-media', 'api-request', 'code-snippet', 'calendar',
+          'kanban-board', 'rss-feed-reader', 'system-monitor', 'clipboard-history',
+          'file-opener'
+        ]).describe('Widget type'),
         name: z.string().describe('Widget display name'),
         settings: z.record(z.string(), z.unknown()).optional().describe('Type-specific settings (optional)')
       }
@@ -252,6 +259,25 @@ export function createFreeterMcpServer({ appDataStorage, widgetDataStorageManage
       }
       await writeState(state);
       return textResult('Switched workflow.');
+    });
+
+    server.registerTool('freeter_reorder_workflows', {
+      description: 'Reorders the workflow tabs of a project. Pass the complete list of the project\'s workflow ids in the desired order (a permutation of the current ids from freeter_list_workflows).',
+      inputSchema: {
+        projectId: z.string().describe('Project id'),
+        workflowIds: z.array(z.string()).describe('All workflow ids of the project, in the new tab order')
+      }
+    }, async ({ projectId, workflowIds }) => {
+      const state = await readState();
+      if (!state) {
+        return errorResult('App state not available.');
+      }
+      const err = reorderWorkflowsInState(state, projectId, workflowIds);
+      if (err) {
+        return errorResult(`Reorder failed: ${err}. Use freeter_list_workflows to get the current ids.`);
+      }
+      await writeState(state);
+      return textResult('Workflows reordered.');
     });
 
     return server;

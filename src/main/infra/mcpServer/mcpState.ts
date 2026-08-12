@@ -150,6 +150,34 @@ export function switchWorkflowInState(state: AppStateDoc, workflowId: string): b
   return true;
 }
 
+/**
+ * Reorders a project's workflow tabs. orderedWorkflowIds must be a permutation
+ * of the project's current workflow ids; returns an error string otherwise.
+ */
+export function reorderWorkflowsInState(state: AppStateDoc, projectId: string, orderedWorkflowIds: string[]): string | undefined {
+  const project = state.obj.entities.projects[projectId];
+  if (!project) {
+    return `project ${projectId} not found`;
+  }
+  const current = project.workflowIds;
+  if (orderedWorkflowIds.length !== current.length) {
+    return `expected ${current.length} workflow ids, got ${orderedWorkflowIds.length}`;
+  }
+  const currentSet = new Set(current);
+  const seen = new Set<string>();
+  for (const id of orderedWorkflowIds) {
+    if (!currentSet.has(id)) {
+      return `workflow ${id} is not in this project`;
+    }
+    if (seen.has(id)) {
+      return `workflow ${id} appears more than once`;
+    }
+    seen.add(id);
+  }
+  (project as { workflowIds: string[] }).workflowIds = [...orderedWorkflowIds];
+  return undefined;
+}
+
 export interface SearchHit {
   kind: 'project' | 'workflow' | 'widget';
   id: string;
