@@ -186,6 +186,11 @@ export const ipcHttpRequestChannel = makeIpcChannelName('http-request');
 export type IpcHttpRequestArgs = [config: HttpRequestConfig];
 export type IpcHttpRequestRes = HttpResponse;
 
+/** Apply MCP server config (start/stop/restart the localhost MCP endpoint). */
+export const ipcSetMcpConfigChannel = makeIpcChannelName('set-mcp-config');
+export type IpcSetMcpConfigArgs = [config: { enabled: boolean; port: number; token: string }];
+export type IpcSetMcpConfigRes = void;
+
 /** Enable/disable launching Freeter at OS startup. */
 export const ipcSetLoginItemSettingsChannel = makeIpcChannelName('set-login-item-settings');
 export type IpcSetLoginItemSettingsArgs = [openAtLogin: boolean];

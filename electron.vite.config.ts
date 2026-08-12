@@ -25,7 +25,9 @@ const rendererDefines = {
 
 export default defineConfig({
   main: {
-    plugins: [externalizeDepsPlugin()],
+    // the packaged app ships no node_modules: bundle the MCP SDK + zod
+    // into main.js instead of externalizing them
+    plugins: [externalizeDepsPlugin({ exclude: ['@modelcontextprotocol/sdk', 'zod'] })],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, 'src/main'),

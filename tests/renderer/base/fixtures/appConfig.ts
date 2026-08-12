@@ -19,6 +19,7 @@ const appConfig: AppConfig = {
     onClose: false
   },
   launchAtStartup: false,
+  mcp: { enabled: false, port: 39587, token: '' },
   themeOverrides: {}
 }
 

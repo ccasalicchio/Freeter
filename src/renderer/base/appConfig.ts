@@ -12,16 +12,27 @@ export interface AutoBackupConfig {
   onClose: boolean;
 }
 
+export interface McpConfig {
+  enabled: boolean;
+  port: number;
+  token: string;
+}
+
 export interface AppConfig {
   mainHotkey: string;
   memSaver: MemSaverConfigApp;
   uiTheme: string;
   autoBackup: AutoBackupConfig;
   launchAtStartup: boolean;
+  mcp: McpConfig;
   /** per-variable overrides applied on top of the selected theme */
   themeOverrides: Record<string, string>;
 }
 
 export function createDefaultAutoBackupConfig(): AutoBackupConfig {
   return { enabled: false, folder: '', onClose: false };
+}
+
+export function createDefaultMcpConfig(): McpConfig {
+  return { enabled: false, port: 39587, token: '' };
 }
