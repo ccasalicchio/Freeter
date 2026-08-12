@@ -194,7 +194,7 @@ export type IpcExecFileRes = ExecFileResult;
 
 /** Apply MCP server config (start/stop/restart the localhost MCP endpoint). */
 export const ipcSetMcpConfigChannel = makeIpcChannelName('set-mcp-config');
-export type IpcSetMcpConfigArgs = [config: { enabled: boolean; port: number; token: string }];
+export type IpcSetMcpConfigArgs = [config: { enabled: boolean; port: number; token: string; allowExternal?: boolean }];
 export type IpcSetMcpConfigRes = void;
 
 /** Enable/disable launching Freeter at OS startup. */

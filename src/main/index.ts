@@ -198,7 +198,7 @@ if (!app.requestSingleInstanceLock()) {
       const appJson = await appDataStorage.getText('app');
       const mcpCfg = appJson ? JSON.parse(appJson)?.obj?.ui?.appConfig?.mcp : undefined;
       if (mcpCfg && typeof mcpCfg === 'object') {
-        mcpServer.start({ enabled: !!mcpCfg.enabled, port: Number(mcpCfg.port) || 39587, token: String(mcpCfg.token ?? '') });
+        mcpServer.start({ enabled: !!mcpCfg.enabled, port: Number(mcpCfg.port) || 39587, token: String(mcpCfg.token ?? ''), allowExternal: !!mcpCfg.allowExternal });
       }
     } catch {
       // malformed state: leave the MCP server off

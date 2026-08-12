@@ -16,6 +16,8 @@ export interface McpConfig {
   enabled: boolean;
   port: number;
   token: string;
+  /** also accept connections from WSL / other devices (binds all interfaces) */
+  allowExternal: boolean;
 }
 
 export interface ShortcutsConfig {
@@ -44,7 +46,7 @@ export function createDefaultAutoBackupConfig(): AutoBackupConfig {
 }
 
 export function createDefaultMcpConfig(): McpConfig {
-  return { enabled: false, port: 39587, token: '' };
+  return { enabled: false, port: 39587, token: '', allowExternal: false };
 }
 
 export function createDefaultShortcutsConfig(): ShortcutsConfig {

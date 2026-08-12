@@ -7,7 +7,7 @@ import { Controller } from '@/controllers/controller';
 import { ipcSetMcpConfigChannel, IpcSetMcpConfigArgs, IpcSetMcpConfigRes } from '@common/ipc/channels';
 
 type Deps = {
-  applyMcpConfig: (config: { enabled: boolean; port: number; token: string }) => void;
+  applyMcpConfig: (config: { enabled: boolean; port: number; token: string; allowExternal?: boolean }) => void;
 }
 
 export function createMcpConfigControllers({ applyMcpConfig }: Deps): [

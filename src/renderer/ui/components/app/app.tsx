@@ -12,6 +12,7 @@ import {SvgIcon} from '@/ui/components/basic/svgIcon';
 import { manage24Svg } from '@/ui/assets/images/appIcons';
 import { InAppNote } from '@/ui/components/basic/inAppNote';
 import { UITheme } from '@/ui/components/app/uiTheme/uiTheme';
+import { installDragScroll } from '@/ui/dragScroll';
 
 type Deps = {
   TopBar: React.FC;
@@ -30,6 +31,7 @@ export function createAppComponent({
 }: Deps) {
   function App() {
     const {modalScreens, hasModalScreens, hasProjects, contextMenuHandler, uiThemeId, themeOverrides, hasTopBar} = useAppViewModel();
+    React.useEffect(() => installDragScroll(), []);
     return (
       <div onContextMenu={contextMenuHandler}>
         <UITheme themeId={uiThemeId} overrides={themeOverrides} />

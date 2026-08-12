@@ -19,7 +19,7 @@ const appConfig: AppConfig = {
     onClose: false
   },
   launchAtStartup: false,
-  mcp: { enabled: false, port: 39587, token: '' },
+  mcp: { enabled: false, port: 39587, token: '', allowExternal: false },
   shortcuts: { projectSwitch: 'ctrl', workflowSwitch: 'alt', editModeToggle: 'ctrl+e' },
   themeOverrides: {}
 }
