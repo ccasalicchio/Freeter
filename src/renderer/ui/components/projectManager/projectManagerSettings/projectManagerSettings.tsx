@@ -76,6 +76,21 @@ export function ProjectManagerSettings(props: ProjectManagerSettingsProps) {
         }} />
       </SettingBlock>
       <SettingBlock
+        titleForId='project-archived'
+        title='Archived'
+        moreInfo='Archived projects are hidden from the project switcher and keyboard shortcuts, but all their workflows and widget data are kept. Unarchive here anytime.'
+      >
+        <div>
+          <label>
+            <input type="checkbox" id="project-archived" checked={settings.isArchived ?? false} onChange={_ => updateSettings({
+              ...settings,
+              isArchived: !(settings.isArchived ?? false)
+            })} />
+            {' Archive this project'}
+          </label>
+        </div>
+      </SettingBlock>
+      <SettingBlock
         title='Memory Saver'
         moreInfo='Freeter frees up memory from inactive workflows.
                   This gives active workflows more computer resources and keeps Freeter

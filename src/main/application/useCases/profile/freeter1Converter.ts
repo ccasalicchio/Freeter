@@ -50,6 +50,7 @@ interface Freeter1Project {
   id: number;
   settings: {
     name?: string;
+    isHidden?: boolean;
     icon?: string;
     iconColor?: string;
     iconLink?: string;
@@ -281,6 +282,7 @@ export function convertFreeter1Data(
       settings: {
         memSaver: {},
         name: p.settings?.name || 'Imported Project',
+        ...(p.settings?.isHidden ? { isArchived: true } : {}),
         ...((iconImage || iconColor) ? { icon: { glyph: iconImage ? '' : 'folder', color: iconColor, image: iconImage } } : {})
       },
       workflowIds,

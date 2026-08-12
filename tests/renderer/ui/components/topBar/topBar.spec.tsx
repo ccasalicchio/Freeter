@@ -36,6 +36,7 @@ async function setup(
   });
 
   const TopBar = createTopBarComponent({
+    AppToolbar: () => null,
     EditModeToggle: mockEditModeToggle,
     ProjectSwitcher: mockProjectSwitcher,
     ManageProjectsButton: mockManageProjectsButton,

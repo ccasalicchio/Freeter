@@ -114,6 +114,7 @@ import { createLoginItemProvider } from '@/infra/loginItemProvider/loginItemProv
 import { createHttpProvider } from '@/infra/httpProvider/httpProvider';
 import { createMcpConfigProvider } from '@/infra/mcpConfigProvider/mcpConfigProvider';
 import { createFindBarComponent } from '@/ui/components/findBar/findBar';
+import { createAppToolbarComponent } from '@/ui/components/appToolbar/appToolbar';
 import { createCloseCommandPaletteUseCase } from '@/application/useCases/commandPalette/closeCommandPalette';
 import { createOpenCommandPaletteUseCase } from '@/application/useCases/commandPalette/openCommandPalette';
 import { createOpenSponsorshipUrlUseCase } from '@/application/useCases/about/openSponsorshipUrl';
@@ -533,6 +534,15 @@ async function createUseCases(store: ReturnType<typeof createStore>) {
 
     openCommandPaletteUseCase,
     closeCommandPaletteUseCase,
+    importProfileUseCase: async () => {
+      const result = await profileProvider.importProfile();
+      if (result) {
+        window.location.reload();
+      }
+    },
+    exportProfileUseCase: async () => {
+      await profileProvider.exportProfile();
+    },
 
     getMainHotkeyOptionsUseCase,
     openApplicationSettingsUseCase,
@@ -630,7 +640,9 @@ function createUI(stateHooks: ReturnType<typeof createUiHooks>, useCases: Awaite
   })
 
   const useTopBarViewModel = createTopBarViewModelHook(deps);
+  const AppToolbar = createAppToolbarComponent(deps);
   const TopBar = createTopBarComponent({
+    AppToolbar,
     EditModeToggle,
     ProjectSwitcher,
     ManageProjectsButton,
