@@ -7,6 +7,7 @@ import { Button, ReactComponent, WidgetReactComponentProps, glyphsById } from '@
 import { Settings } from './settings';
 import styles from './widget.module.scss';
 import { useState } from 'react';
+import { resolveImageSrc } from '@/base/imageSrc';
 
 /** splits an args string honoring double-quoted segments */
 export function parseArgs(args: string): string[] {
@@ -28,7 +29,7 @@ function WidgetComp({settings, widgetApi}: WidgetReactComponentProps<Settings>) 
   }
 
   const glyphSvg = glyphsById[settings.glyph]?.svg;
-  const iconUrl = (!iconFailed && settings.customIcon) ? settings.customIcon : undefined;
+  const iconUrl = (!iconFailed && settings.customIcon) ? resolveImageSrc(settings.customIcon) : undefined;
 
   return (
     <Button

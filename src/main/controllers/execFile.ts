@@ -16,11 +16,12 @@ export function createExecFileControllers(): [
     channel: ipcExecFileChannel,
     handle: (_event, cmd, args, cwd) => new Promise(resolve => {
       execFile(cmd, args, { cwd, timeout: 15000, maxBuffer: maxOutput, windowsHide: true }, (err, stdout, stderr) => {
+        const errCode = err ? (err as NodeJS.ErrnoException).code : undefined;
         resolve({
-          code: err ? ((err as NodeJS.ErrnoException & { code?: number | string }).code as number | null ?? 1) : 0,
+          code: err ? (typeof errCode === 'number' ? errCode : 1) : 0,
           stdout: String(stdout ?? ''),
           stderr: String(stderr ?? ''),
-          ...(err && typeof (err as NodeJS.ErrnoException).code === 'string' ? { error: (err as Error).message } : {})
+          ...(err && typeof errCode === 'string' ? { error: (err as Error).message } : {})
         });
       });
     })

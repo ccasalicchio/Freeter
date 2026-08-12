@@ -8,6 +8,7 @@ import clsx from 'clsx';
 import styles from './projectSwitcher.module.scss';
 import { SvgIcon } from '@/ui/components/basic/svgIcon';
 import { glyphsById } from '@/ui/assets/images/glyphs';
+import { resolveImageSrc } from '@/base/imageSrc';
 
 type Deps = {
   useProjectSwitcherViewModel: ProjectSwitcherViewModelHook
@@ -31,11 +32,8 @@ export function createProjectSwitcherComponent({
     const currentSettings = projects.find(p => p.id === currentProjectId)?.settings;
     const currentIcon = currentSettings?.icon;
     const currentGlyph = currentIcon && !currentIcon.image ? glyphsById[currentIcon.glyph] : undefined;
-    // a relative logo path resolves against the project's root folder
-    let iconImageSrc = currentIcon?.image || '';
-    if (iconImageSrc && !/^([a-zA-Z]+:|\/|\\)/.test(iconImageSrc) && currentSettings?.rootFolder) {
-      iconImageSrc = 'file:///' + (currentSettings.rootFolder + '/' + iconImageSrc).replace(/\\/g, '/');
-    }
+    // local logo paths (absolute or root-folder-relative) are served via the app protocol
+    const iconImageSrc = resolveImageSrc(currentIcon?.image || '', currentSettings?.rootFolder);
 
     return (<>
       {iconImageSrc && (

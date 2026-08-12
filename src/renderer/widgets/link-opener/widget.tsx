@@ -8,6 +8,7 @@ import { Settings } from './settings';
 import { openLinkSvg } from '@/widgets/link-opener/icons';
 import styles from './widget.module.scss';
 import { useMemo, useState } from 'react';
+import { resolveImageSrc } from '@/base/imageSrc';
 
 function faviconUrl(url: string): string {
   try {
@@ -28,7 +29,7 @@ function WidgetComp({settings, widgetApi}: WidgetReactComponentProps<Settings>) 
       return '';
     }
     if (settings.iconMode === 'custom' && settings.customIcon) {
-      return settings.customIcon;
+      return resolveImageSrc(settings.customIcon);
     }
     if (settings.iconMode === 'favicon' && urls[0]) {
       return faviconUrl(urls[0]);

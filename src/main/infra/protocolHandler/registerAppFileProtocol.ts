@@ -7,7 +7,7 @@ import { join } from 'path';
 import { pathToFileURL } from 'url';
 import { net } from 'electron';
 import { registerProtocol } from '@/infra/protocolHandler/protocolHandler';
-import { hostFreeterApp, schemeFreeterFile } from '@common/infra/network';
+import { hostFreeterApp, hostLocalFile, schemeFreeterFile } from '@common/infra/network';
 
 export function registerAppFileProtocol(devMode: boolean) {
   let fetchAppFile: (pathname: string) => Promise<Response>;
@@ -16,10 +16,20 @@ export function registerAppFileProtocol(devMode: boolean) {
   } else {
     fetchAppFile = pathname => net.fetch(pathToFileURL(join(__dirname, '..', 'renderer', pathname)).toString())
   }
+  const reImageFile = /\.(png|jpe?g|gif|webp|svg|ico|bmp|avif)$/i;
   registerProtocol(
     schemeFreeterFile,
     req => {
       const urlObj = new URL(req.url);
+      if (urlObj.host === hostLocalFile) {
+        // serves user-selected local images (project logos, custom icons);
+        // restricted to image files
+        const localPath = decodeURIComponent(urlObj.pathname.replace(/^\//, ''));
+        if (!reImageFile.test(localPath)) {
+          return new Response(null, { status: 403 });
+        }
+        return net.fetch(pathToFileURL(localPath).toString());
+      }
       if (urlObj.host !== hostFreeterApp) {
         return new Response(null, { status: 404 });
       }
