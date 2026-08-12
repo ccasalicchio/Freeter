@@ -3,7 +3,7 @@
  * GNU General Public License v3.0 or later (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
  */
 
-import { parseAppState, listProjects, listWorkflows, listWidgets, createWidgetInState, switchProjectInState, switchWorkflowInState, searchNames, AppStateDoc } from '@/infra/mcpServer/mcpState';
+import { parseAppState, listProjects, listWorkflows, listWidgets, createWidgetInState, switchProjectInState, switchWorkflowInState, reorderWorkflowsInState, searchNames, AppStateDoc } from '@/infra/mcpServer/mcpState';
 
 function fixtureState(): AppStateDoc {
   return {
@@ -79,6 +79,22 @@ describe('mcpState v2', () => {
     expect(state.obj.ui.projectSwitcher?.currentProjectId).toBe('P1');
     expect(state.obj.entities.projects['P1'].currentWorkflowId).toBe('W1');
     expect(switchWorkflowInState(state, 'NOPE')).toBe(false);
+  })
+
+  it('reorders workflows with permutation validation', () => {
+    const state = fixtureState();
+    const p1 = state.obj.entities.projects['P1'] as { workflowIds: string[] };
+    p1.workflowIds = ['W1', 'W2', 'W3'];
+
+    expect(reorderWorkflowsInState(state, 'P1', ['W3', 'W1', 'W2'])).toBeUndefined();
+    expect(state.obj.entities.projects['P1'].workflowIds).toEqual(['W3', 'W1', 'W2']);
+
+    expect(reorderWorkflowsInState(state, 'NOPE', ['W1'])).toMatch(/not found/);
+    expect(reorderWorkflowsInState(state, 'P1', ['W1', 'W2'])).toMatch(/expected 3/);
+    expect(reorderWorkflowsInState(state, 'P1', ['W1', 'W2', 'WX'])).toMatch(/not in this project/);
+    expect(reorderWorkflowsInState(state, 'P1', ['W1', 'W1', 'W2'])).toMatch(/more than once/);
+    // failed reorders leave the order untouched
+    expect(state.obj.entities.projects['P1'].workflowIds).toEqual(['W3', 'W1', 'W2']);
   })
 
   it('searches names across projects, workflows and widgets', () => {
