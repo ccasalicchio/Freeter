@@ -28,7 +28,8 @@ async function setup(
   const useAppState = createAppStateHook(appStoreForUi);
   const processProviderMock: ProcessProvider = {
     getProcessInfo: () => opts?.processInfo || fixtureProcessInfoLinux(),
-    getSystemMetrics: jest.fn()
+    getSystemMetrics: jest.fn(),
+    execFile: jest.fn(async () => ({ code: 0, stdout: '', stderr: '' }))
   }
 
   const getMainHotkeyOptionsUseCase = createGetMainHotkeyOptionsUseCase({

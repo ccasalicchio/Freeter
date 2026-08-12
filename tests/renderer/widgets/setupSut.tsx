@@ -110,6 +110,7 @@ export function setupWidgetSut<T>(reactComp: ReactComponent<WidgetReactComponent
     process: {
       getProcessInfo: jest.fn(()=>fixtureProcessInfoLinux({browser: {name: 'Chrome', ver: '1.2.3'}, os: {name: 'linux', ver: '5.6.7'}})),
       getSystemMetrics: jest.fn(),
+      execFile: jest.fn(async () => ({ code: 0, stdout: '', stderr: '' })),
       ...mockWidgetApi.process
     },
     shell: {

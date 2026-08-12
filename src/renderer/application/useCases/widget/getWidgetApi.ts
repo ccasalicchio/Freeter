@@ -68,7 +68,8 @@ function _createWidgetApiFactory({
       },
       process: () => ({
         getProcessInfo: () => processProvider.getProcessInfo(),
-        getSystemMetrics: () => processProvider.getSystemMetrics()
+        getSystemMetrics: () => processProvider.getSystemMetrics(),
+        execFile: (cmd, args, cwd) => processProvider.execFile(cmd, args, cwd)
       }),
       http: () => ({
         request: (config) => httpProvider.request(config)

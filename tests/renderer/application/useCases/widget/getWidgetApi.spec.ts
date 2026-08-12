@@ -25,7 +25,8 @@ function setup() {
   }
   const processProvider: jest.MockedObject<ProcessProvider> = {
     getProcessInfo: jest.fn(),
-    getSystemMetrics: jest.fn()
+    getSystemMetrics: jest.fn(),
+    execFile: jest.fn(async () => ({ code: 0, stdout: '', stderr: '' }))
   }
   const shellProvider = mockShellProvider({
     openApp: jest.fn(),
