@@ -238,6 +238,7 @@ export function createWorkflowSwitcherViewModelHook({
       topBarIsHidden,
       editTogglePos,
       prjSwitcherPos,
+      currentProjectAccentColor,
     } = useAppState(state => {
       const { editMode: isEditMode } = state.ui;
       const { currentProjectId } = state.ui.projectSwitcher;
@@ -252,6 +253,7 @@ export function createWorkflowSwitcherViewModelHook({
       const topBarIsHidden = !state.ui.topBar;
       const editTogglePos = state.ui.editTogglePos;
       const prjSwitcherPos = state.ui.projectSwitcher.pos;
+      const currentProjectAccentColor = state.entities.projects[currentProjectId]?.settings.accentColor;
       return {
         isEditMode,
         currentProjectId,
@@ -266,6 +268,7 @@ export function createWorkflowSwitcherViewModelHook({
         topBarIsHidden,
         editTogglePos,
         prjSwitcherPos,
+        currentProjectAccentColor,
       }
     })
 
@@ -419,6 +422,7 @@ export function createWorkflowSwitcherViewModelHook({
       showPrjSwitcherRight,
       showEditToggleLeft,
       showEditToggleRight,
+      currentProjectAccentColor,
     }
   }
 

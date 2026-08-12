@@ -15,6 +15,7 @@ import { GetWidgetsInCurrentWorkflowUseCase } from '@/application/useCases/widge
 
 import { SafeStorageRenderer } from '@/infra/safeStorageProvider/safeStorageProvider';
 import { HttpProvider } from '@/infra/httpProvider/httpProvider';
+import { FsProvider } from '@/infra/fsProvider/fsProvider';
 
 interface Deps {
   clipboardProvider: ClipboardProvider;
@@ -25,10 +26,12 @@ interface Deps {
   getWidgetsInCurrentWorkflowUseCase: GetWidgetsInCurrentWorkflowUseCase;
   safeStorageProvider: SafeStorageRenderer;
   httpProvider: HttpProvider;
+  fsProvider: FsProvider;
 }
 function _createWidgetApiFactory({
   clipboardProvider,
   httpProvider,
+  fsProvider,
   processProvider,
   shellProvider,
   widgetDataStorageManager,
@@ -73,6 +76,9 @@ function _createWidgetApiFactory({
       }),
       http: () => ({
         request: (config) => httpProvider.request(config)
+      }),
+      fs: () => ({
+        listDir: (dirPath) => fsProvider.listDir(dirPath)
       }),
       shell: () => ({
         openApp: (appPath, args) => shellProvider.openApp(appPath, args),

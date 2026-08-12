@@ -5,7 +5,9 @@ import gitStatus from './git-status';
 import githubCi from './github-ci';
 import githubPrs from './github-prs';
 import commander from './commander';
+import fileExplorer from './file-explorer';
 import fileOpener from './file-opener';
+import httpMonitor from './http-monitor';
 import linkOpener from './link-opener';
 import note from './note';
 import timer from './timer';
@@ -29,7 +31,9 @@ const builtinWidgetTypes = [
   githubCi,
   githubPrs,
   commander,
+  fileExplorer,
   fileOpener,
+  httpMonitor,
   linkOpener,
   note,
   timer,

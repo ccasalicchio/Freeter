@@ -13,6 +13,7 @@ import { WidgetContextMenuFactory } from '@/base/widget';
 import { ActionBarItems } from './actionBar';
 import { ProcessInfo, SystemMetrics } from '@common/base/process';
 import { HttpRequestConfig, HttpResponse } from '@common/base/http';
+import { FsListDirResult } from '@common/base/fsEntries';
 import { ExecFileResult } from '@common/base/exec';
 import { OpenDialogResult, OpenDirDialogConfig, OpenFileDialogConfig } from '@common/base/dialog';
 
@@ -73,6 +74,10 @@ interface WidgetApiModules {
   };
   readonly http: {
     request: (config: HttpRequestConfig) => Promise<HttpResponse>;
+  };
+  /** Read-only file system access (directory listing). */
+  readonly fs: {
+    listDir: (dirPath: string) => Promise<FsListDirResult>;
   };
   readonly shell: {
     openApp: (appPath: string, args?: string[]) => Promise<void>;

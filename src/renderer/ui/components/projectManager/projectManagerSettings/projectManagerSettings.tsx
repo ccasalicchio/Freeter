@@ -7,7 +7,7 @@ import { convertStrToUndBool, convertStrToUndNum, convertUndBoolToStr, convertUn
 import { sanitizePartialMemSaverConfig } from '@/base/memSaver';
 import { ProjectManagerSettingsProps, useProjectManagerSettingsViewModel } from '@/ui/components/projectManager/projectManagerSettings/projectManagerSettingsViewModel';
 import { Button, SettingBlock } from '@/widgets/appModules';
-import { IconPicker } from '@/ui/components/basic/iconPicker/iconPicker';
+import { ColorPicker, IconPicker } from '@/ui/components/basic/iconPicker/iconPicker';
 
 export function ProjectManagerSettings(props: ProjectManagerSettingsProps) {
   const {
@@ -74,6 +74,20 @@ export function ProjectManagerSettings(props: ProjectManagerSettingsProps) {
             updateSettings({ ...settings, icon: { glyph: settings.icon?.glyph ?? '', color: settings.icon?.color ?? '', image: file } });
           }
         }} />
+      </SettingBlock>
+      <SettingBlock
+        title='Accent Color (optional)'
+        moreInfo='Shown as a subtle underline on the workflow tab bar while this project is open. Pick the first (uncolored) swatch for none.'
+      >
+        <ColorPicker
+          color={settings.accentColor ?? ''}
+          noneTitle='None'
+          ariaLabel='Accent Color'
+          onSelectColor={color => updateSettings({
+            ...settings,
+            accentColor: color || undefined
+          })}
+        />
       </SettingBlock>
       <SettingBlock
         titleForId='project-archived'

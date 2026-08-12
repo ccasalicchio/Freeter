@@ -81,6 +81,7 @@ import { createProfileControllers } from '@/controllers/profile';
 import { createFindInPageControllers } from '@/controllers/findInPage';
 import { createLoginItemControllers } from '@/controllers/loginItem';
 import { createHttpRequestControllers } from '@/controllers/httpRequest';
+import { createFsListDirControllers } from '@/controllers/fsListDir';
 import { createMcpConfigControllers } from '@/controllers/mcpConfig';
 import { createExecFileControllers } from '@/controllers/execFile';
 import { createFreeterMcpServer } from '@/infra/mcpServer/mcpServer';
@@ -311,7 +312,8 @@ if (!app.requestSingleInstanceLock()) {
       ...createMcpConfigControllers({
         applyMcpConfig: (config) => mcpServer.start(config)
       }),
-      ...createExecFileControllers()
+      ...createExecFileControllers(),
+      ...createFsListDirControllers()
     ])
 
     const [windowStore] = createWindowStore({

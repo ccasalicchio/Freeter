@@ -123,6 +123,10 @@ export function setupWidgetSut<T>(reactComp: ReactComponent<WidgetReactComponent
       request: jest.fn(async () => ({ ok: true, status: 200, statusText: 'OK', body: '' })),
       ...mockWidgetApi.http
     },
+    fs: {
+      listDir: jest.fn(async () => ({ ok: true, entries: [] })),
+      ...mockWidgetApi.fs
+    },
     terminal: {
       execCmdLines: jest.fn(),
       ...mockWidgetApi.terminal

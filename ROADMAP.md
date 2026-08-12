@@ -4,7 +4,7 @@ High-level milestone view for the Freeter v3 upgrade.
 
 ---
 
-## Status — updated 2026-08-11
+## Status — updated 2026-08-12
 
 ### ✅ Done (verified working in the installed app; all merged to `master`)
 
@@ -43,25 +43,32 @@ High-level milestone view for the Freeter v3 upgrade.
   highlighting, themed typography, Content Style setting), clickable links
 - Global find-in-page (Ctrl+F) across all widgets; CodeMirror search in editors
 - Keyboard shortcuts: Ctrl/Cmd+1-9 projects, Alt+1-9 workflows, Ctrl/Cmd+E edit
+- Settings → Shortcuts tab (customizable project/workflow/edit-mode bindings)
+- Settings → AI tab: **Freeter MCP server** (streamable-HTTP, bearer-token,
+  11 tools over projects/workflows/widgets/notes/todos) with optional
+  WSL/network access (binds 0.0.0.0; loopback-only by default) — verified
+  end-to-end from Claude Code in WSL
+- Developer widgets: **Webhook Button**, **Git Status**, **GitHub CI**,
+  **GitHub PRs** (plus earlier API Client, Code Snippet, System Monitor)
+- Project archiving (hide without deleting); archived projects excluded from
+  switcher, palette and shortcuts
+- Top-bar quick-actions toolbar (palette, apps, import/export, settings)
+- Click-hold-and-drag scrolling on all scrollable areas (tabs, shelf, lists)
 
 ### 🔜 Pending (specced, not yet built)
 
-- **Freeter MCP server** — localhost streamable-HTTP, token-authed tools over
-  projects/notes/todos so AI clients can drive the dashboard
-  (see docs/developer-features-and-mcp-plan.md)
-- **Developer widgets**: webhook button (n8n/Zapier/Slack), git repo status,
-  CI status, PR/issue list, HTTP monitor, port watcher, snippet runner,
-  reminders (same doc, ranked)
-- **Settings → Shortcuts tab** (customizable keybindings; importer mapping of
-  v1 per-project/tab shortcut fields)
-- **File Explorer widget** (v1 parity; rules-based listing + file ops)
+- **Monitoring & reporting integrations** — Prometheus / Grafana /
+  Alertmanager widgets, generic JSON metric widget, alert webhook ingest +
+  desktop notifications (see docs/monitoring-integrations-plan.md)
+- Developer widgets remainder: port watcher, reminders
 - **Shelf bulk-pin** from the Freeter 1 Library
 - Icon polish: favicon offline caching, per-URL icons on multi-URL tiles
 - Auto-update / release channel wiring (electron-builder publish is configured
-  but unused); code signing for the MSI
+  but unused); code signing for the MSI (blocked: requires a purchased
+  code-signing certificate)
 - Remaining roadmap phases below that have not shipped: enhanced Browser widget
   (Phase 6 items: address bar, downloads, reader mode), multi-window,
-  per-project accent color (Phase 9 remainder), plugin discovery (Phase 10)
+  plugin discovery (Phase 10)
 
 See **[docs/v1-v2-parity-plan.md](docs/v1-v2-parity-plan.md)** and
 **[docs/developer-features-and-mcp-plan.md](docs/developer-features-and-mcp-plan.md)**
