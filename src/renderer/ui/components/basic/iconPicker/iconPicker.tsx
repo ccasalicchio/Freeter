@@ -21,6 +21,40 @@ export const iconColors: { id: string; name: string; value: string }[] = [
   { id: 'pink', name: 'Pink', value: '#D6409F' },
 ];
 
+export interface ColorPickerProps {
+  color: string;
+  onSelectColor: (color: string) => void;
+  /** label of the empty-value preset swatch (default 'Theme default') */
+  noneTitle?: string;
+  ariaLabel?: string;
+}
+
+/** a row of preset color swatches + a custom color input; the first swatch clears the color */
+export function ColorPicker({ color, onSelectColor, noneTitle, ariaLabel }: ColorPickerProps) {
+  return (
+    <div className={styles['color-row']} role='listbox' aria-label={ariaLabel ?? 'Color'}>
+      {iconColors.map(c => (
+        <button
+          key={c.id}
+          type='button'
+          role='option'
+          aria-selected={color === c.value}
+          title={c.value === '' ? (noneTitle ?? c.name) : c.name}
+          className={clsx(styles['color-cell'], color === c.value && styles['is-selected'])}
+          style={{ background: c.value || 'var(--freeter-componentColor)' }}
+          onClick={() => onSelectColor(c.value)}
+        />
+      ))}
+      <input
+        type='color'
+        title='Custom color'
+        value={/^#[0-9a-fA-F]{6}$/.test(color) ? color : '#888888'}
+        onChange={e => onSelectColor(e.target.value)}
+      />
+    </div>
+  );
+}
+
 export interface IconPickerProps {
   glyphId: string;
   color: string;
@@ -52,26 +86,7 @@ export function IconPicker({ glyphId, color, onSelectGlyph, onSelectColor }: Ico
           </div>
         </div>
       ))}
-      <div className={styles['color-row']} role='listbox' aria-label='Icon Color'>
-        {iconColors.map(c => (
-          <button
-            key={c.id}
-            type='button'
-            role='option'
-            aria-selected={color === c.value}
-            title={c.name}
-            className={clsx(styles['color-cell'], color === c.value && styles['is-selected'])}
-            style={{ background: c.value || 'var(--freeter-componentColor)' }}
-            onClick={() => onSelectColor(c.value)}
-          />
-        ))}
-        <input
-          type='color'
-          title='Custom color'
-          value={/^#[0-9a-fA-F]{6}$/.test(color) ? color : '#888888'}
-          onChange={e => onSelectColor(e.target.value)}
-        />
-      </div>
+      <ColorPicker color={color} onSelectColor={onSelectColor} ariaLabel='Icon Color' />
     </div>
   );
 }

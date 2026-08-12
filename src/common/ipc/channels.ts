@@ -18,6 +18,7 @@ import { makeIpcChannelName } from '@common/ipc/ipc';
 import { HttpRequestConfig, HttpResponse } from '@common/base/http';
 import { ExecFileResult } from '@common/base/exec';
 import { MessageBoxConfig, MessageBoxResult, OpenDialogResult, OpenDirDialogConfig, OpenFileDialogConfig, SaveDialogResult, SaveFileDialogConfig } from '@common/base/dialog';
+import { FsListDirResult } from '@common/base/fsEntries';
 
 /** Get a text value from application-level data storage. */
 export const ipcAppDataStorageGetTextChannel = makeIpcChannelName('app-data-storage-get-text');
@@ -191,6 +192,11 @@ export type IpcHttpRequestRes = HttpResponse;
 export const ipcExecFileChannel = makeIpcChannelName('exec-file');
 export type IpcExecFileArgs = [cmd: string, args: string[], cwd?: string];
 export type IpcExecFileRes = ExecFileResult;
+
+/** List a directory's entries from the main process (read-only). */
+export const ipcFsListDirChannel = makeIpcChannelName('fs-list-dir');
+export type IpcFsListDirArgs = [dirPath: string];
+export type IpcFsListDirRes = FsListDirResult;
 
 /** Apply MCP server config (start/stop/restart the localhost MCP endpoint). */
 export const ipcSetMcpConfigChannel = makeIpcChannelName('set-mcp-config');

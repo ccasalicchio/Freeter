@@ -22,6 +22,8 @@ export interface ProjectSettings {
   readonly rootFolder?: string;
   /** optional project logo/icon */
   readonly icon?: ProjectIcon;
+  /** optional accent color shown as an underline on the project's workflow tab bar */
+  readonly accentColor?: string;
   /** archived projects are hidden from the switcher/shortcuts but keep all data */
   readonly isArchived?: boolean;
 }

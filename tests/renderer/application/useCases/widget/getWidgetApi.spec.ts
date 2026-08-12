@@ -26,7 +26,7 @@ function setup() {
   const processProvider: jest.MockedObject<ProcessProvider> = {
     getProcessInfo: jest.fn(),
     getSystemMetrics: jest.fn(),
-    execFile: jest.fn(async () => ({ code: 0, stdout: '', stderr: '' }))
+    execFile: jest.fn()
   }
   const shellProvider = mockShellProvider({
     openApp: jest.fn(),
@@ -67,6 +67,7 @@ function setup() {
     getWidgetsInCurrentWorkflowUseCase,
     safeStorageProvider,
     httpProvider: { request: jest.fn(async () => ({ ok: true, status: 200, statusText: 'OK', body: '' })) },
+    fsProvider: { listDir: jest.fn(async () => ({ ok: true, entries: [] })) },
   });
   return {
     clipboardProvider,

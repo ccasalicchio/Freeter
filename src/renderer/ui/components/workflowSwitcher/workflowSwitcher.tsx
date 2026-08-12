@@ -58,6 +58,7 @@ export function createWorkflowSwitcherComponent({
       showEditToggleLeft,
       showPrjSwitcherRight,
       showEditToggleRight,
+      currentProjectAccentColor,
     } = useWorkflowSwitcherViewModel();
 
     const compPrjSwitcher =
@@ -78,7 +79,10 @@ export function createWorkflowSwitcherComponent({
       </div>
 
     return (
-      <div className={styles['workflow-switcher-bar']}>
+      <div
+        className={styles['workflow-switcher-bar']}
+        style={currentProjectAccentColor ? { '--project-accent': currentProjectAccentColor } as React.CSSProperties : undefined}
+      >
         {showPrjSwitcherLeft && compPrjSwitcher}
         {showEditToggleLeft && compEditToggle}
         {showPaletteLeft && compPalette}

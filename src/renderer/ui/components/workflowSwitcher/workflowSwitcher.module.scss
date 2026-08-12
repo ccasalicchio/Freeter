@@ -12,6 +12,21 @@
   width: 100%;
   display: flex;
   flex-direction: row;
+  position: relative;
+
+  // per-project accent underline; transparent (no-op) unless the current
+  // project sets --project-accent via an inline style on the bar
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 2px;
+    background-color: var(--project-accent, transparent);
+    pointer-events: none;
+    z-index: 1;
+  }
 }
 
 .workflow-switcher-bar-section {
@@ -133,6 +148,8 @@
       background-color: var(--freeter-workflowSwitcherTabOpenBackground);
       border-bottom-color: var(--freeter-workflowSwitcherTabOpenBackground);
       color: var(--freeter-workflowSwitcherTabOpenColor);
+      // per-project accent indicator on the active tab (no-op without --project-accent)
+      box-shadow: inset 0 2px 0 0 var(--project-accent, transparent);
     }
     > .workflow-switcher-item-action-bar {
       background-color: var(--freeter-workflowSwitcherTabOpenBackground);

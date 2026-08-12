@@ -112,6 +112,7 @@ import { createProfileProvider } from '@/infra/profileProvider/profileProvider';
 import { createFindInPageProvider } from '@/infra/findInPageProvider/findInPageProvider';
 import { createLoginItemProvider } from '@/infra/loginItemProvider/loginItemProvider';
 import { createHttpProvider } from '@/infra/httpProvider/httpProvider';
+import { createFsProvider } from '@/infra/fsProvider/fsProvider';
 import { createMcpConfigProvider } from '@/infra/mcpConfigProvider/mcpConfigProvider';
 import { createFindBarComponent } from '@/ui/components/findBar/findBar';
 import { createAppToolbarComponent } from '@/ui/components/appToolbar/appToolbar';
@@ -287,6 +288,7 @@ async function createUseCases(store: ReturnType<typeof createStore>) {
     getWidgetsInCurrentWorkflowUseCase,
     safeStorageProvider,
     httpProvider: createHttpProvider(),
+    fsProvider: createFsProvider(),
   })
   const deleteWidgetUseCase = createDeleteWidgetUseCase({
     ...deps,
