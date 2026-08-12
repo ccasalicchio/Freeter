@@ -27,6 +27,8 @@ export interface McpServerConfig {
   enabled: boolean;
   port: number;
   token: string;
+  /** bind all interfaces (WSL / LAN access); default binds 127.0.0.1 only */
+  allowExternal?: boolean;
 }
 
 type Deps = {
@@ -291,8 +293,9 @@ export function createFreeterMcpServer({ appDataStorage, widgetDataStorageManage
           }
         }
       });
-      httpServer.listen(config.port, '127.0.0.1', () => {
-        logToFile('info', `mcp server listening on 127.0.0.1:${config.port}`);
+      const bindHost = config.allowExternal ? '0.0.0.0' : '127.0.0.1';
+      httpServer.listen(config.port, bindHost, () => {
+        logToFile('info', `mcp server listening on ${bindHost}:${config.port}`);
       });
       httpServer.on('error', err => {
         logToFile('error', `mcp server error: ${err.message}`);

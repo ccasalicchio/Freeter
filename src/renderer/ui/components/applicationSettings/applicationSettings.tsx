@@ -315,6 +315,21 @@ export function createApplicationSettingsComponent({
             </div>
           </SettingBlock>
           <SettingBlock
+            titleForId='mcp-allow-external'
+            title='Allow WSL / Network Connections'
+            moreInfo='By default the MCP server only accepts connections from this computer (127.0.0.1). Enable this to accept token-authenticated connections from WSL or other devices on your network. Keep the access token secret.'
+          >
+            <div>
+              <label>
+                <input type='checkbox' id='mcp-allow-external' checked={appConfig.mcp.allowExternal} onChange={_ => updateSettings({
+                  ...appConfig,
+                  mcp: { ...appConfig.mcp, allowExternal: !appConfig.mcp.allowExternal }
+                })} />
+                {' Accept connections from WSL and the local network'}
+              </label>
+            </div>
+          </SettingBlock>
+          <SettingBlock
             titleForId='mcp-port'
             title='Port'
           >
