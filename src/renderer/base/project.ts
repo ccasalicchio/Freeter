@@ -22,6 +22,8 @@ export interface ProjectSettings {
   readonly rootFolder?: string;
   /** optional project logo/icon */
   readonly icon?: ProjectIcon;
+  /** archived projects are hidden from the switcher/shortcuts but keep all data */
+  readonly isArchived?: boolean;
 }
 export interface Project extends Entity {
   readonly settings: ProjectSettings;

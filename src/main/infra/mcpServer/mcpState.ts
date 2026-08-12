@@ -10,7 +10,7 @@
 
 interface EntityBase { id: string }
 interface ProjectEntity extends EntityBase {
-  settings: { name?: string };
+  settings: { name?: string; isArchived?: boolean };
   workflowIds: string[];
   currentWorkflowId: string;
 }
@@ -63,7 +63,8 @@ export function listProjects(state: AppStateDoc) {
       id: p.id,
       name: p.settings.name ?? '',
       workflowCount: p.workflowIds.length,
-      isCurrent: p.id === currentId
+      isCurrent: p.id === currentId,
+      isArchived: !!p.settings.isArchived
     }));
 }
 

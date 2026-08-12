@@ -107,7 +107,8 @@ export function createAppViewModelHook({
           return;
         }
         if (matchesProject(e)) {
-          const projectId = projectIds[num - 1];
+          const visibleIds = projectIds.filter(id => !projects[id]?.settings.isArchived);
+          const projectId = visibleIds[num - 1];
           if (projectId) {
             e.preventDefault();
             switchProjectUseCase(projectId);
@@ -129,7 +130,7 @@ export function createAppViewModelHook({
 
       for (const pId of projectIds) {
         const project = projects[pId];
-        if (project) {
+        if (project && !project.settings.isArchived) {
           result.push({
             id: `prj-${project.id}`,
             label: project.settings.name || 'Unnamed Project',

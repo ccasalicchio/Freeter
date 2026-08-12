@@ -11,6 +11,7 @@ import { ProjectSwitcherProps } from '@/ui/components/projectSwitcher';
 import { PaletteProps, PalettePropsPos } from '@/ui/components/palette';
 
 type Deps = {
+  AppToolbar: React.FC;
   EditModeToggle: React.FC;
   ProjectSwitcher: React.FC<ProjectSwitcherProps>;
   ManageProjectsButton: React.FC;
@@ -20,6 +21,7 @@ type Deps = {
 }
 
 export function createTopBarComponent({
+  AppToolbar,
   EditModeToggle,
   ProjectSwitcher,
   ManageProjectsButton,
@@ -46,6 +48,9 @@ export function createTopBarComponent({
             <Palette pos={PalettePropsPos.TopBar} />
           </div>
         }
+        <div className={styles['top-bar-section']}>
+          <AppToolbar />
+        </div>
         {showEditToggle &&
           <div className={styles['top-bar-section']}>
             <EditModeToggle />

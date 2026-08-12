@@ -18,7 +18,8 @@ export function createProjectSwitcherViewModelHook({
 }: Deps) {
   function useViewModel() {
     const [_currentProjectId, projectIds] = useAppState(state => ([state.ui.projectSwitcher.currentProjectId, state.ui.projectSwitcher.projectIds]));
-    const projects = useAppState.useEntityList(state => state.entities.projects, projectIds);
+    const allProjects = useAppState.useEntityList(state => state.entities.projects, projectIds);
+    const projects = allProjects.filter(p => !p.settings.isArchived || p.id === _currentProjectId);
     const noProjects = projects.length === 0;
     const currentProjectId = projects.findIndex(item => item.id === _currentProjectId) > -1 ? _currentProjectId : '';
 
