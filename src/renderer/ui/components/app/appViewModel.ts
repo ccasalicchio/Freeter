@@ -56,6 +56,7 @@ export function createAppViewModelHook({
       modalScreensOrder,
       uiTheme,
       themeOverrides,
+      shortcuts,
       hasTopBar
     ] = useAppState(state => [
       state.ui.editMode,
@@ -66,6 +67,7 @@ export function createAppViewModelHook({
       state.ui.modalScreens.order,
       state.ui.appConfig.uiTheme,
       state.ui.appConfig.themeOverrides,
+      state.ui.appConfig.shortcuts,
       state.ui.topBar
     ])
 
@@ -83,10 +85,19 @@ export function createAppViewModelHook({
       workflowSettings: createElement(WorkflowSettings, {}),
     }
 
-    // keyboard shortcuts: Ctrl/Cmd+1..9 projects, Alt+1..9 workflows, Ctrl/Cmd+E edit mode
+    // keyboard shortcuts, configurable in Settings > Shortcuts
     useEffect(() => {
+      const ctrl = (e: KeyboardEvent) => e.ctrlKey || e.metaKey;
+      const matchesProject = (e: KeyboardEvent) =>
+        shortcuts.projectSwitch === 'ctrl' ? (ctrl(e) && !e.altKey && !e.shiftKey)
+          : shortcuts.projectSwitch === 'ctrl+shift' ? (ctrl(e) && !e.altKey && e.shiftKey)
+            : false;
+      const matchesWorkflow = (e: KeyboardEvent) =>
+        shortcuts.workflowSwitch === 'alt' ? (e.altKey && !ctrl(e) && !e.shiftKey)
+          : shortcuts.workflowSwitch === 'alt+shift' ? (e.altKey && !ctrl(e) && e.shiftKey)
+            : false;
       const onKeyDown = (e: KeyboardEvent) => {
-        if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && e.key.toLowerCase() === 'e') {
+        if (shortcuts.editModeToggle === 'ctrl+e' && ctrl(e) && !e.altKey && !e.shiftKey && e.key.toLowerCase() === 'e') {
           e.preventDefault();
           toggleEditModeUseCase();
           return;
@@ -95,13 +106,13 @@ export function createAppViewModelHook({
         if (!Number.isInteger(num) || num < 1 || num > 9) {
           return;
         }
-        if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey) {
+        if (matchesProject(e)) {
           const projectId = projectIds[num - 1];
           if (projectId) {
             e.preventDefault();
             switchProjectUseCase(projectId);
           }
-        } else if (e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey) {
+        } else if (matchesWorkflow(e)) {
           const workflowId = projects[currentProjectId]?.workflowIds[num - 1];
           if (workflowId) {
             e.preventDefault();
@@ -111,7 +122,7 @@ export function createAppViewModelHook({
       };
       window.addEventListener('keydown', onKeyDown);
       return () => window.removeEventListener('keydown', onKeyDown);
-    }, [projectIds, projects, currentProjectId]);
+    }, [projectIds, projects, currentProjectId, shortcuts]);
 
     const paletteItems = useMemo((): PaletteItem[] => {
       const result: PaletteItem[] = [];

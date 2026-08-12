@@ -20,6 +20,7 @@ const appConfig: AppConfig = {
   },
   launchAtStartup: false,
   mcp: { enabled: false, port: 39587, token: '' },
+  shortcuts: { projectSwitch: 'ctrl', workflowSwitch: 'alt', editModeToggle: 'ctrl+e' },
   themeOverrides: {}
 }
 

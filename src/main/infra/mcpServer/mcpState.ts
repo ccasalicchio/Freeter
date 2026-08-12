@@ -127,3 +127,86 @@ export function createWidgetInState(
   ];
   return { widgetId };
 }
+
+export function switchProjectInState(state: AppStateDoc, projectId: string): boolean {
+  if (!state.obj.entities.projects[projectId]) {
+    return false;
+  }
+  state.obj.ui.projectSwitcher = {
+    ...(state.obj.ui.projectSwitcher ?? {}),
+    currentProjectId: projectId
+  };
+  return true;
+}
+
+export function switchWorkflowInState(state: AppStateDoc, workflowId: string): boolean {
+  const project = Object.values(state.obj.entities.projects).find(p => p.workflowIds.includes(workflowId));
+  if (!project) {
+    return false;
+  }
+  (state.obj.entities.projects[project.id] as { currentWorkflowId: string }).currentWorkflowId = workflowId;
+  switchProjectInState(state, project.id);
+  return true;
+}
+
+export interface SearchHit {
+  kind: 'project' | 'workflow' | 'widget';
+  id: string;
+  name: string;
+  widgetType?: string;
+  projectName?: string;
+  workflowName?: string;
+}
+
+/** searches project/workflow/widget names (case-insensitive substring) */
+export function searchNames(state: AppStateDoc, query: string): SearchHit[] {
+  const q = query.toLowerCase();
+  const hits: SearchHit[] = [];
+  for (const p of Object.values(state.obj.entities.projects)) {
+    if ((p.settings.name ?? '').toLowerCase().includes(q)) {
+      hits.push({ kind: 'project', id: p.id, name: p.settings.name ?? '' });
+    }
+    for (const wid of p.workflowIds) {
+      const w = state.obj.entities.workflows[wid];
+      if (!w) {
+        continue;
+      }
+      if ((w.settings.name ?? '').toLowerCase().includes(q)) {
+        hits.push({ kind: 'workflow', id: w.id, name: w.settings.name ?? '', projectName: p.settings.name ?? '' });
+      }
+      for (const item of w.layout) {
+        const widget = state.obj.entities.widgets[item.widgetId];
+        if (widget && (widget.coreSettings.name ?? '').toLowerCase().includes(q)) {
+          hits.push({
+            kind: 'widget', id: widget.id, name: widget.coreSettings.name ?? '',
+            widgetType: widget.type, projectName: p.settings.name ?? '', workflowName: w.settings.name ?? ''
+          });
+        }
+      }
+    }
+  }
+  return hits;
+}
+
+/** widgets of a content-bearing type, with their location, for content search */
+export function listContentWidgets(state: AppStateDoc): { id: string; type: string; name: string; projectName: string; workflowName: string }[] {
+  const res: { id: string; type: string; name: string; projectName: string; workflowName: string }[] = [];
+  for (const p of Object.values(state.obj.entities.projects)) {
+    for (const wid of p.workflowIds) {
+      const w = state.obj.entities.workflows[wid];
+      if (!w) {
+        continue;
+      }
+      for (const item of w.layout) {
+        const widget = state.obj.entities.widgets[item.widgetId];
+        if (widget && (widget.type === 'note' || widget.type === 'to-do-list')) {
+          res.push({
+            id: widget.id, type: widget.type, name: widget.coreSettings.name ?? '',
+            projectName: p.settings.name ?? '', workflowName: w.settings.name ?? ''
+          });
+        }
+      }
+    }
+  }
+  return res;
+}

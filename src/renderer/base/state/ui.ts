@@ -4,7 +4,7 @@
  */
 
 import { App } from '@/base/app';
-import { AppConfig, createDefaultAutoBackupConfig, createDefaultMcpConfig } from '@/base/appConfig';
+import { AppConfig, createDefaultAutoBackupConfig, createDefaultMcpConfig, createDefaultShortcutsConfig } from '@/base/appConfig';
 import { Entity, EntityId } from '@/base/entity';
 import { EntityCollection } from '@/base/entityCollection';
 import { EntityIdList } from '@/base/entityList';
@@ -241,6 +241,7 @@ export function createUiState(): UiState {
       autoBackup: createDefaultAutoBackupConfig(),
       launchAtStartup: false,
       mcp: createDefaultMcpConfig(),
+      shortcuts: createDefaultShortcutsConfig(),
       themeOverrides: {}
     },
     apps: {

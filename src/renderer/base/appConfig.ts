@@ -18,6 +18,15 @@ export interface McpConfig {
   token: string;
 }
 
+export interface ShortcutsConfig {
+  /** modifier for project switching with 1..9 */
+  projectSwitch: 'ctrl' | 'ctrl+shift' | 'off';
+  /** modifier for workflow switching with 1..9 */
+  workflowSwitch: 'alt' | 'alt+shift' | 'off';
+  /** edit-mode toggle key */
+  editModeToggle: 'ctrl+e' | 'off';
+}
+
 export interface AppConfig {
   mainHotkey: string;
   memSaver: MemSaverConfigApp;
@@ -25,6 +34,7 @@ export interface AppConfig {
   autoBackup: AutoBackupConfig;
   launchAtStartup: boolean;
   mcp: McpConfig;
+  shortcuts: ShortcutsConfig;
   /** per-variable overrides applied on top of the selected theme */
   themeOverrides: Record<string, string>;
 }
@@ -35,4 +45,8 @@ export function createDefaultAutoBackupConfig(): AutoBackupConfig {
 
 export function createDefaultMcpConfig(): McpConfig {
   return { enabled: false, port: 39587, token: '' };
+}
+
+export function createDefaultShortcutsConfig(): ShortcutsConfig {
+  return { projectSwitch: 'ctrl', workflowSwitch: 'alt', editModeToggle: 'ctrl+e' };
 }

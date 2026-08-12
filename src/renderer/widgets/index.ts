@@ -2,6 +2,8 @@ import { WidgetSettings, WidgetType } from '@/widgets/appModules'
 import appLauncher from './app-launcher';
 import webhookButton from './webhook-button';
 import gitStatus from './git-status';
+import githubCi from './github-ci';
+import githubPrs from './github-prs';
 import commander from './commander';
 import fileOpener from './file-opener';
 import linkOpener from './link-opener';
@@ -24,6 +26,8 @@ const builtinWidgetTypes = [
   appLauncher,
   webhookButton,
   gitStatus,
+  githubCi,
+  githubPrs,
   commander,
   fileOpener,
   linkOpener,
