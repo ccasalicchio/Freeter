@@ -82,6 +82,7 @@ import { createFindInPageControllers } from '@/controllers/findInPage';
 import { createLoginItemControllers } from '@/controllers/loginItem';
 import { createHttpRequestControllers } from '@/controllers/httpRequest';
 import { createMcpConfigControllers } from '@/controllers/mcpConfig';
+import { createExecFileControllers } from '@/controllers/execFile';
 import { createFreeterMcpServer } from '@/infra/mcpServer/mcpServer';
 import { createAutoBackup } from '@/infra/autoBackup/autoBackup';
 import { createPluginControllers } from '@/controllers/plugin';
@@ -309,7 +310,8 @@ if (!app.requestSingleInstanceLock()) {
       ...createHttpRequestControllers(),
       ...createMcpConfigControllers({
         applyMcpConfig: (config) => mcpServer.start(config)
-      })
+      }),
+      ...createExecFileControllers()
     ])
 
     const [windowStore] = createWindowStore({

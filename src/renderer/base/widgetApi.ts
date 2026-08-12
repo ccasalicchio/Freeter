@@ -13,6 +13,7 @@ import { WidgetContextMenuFactory } from '@/base/widget';
 import { ActionBarItems } from './actionBar';
 import { ProcessInfo, SystemMetrics } from '@common/base/process';
 import { HttpRequestConfig, HttpResponse } from '@common/base/http';
+import { ExecFileResult } from '@common/base/exec';
 import { OpenDialogResult, OpenDirDialogConfig, OpenFileDialogConfig } from '@common/base/dialog';
 
 /**
@@ -68,6 +69,7 @@ interface WidgetApiModules {
   readonly process: {
     getProcessInfo: () => ProcessInfo;
     getSystemMetrics: () => Promise<SystemMetrics>;
+    execFile: (cmd: string, args: string[], cwd?: string) => Promise<ExecFileResult>;
   };
   readonly http: {
     request: (config: HttpRequestConfig) => Promise<HttpResponse>;

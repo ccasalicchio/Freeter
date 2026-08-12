@@ -16,6 +16,7 @@ import { ProcessInfo, SystemMetrics } from '@common/base/process';
 import { PluginManifest } from '@common/base/plugin';
 import { makeIpcChannelName } from '@common/ipc/ipc';
 import { HttpRequestConfig, HttpResponse } from '@common/base/http';
+import { ExecFileResult } from '@common/base/exec';
 import { MessageBoxConfig, MessageBoxResult, OpenDialogResult, OpenDirDialogConfig, OpenFileDialogConfig, SaveDialogResult, SaveFileDialogConfig } from '@common/base/dialog';
 
 /** Get a text value from application-level data storage. */
@@ -185,6 +186,11 @@ export type IpcStopFindInPageRes = void;
 export const ipcHttpRequestChannel = makeIpcChannelName('http-request');
 export type IpcHttpRequestArgs = [config: HttpRequestConfig];
 export type IpcHttpRequestRes = HttpResponse;
+
+/** Execute a program and capture its output (no shell; args passed directly). */
+export const ipcExecFileChannel = makeIpcChannelName('exec-file');
+export type IpcExecFileArgs = [cmd: string, args: string[], cwd?: string];
+export type IpcExecFileRes = ExecFileResult;
 
 /** Apply MCP server config (start/stop/restart the localhost MCP endpoint). */
 export const ipcSetMcpConfigChannel = makeIpcChannelName('set-mcp-config');

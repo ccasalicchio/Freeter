@@ -4,8 +4,10 @@
  */
 
 import { ProcessInfo, SystemMetrics } from '@common/base/process';
+import { ExecFileResult } from '@common/base/exec';
 
 export interface ProcessProvider {
   getProcessInfo: () => ProcessInfo;
   getSystemMetrics: () => Promise<SystemMetrics>;
+  execFile: (cmd: string, args: string[], cwd?: string) => Promise<ExecFileResult>;
 }

@@ -101,6 +101,7 @@ import tbFocusSvg from './tabler/focus.svg';
 import tbFolderSvg from './tabler/folder.svg';
 import tbGaugeSvg from './tabler/gauge.svg';
 import tbGiftCardSvg from './tabler/gift-card.svg';
+import tbGitBranchSvg from './tabler/git-branch.svg';
 import tbGlassSvg from './tabler/glass.svg';
 import tbGlobeSvg from './tabler/globe.svg';
 import tbHammerSvg from './tabler/hammer.svg';
@@ -329,6 +330,7 @@ export const glyphs: Glyph[] = [
   { id: 'tb-folder', name: 'Folder', set: 'Tabler', svg: tbFolderSvg },
   { id: 'tb-gauge', name: 'Gauge', set: 'Tabler', svg: tbGaugeSvg },
   { id: 'tb-gift-card', name: 'Gift Card', set: 'Tabler', svg: tbGiftCardSvg },
+  { id: 'tb-git-branch', name: 'Git Branch', set: 'Tabler', svg: tbGitBranchSvg },
   { id: 'tb-glass', name: 'Glass', set: 'Tabler', svg: tbGlassSvg },
   { id: 'tb-globe', name: 'Globe', set: 'Tabler', svg: tbGlobeSvg },
   { id: 'tb-hammer', name: 'Hammer', set: 'Tabler', svg: tbHammerSvg },
