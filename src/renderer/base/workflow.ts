@@ -11,6 +11,7 @@ import { WidgetLayout } from '@/base/widgetLayout';
 export interface WorkflowSettings {
   readonly memSaver: MemSaverConfigWfl;
   readonly name: string;
+  readonly isArchived?: boolean;
 }
 
 export interface Workflow extends Entity {

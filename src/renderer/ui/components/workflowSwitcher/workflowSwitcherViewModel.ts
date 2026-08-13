@@ -27,6 +27,7 @@ import { Workflow } from '@/base/workflow';
 import { WorkflowEntityDeps } from '@/base/state/entities';
 import { PasteWorkflowUseCase } from '@/application/useCases/workflowSwitcher/pasteWorkflow';
 import { CopyWorkflowUseCase } from '@/application/useCases/workflow/copyWorkflow';
+import { ToggleWorkflowArchivedUseCase } from '@/application/useCases/workflowSwitcher/toggleWorkflowArchived';
 
 type Deps = {
   useAppState: UseAppState;
@@ -43,6 +44,7 @@ type Deps = {
   showContextMenuUseCase: ShowContextMenuUseCase;
   copyWorkflowUseCase: CopyWorkflowUseCase;
   pasteWorkflowUseCase: PasteWorkflowUseCase;
+  toggleWorkflowArchivedUseCase: ToggleWorkflowArchivedUseCase;
 }
 
 export function createWorkflowSwitcherViewModelHook({
@@ -60,6 +62,7 @@ export function createWorkflowSwitcherViewModelHook({
   showContextMenuUseCase,
   copyWorkflowUseCase,
   pasteWorkflowUseCase,
+  toggleWorkflowArchivedUseCase,
 }: Deps) {
   function buildPasteMenuItems(
     copiedWorkflows: EntityList<CopiedEntitiesItem<Workflow, WorkflowEntityDeps>>,
@@ -111,6 +114,7 @@ export function createWorkflowSwitcherViewModelHook({
   function showMoreActionsForItem(
     id: EntityId,
     setItemIdInEditNameMode: (id: string | undefined) => void,
+    isArchived: boolean,
   ) {
     showContextMenuUseCase([
       {
@@ -127,15 +131,25 @@ export function createWorkflowSwitcherViewModelHook({
         doAction: async () => {
           copyWorkflowUseCase(id)
         }
+      },
+      { type: 'separator' },
+      {
+        enabled: true,
+        label: isArchived ? 'Unarchive Tab' : 'Archive Tab',
+        doAction: async () => {
+          toggleWorkflowArchivedUseCase(id);
+        }
       }
     ])
   }
   const createItemActionBarItemsEditMode: (
     id: EntityId,
-    setItemIdInEditNameMode: (id: string | undefined) => void
+    setItemIdInEditNameMode: (id: string | undefined) => void,
+    isArchived: boolean
   ) => ActionBarItems = (
     id,
-    setItemIdInEditNameMode
+    setItemIdInEditNameMode,
+    isArchived
   ) => [{
     enabled: true,
     icon: settings14Svg,
@@ -159,7 +173,7 @@ export function createWorkflowSwitcherViewModelHook({
     id: 'MORE-ACTIONS',
     title: 'More Actions...',
     doAction: async () => {
-      showMoreActionsForItem(id, setItemIdInEditNameMode);
+      showMoreActionsForItem(id, setItemIdInEditNameMode, isArchived);
     }
   }]
 
@@ -178,8 +192,9 @@ export function createWorkflowSwitcherViewModelHook({
   const createItemContextMenuItemsEditMode: (
     id: EntityId,
     setItemIdInEditNameMode: (id: string | undefined) => void,
-    copiedWorkflows: EntityList<CopiedEntitiesItem<Workflow, WorkflowEntityDeps>>
-  ) => MenuItems = (id, setItemIdInEditNameMode, copiedWorkflows) => [{
+    copiedWorkflows: EntityList<CopiedEntitiesItem<Workflow, WorkflowEntityDeps>>,
+    isArchived: boolean
+  ) => MenuItems = (id, setItemIdInEditNameMode, copiedWorkflows, isArchived) => [{
     enabled: true,
     label: 'Rename Workflow',
     doAction: async () => {
@@ -213,6 +228,12 @@ export function createWorkflowSwitcherViewModelHook({
     submenu: buildPasteMenuItems(copiedWorkflows, id)
   }, {
     type: 'separator'
+  }, {
+    enabled: true,
+    label: isArchived ? 'Unarchive Tab' : 'Archive Tab',
+    doAction: async () => {
+      toggleWorkflowArchivedUseCase(id);
+    }
   }, {
     enabled: true,
     label: 'Delete Workflow',
@@ -276,7 +297,22 @@ export function createWorkflowSwitcherViewModelHook({
 
     const [itemIdInEditNameMode, setItemIdInEditNameMode] = useState<string | undefined>(undefined);
 
-    const workflows = useAppState.useEntityListIfIdsDefined(state => state.entities.workflows, workflowIds);
+    const allWorkflows = useAppState.useEntityListIfIdsDefined(state => state.entities.workflows, workflowIds);
+
+    // In edit mode all workflows are visible (archived ones dimmed); otherwise
+    // archived workflows are hidden, unless the workflow is the current one
+    // (mirrors the archived-projects behavior of the project switcher).
+    const workflows = useMemo(
+      () => isEditMode
+        ? allWorkflows
+        : allWorkflows?.filter(w => !w.settings.isArchived || w.id === currentWorkflowId),
+      [allWorkflows, isEditMode, currentWorkflowId]
+    );
+
+    const isWorkflowArchived = useCallback(
+      (id: EntityId) => !!allWorkflows?.find(w => w.id === id)?.settings.isArchived,
+      [allWorkflows]
+    );
 
     const onItemClick = useCallback((_evt: MouseEvent<HTMLElement>, itemId: EntityId) => {
       if (currentWorkflowId !== itemId) {
@@ -363,9 +399,9 @@ export function createWorkflowSwitcherViewModelHook({
 
     const itemActionBarItemsFactory: ItemActionBarItemsFactory = useCallback(
       (id) => isEditMode
-        ? createItemActionBarItemsEditMode(id, setItemIdInEditNameMode)
+        ? createItemActionBarItemsEditMode(id, setItemIdInEditNameMode, isWorkflowArchived(id))
         : createItemActionBarItemsViewMode(id),
-      [isEditMode]
+      [isEditMode, isWorkflowArchived]
     )
 
     const dontShowActionBar = !!resizingItem || !!dndFrom;
@@ -379,10 +415,10 @@ export function createWorkflowSwitcherViewModelHook({
     const onItemContextMenu = useCallback((e: MouseEvent<HTMLElement>, itemId: EntityId) => {
       const contextMenuItems: MenuItems =
         isEditMode
-          ? createItemContextMenuItemsEditMode(itemId, setItemIdInEditNameMode, copiedWorkflows)
+          ? createItemContextMenuItemsEditMode(itemId, setItemIdInEditNameMode, copiedWorkflows, isWorkflowArchived(itemId))
           : createItemContextMenuItemsViewMode(itemId);
       showContextMenuUseCase(contextMenuItems);
-    }, [copiedWorkflows, isEditMode])
+    }, [copiedWorkflows, isEditMode, isWorkflowArchived])
 
     const showPrjSwitcherLeft = prjSwitcherPos === ProjectSwitcherPos.TabBarLeft;
     const showPrjSwitcherRight = prjSwitcherPos === ProjectSwitcherPos.TabBarRight;

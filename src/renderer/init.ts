@@ -83,6 +83,7 @@ import { createOpenProjectManagerUseCase } from '@/application/useCases/projectM
 import { createAddWorkflowUseCase } from '@/application/useCases/workflowSwitcher/addWorkflow';
 import { createRenameWorkflowUseCase } from '@/application/useCases/workflowSwitcher/renameWorkflow';
 import { createDeleteWorkflowUseCase } from '@/application/useCases/workflowSwitcher/deleteWorkflow';
+import { createToggleWorkflowArchivedUseCase } from '@/application/useCases/workflowSwitcher/toggleWorkflowArchived';
 import { createOsDialogProvider } from '@/infra/dialogProvider/osDialogProvider';
 import { createDeleteWidgetUseCase } from '@/application/useCases/widget/deleteWidget';
 import { createAddWidgetToWorkflowUseCase } from '@/application/useCases/workflow/addWidgetToWorkflow';
@@ -167,7 +168,20 @@ function createStore() {
 
   const firstRunState = createAppState();
 
-  const appState = entityStateActions.widgetTypes.setAll(firstRunState, registry.getWidgetTypes());
+  const stateWithWidgetTypes = entityStateActions.widgetTypes.setAll(firstRunState, registry.getWidgetTypes());
+  // the Add Widget palette always offers every registered widget type (sorted by name)
+  const appState = {
+    ...stateWithWidgetTypes,
+    ui: {
+      ...stateWithWidgetTypes.ui,
+      palette: {
+        ...stateWithWidgetTypes.ui.palette,
+        widgetTypeIds: [...registry.getWidgetTypes()]
+          .sort((a, b) => a.name.localeCompare(b.name))
+          .map(t => t.id)
+      }
+    }
+  };
   const dataStorage = prepareDataStorageForRenderer(createAppDataStorage());
   const [appStore, appStoreForUi] = createAppStore({
     stateStorage: createAppStateStorage(
@@ -238,6 +252,10 @@ async function createUseCases(store: ReturnType<typeof createStore>) {
   const deleteWorkflowUseCase = createDeleteWorkflowUseCase({
     ...deps,
     dialog: osDialogProvider,
+    deactivateWorkflowUseCase
+  });
+  const toggleWorkflowArchivedUseCase = createToggleWorkflowArchivedUseCase({
+    ...deps,
     deactivateWorkflowUseCase
   });
 
@@ -494,6 +512,7 @@ async function createUseCases(store: ReturnType<typeof createStore>) {
     saveWorkflowSettingsUseCase,
     updateWorkflowSettingsUseCase,
     deleteWorkflowUseCase,
+    toggleWorkflowArchivedUseCase,
 
     toggleEditModeUseCase,
     toggleMenuBarUseCase,

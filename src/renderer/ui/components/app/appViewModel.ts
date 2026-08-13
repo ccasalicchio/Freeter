@@ -114,7 +114,8 @@ export function createAppViewModelHook({
             switchProjectUseCase(projectId);
           }
         } else if (matchesWorkflow(e)) {
-          const workflowId = projects[currentProjectId]?.workflowIds[num - 1];
+          const visibleWorkflowIds = (projects[currentProjectId]?.workflowIds ?? []).filter(id => !workflows[id]?.settings.isArchived);
+          const workflowId = visibleWorkflowIds[num - 1];
           if (workflowId) {
             e.preventDefault();
             switchWorkflowUseCase(currentProjectId, workflowId);
@@ -123,7 +124,7 @@ export function createAppViewModelHook({
       };
       window.addEventListener('keydown', onKeyDown);
       return () => window.removeEventListener('keydown', onKeyDown);
-    }, [projectIds, projects, currentProjectId, shortcuts]);
+    }, [projectIds, projects, workflows, currentProjectId, shortcuts]);
 
     const paletteItems = useMemo((): PaletteItem[] => {
       const result: PaletteItem[] = [];
@@ -140,7 +141,7 @@ export function createAppViewModelHook({
           });
           for (const wId of project.workflowIds) {
             const workflow = workflows[wId];
-            if (workflow) {
+            if (workflow && !workflow.settings.isArchived) {
               result.push({
                 id: `wfl-${workflow.id}`,
                 label: `${project.settings.name || 'Project'} › ${workflow.settings.name || 'Workflow'}`,

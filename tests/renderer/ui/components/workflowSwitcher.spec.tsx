@@ -17,7 +17,9 @@ import { createAddWorkflowUseCase } from '@/application/useCases/workflowSwitche
 import userEvent from '@testing-library/user-event';
 import { fixtureWorktableNotResizing, fixtureWorktableResizingItem } from '@tests/base/state/fixtures/worktable';
 import { createCreateWorkflowSubCase } from '@/application/useCases/workflow/subs/createWorkflow';
+import { createToggleWorkflowArchivedUseCase } from '@/application/useCases/workflowSwitcher/toggleWorkflowArchived';
 import { EditTogglePos, ProjectSwitcherPos } from '@/base/state/ui';
+import { MenuItem, MenuItems } from '@common/base/menu';
 
 const newWorkflowId = 'NEW-WORKFLOW-ID';
 
@@ -54,6 +56,7 @@ async function setup(
   const showContextMenuUseCase = jest.fn();
   const copyWorkflowUseCase = jest.fn();
   const pasteWorkflowUseCase = jest.fn();
+  const toggleWorkflowArchivedUseCase = createToggleWorkflowArchivedUseCase({ appStore, deactivateWorkflowUseCase });
 
   const useWorkflowSwitcherViewModel = createWorkflowSwitcherViewModelHook({
     useAppState,
@@ -70,6 +73,7 @@ async function setup(
     showContextMenuUseCase,
     copyWorkflowUseCase,
     pasteWorkflowUseCase,
+    toggleWorkflowArchivedUseCase,
   })
   const WorkflowSwitcher = createWorkflowSwitcherComponent({
     useWorkflowSwitcherViewModel,
@@ -96,6 +100,7 @@ async function setup(
     renameWorkflowUseCase,
     deleteWorkflowUseCase,
     showContextMenuUseCase,
+    toggleWorkflowArchivedUseCase,
   }
 }
 
@@ -1585,5 +1590,107 @@ describe('<WorkflowSwitcher />', () => {
     fireEvent.drop(elOver);
     expect(dropOnWorkflowSwitcherUseCase).toBeCalledTimes(1);
     expect(dropOnWorkflowSwitcherUseCase).toBeCalledWith(idP, overItemId);
+  });
+
+  describe('archived workflows', () => {
+    const idP = 'P';
+    const idWA = 'W-A';
+    const idWB = 'W-B';
+    const nameWA = 'Workflow A';
+    const nameWB = 'Workflow B';
+
+    const makeState = (opts: { editMode: boolean, archivedB: boolean, currentWorkflowId?: string }) => fixtureAppState({
+      entities: {
+        projects: {
+          ...fixtureProjectAInColl({ id: idP, workflowIds: [idWA, idWB], currentWorkflowId: opts.currentWorkflowId ?? idWA })
+        },
+        workflows: {
+          ...fixtureWorkflowAInColl({ id: idWA, settings: fixtureWorkflowSettingsA({ name: nameWA }) }),
+          ...fixtureWorkflowBInColl({ id: idWB, settings: fixtureWorkflowSettingsB({ name: nameWB, isArchived: opts.archivedB }) }),
+        }
+      },
+      ui: {
+        editMode: opts.editMode,
+        projectSwitcher: fixtureProjectSwitcher({
+          projectIds: [idP],
+          currentProjectId: idP
+        })
+      }
+    })
+
+    it('should hide archived tabs, when edit mode is off', async () => {
+      await setup(makeState({ editMode: false, archivedB: true }));
+
+      expect(screen.getAllByRole('tab').length).toBe(1);
+      expect(screen.getByText(nameWA)).toBeInTheDocument();
+      expect(screen.queryByText(nameWB)).not.toBeInTheDocument();
+    });
+
+    it('should show an archived tab, when it is the current workflow and edit mode is off', async () => {
+      await setup(makeState({ editMode: false, archivedB: true, currentWorkflowId: idWB }));
+
+      expect(screen.getAllByRole('tab').length).toBe(2);
+      expect(screen.getByText(nameWB)).toBeInTheDocument();
+    });
+
+    it('should show archived tabs dimmed with an "(archived)" tooltip, when edit mode is on', async () => {
+      await setup(makeState({ editMode: true, archivedB: true }));
+
+      const tabs = screen.getAllByRole('tab');
+      expect(tabs.length).toBe(2);
+      expect(tabs[0]).not.toHaveClass('is-archived');
+      expect(tabs[1]).toHaveClass('is-archived');
+      expect(tabs[1]).toHaveAttribute('title', `${nameWB} (archived)`);
+    });
+
+    it('should not dim non-archived tabs', async () => {
+      await setup(makeState({ editMode: true, archivedB: false }));
+
+      const tabs = screen.getAllByRole('tab');
+      expect(tabs[0]).not.toHaveClass('is-archived');
+      expect(tabs[1]).not.toHaveClass('is-archived');
+      expect(tabs[1]).not.toHaveAttribute('title');
+    });
+
+    const findMenuItemByLabel = (menuItems: MenuItems, label: string): MenuItem | undefined =>
+      menuItems.find(item => item.label === label);
+
+    it('should show an "Archive Tab" context menu item toggling isArchived=true and switching to the first non-archived workflow, when the workflow is not archived', async () => {
+      const { appStore, showContextMenuUseCase } = await setup(makeState({ editMode: true, archivedB: false, currentWorkflowId: idWB }));
+
+      fireEvent.contextMenu(screen.getAllByRole('tab')[1]);
+
+      expect(showContextMenuUseCase).toBeCalledTimes(1);
+      const menuItems: MenuItems = showContextMenuUseCase.mock.calls[0][0];
+      expect(findMenuItemByLabel(menuItems, 'Unarchive Tab')).toBeUndefined();
+      const archiveItem = findMenuItemByLabel(menuItems, 'Archive Tab');
+      expect(archiveItem).toBeDefined();
+
+      await act(async () => {
+        await archiveItem!.doAction!();
+      });
+
+      const newState = appStore.get();
+      expect(newState.entities.workflows[idWB]?.settings.isArchived).toBe(true);
+      expect(newState.entities.projects[idP]?.currentWorkflowId).toBe(idWA);
+    });
+
+    it('should show an "Unarchive Tab" context menu item toggling isArchived=false, when the workflow is archived', async () => {
+      const { appStore, showContextMenuUseCase } = await setup(makeState({ editMode: true, archivedB: true }));
+
+      fireEvent.contextMenu(screen.getAllByRole('tab')[1]);
+
+      expect(showContextMenuUseCase).toBeCalledTimes(1);
+      const menuItems: MenuItems = showContextMenuUseCase.mock.calls[0][0];
+      expect(findMenuItemByLabel(menuItems, 'Archive Tab')).toBeUndefined();
+      const unarchiveItem = findMenuItemByLabel(menuItems, 'Unarchive Tab');
+      expect(unarchiveItem).toBeDefined();
+
+      await act(async () => {
+        await unarchiveItem!.doAction!();
+      });
+
+      expect(appStore.get().entities.workflows[idWB]?.settings.isArchived).toBe(false);
+    });
   });
 })

@@ -109,6 +109,7 @@ export function createWorkflowSwitcherComponent({
               isCurrent={item.id===currentWorkflowId}
               isDropArea={isEditMode && item.id===dndTargetListItemId}
               isEditNameMode={item.id===itemIdInEditNameMode}
+              isArchived={!!item.settings.isArchived}
               onEditName={onItemRename}
               onFinishEditName={onFinishEditName}
               onClick={onItemClick}

@@ -60,6 +60,9 @@ High-level milestone view for the Freeter v3 upgrade.
 - **Monitoring & reporting integrations** — Prometheus / Grafana /
   Alertmanager widgets, generic JSON metric widget, alert webhook ingest +
   desktop notifications (see docs/monitoring-integrations-plan.md)
+- **MCP actions remainder** — workflow/project lifecycle tools, snippet/kanban
+  content tools, opt-in action execution, MCP resources
+  (see docs/mcp-actions-plan.md; phases 1-4)
 - Developer widgets remainder: port watcher, reminders
 - **Shelf bulk-pin** from the Freeter 1 Library
 - Icon polish: favicon offline caching, per-URL icons on multi-URL tiles

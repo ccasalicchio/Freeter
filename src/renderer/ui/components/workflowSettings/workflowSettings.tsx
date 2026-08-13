@@ -45,6 +45,22 @@ export function createWorkflowSettingsComponent({
           </SettingBlock>
 
           <SettingBlock
+            titleForId='workflow-archived'
+            title='Archived'
+            moreInfo='Archived workflow tabs are hidden from the tab bar (unless open), the command palette and keyboard shortcuts, but all their widgets and data are kept. Unarchive here or via the tab context menu in edit mode anytime.'
+          >
+            <div>
+              <label>
+                <input type="checkbox" id="workflow-archived" checked={settings.isArchived ?? false} onChange={_ => updateSettings({
+                  ...settings,
+                  isArchived: !(settings.isArchived ?? false)
+                })} />
+                {' Archive this workflow'}
+              </label>
+            </div>
+          </SettingBlock>
+
+          <SettingBlock
             title='Memory Saver'
             moreInfo='Freeter frees up memory from inactive workflows.
                       This gives active workflows more computer resources and keeps Freeter

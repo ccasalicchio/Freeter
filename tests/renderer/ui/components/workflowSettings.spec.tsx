@@ -226,5 +226,63 @@ describe('<WorkflowSettings />', () => {
         name: curName+addToName
       })
     })
+
+    it('should fill the Archived checkbox with the right value', async () => {
+      const settings = fixtureWorkflowSettingsA({ isArchived: true });
+      await setup(fixtureAppState({
+        entities: {
+          workflows: {
+            ...fixtureWorkflowAInColl({
+              id: workflowId,
+            }),
+            ...fixtureWorkflowBInColl()
+          }
+        },
+        ui: {
+          modalScreens: fixtureModalScreens({
+            data: fixtureModalScreensData({
+              workflowSettings: fixtureWorkflowSettings({
+                workflow: fixtureWorkflowA({id: workflowId, settings}),
+              })
+            })
+          })
+        }
+      }));
+
+      expect(screen.getByRole('checkbox', { name: /archive this workflow/i })).toBeChecked();
+    })
+
+    it('should call updateWorkflowSettingsUseCase with right args when toggling the Archived checkbox', async () => {
+      const settings = fixtureWorkflowSettingsA();
+      const {updateWorkflowSettingsUseCase} = await setup(fixtureAppState({
+        entities: {
+          workflows: {
+            ...fixtureWorkflowAInColl({
+              id: workflowId,
+            }),
+            ...fixtureWorkflowBInColl()
+          }
+        },
+        ui: {
+          modalScreens: fixtureModalScreens({
+            data: fixtureModalScreensData({
+              workflowSettings: fixtureWorkflowSettings({
+                workflow: fixtureWorkflowA({id: workflowId, settings}),
+              })
+            })
+          })
+        }
+      }));
+      const checkbox = screen.getByRole('checkbox', { name: /archive this workflow/i })
+      expect(checkbox).not.toBeChecked();
+
+      fireEvent.click(checkbox);
+
+      expect(updateWorkflowSettingsUseCase).toBeCalledTimes(1);
+      expect(updateWorkflowSettingsUseCase).toBeCalledWith({
+        ...settings,
+        isArchived: true
+      })
+    })
   })
 })
