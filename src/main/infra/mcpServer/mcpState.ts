@@ -80,8 +80,19 @@ export function listWorkflows(state: AppStateDoc, projectId: string) {
       id: w.id,
       name: w.settings.name ?? '',
       widgetCount: w.layout.length,
-      isCurrent: w.id === project.currentWorkflowId
+      isCurrent: w.id === project.currentWorkflowId,
+      isArchived: (w.settings as { isArchived?: boolean }).isArchived === true
     }));
+}
+
+/** Archives or unarchives a workflow tab. Returns false if the workflow doesn't exist. */
+export function setWorkflowArchivedInState(state: AppStateDoc, workflowId: string, archived: boolean): boolean {
+  const workflow = state.obj.entities.workflows[workflowId];
+  if (!workflow) {
+    return false;
+  }
+  (workflow.settings as { isArchived?: boolean }).isArchived = archived ? true : undefined;
+  return true;
 }
 
 export function listWidgets(state: AppStateDoc, workflowId: string) {
@@ -99,6 +110,94 @@ export function listWidgets(state: AppStateDoc, workflowId: string) {
 
 export function getWidget(state: AppStateDoc, widgetId: string) {
   return state.obj.entities.widgets[widgetId] ?? null;
+}
+
+/**
+ * Updates a widget's display name and/or merges keys into its settings.
+ * Setting a settings key to null deletes it. Returns false if the widget doesn't exist.
+ */
+export function updateWidgetInState(
+  state: AppStateDoc,
+  widgetId: string,
+  changes: { name?: string; settings?: Record<string, unknown> }
+): boolean {
+  const widget = state.obj.entities.widgets[widgetId];
+  if (!widget) {
+    return false;
+  }
+  if (changes.name !== undefined) {
+    widget.coreSettings = { ...widget.coreSettings, name: changes.name };
+  }
+  if (changes.settings) {
+    const merged: Record<string, unknown> = { ...(widget.settings as Record<string, unknown>) };
+    for (const [key, value] of Object.entries(changes.settings)) {
+      if (value === null) {
+        delete merged[key];
+      } else {
+        merged[key] = value;
+      }
+    }
+    widget.settings = merged;
+  }
+  return true;
+}
+
+/**
+ * Moves a widget to another workflow (tab), placing it below that tab's layout.
+ * Returns an error string on failure.
+ */
+export function moveWidgetInState(
+  state: AppStateDoc,
+  widgetId: string,
+  targetWorkflowId: string,
+  generateId: () => string
+): string | undefined {
+  if (!state.obj.entities.widgets[widgetId]) {
+    return `widget ${widgetId} not found`;
+  }
+  const target = state.obj.entities.workflows[targetWorkflowId];
+  if (!target) {
+    return `workflow ${targetWorkflowId} not found`;
+  }
+  const source = Object.values(state.obj.entities.workflows)
+    .find(w => w.layout.some(item => item.widgetId === widgetId));
+  if (!source) {
+    return `widget ${widgetId} is not placed in any workflow`;
+  }
+  if (source.id === targetWorkflowId) {
+    return undefined;
+  }
+  const item = source.layout.find(i => i.widgetId === widgetId);
+  source.layout = source.layout.filter(i => i.widgetId !== widgetId);
+  const maxY = target.layout.reduce((m, i) => Math.max(m, i.rect.y + i.rect.h), 0);
+  target.layout = [
+    ...target.layout,
+    { id: generateId(), widgetId, rect: { ...(item as NonNullable<typeof item>).rect, x: 0, y: maxY } }
+  ];
+  return undefined;
+}
+
+/**
+ * Sets the grid rect (x, y, w, h) of a widget's layout item.
+ * Returns an error string on failure.
+ */
+export function resizeWidgetInState(
+  state: AppStateDoc,
+  widgetId: string,
+  rect: { x: number; y: number; w: number; h: number }
+): string | undefined {
+  if ([rect.x, rect.y, rect.w, rect.h].some(n => !Number.isInteger(n) || n < 0) || rect.w < 1 || rect.h < 1) {
+    return 'rect values must be non-negative integers with w/h >= 1';
+  }
+  const workflow = Object.values(state.obj.entities.workflows)
+    .find(w => w.layout.some(item => item.widgetId === widgetId));
+  if (!workflow) {
+    return `widget ${widgetId} is not placed in any workflow`;
+  }
+  workflow.layout = workflow.layout.map(item =>
+    item.widgetId === widgetId ? { ...item, rect: { ...rect } } : item
+  );
+  return undefined;
 }
 
 /** places a new widget below the lowest row of the workflow layout */

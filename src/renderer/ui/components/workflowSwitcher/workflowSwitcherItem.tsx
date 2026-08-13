@@ -15,6 +15,7 @@ export function WorkflowSwitcherItem (props: WorkflowSwitcherItemProps) {
     isCurrent,
     isEditMode,
     isDropArea,
+    isArchived,
     onClickHandler,
     onContextMenuHandler,
     onDragStartHandler,
@@ -39,7 +40,12 @@ export function WorkflowSwitcherItem (props: WorkflowSwitcherItemProps) {
       <button
         role="tab"
         aria-selected={isCurrent}
-        className={clsx(styles['workflow-switcher-item-button'], isDropArea && styles['is-drop-area'])}
+        title={isArchived ? `${name} (archived)` : undefined}
+        className={clsx(
+          styles['workflow-switcher-item-button'],
+          isDropArea && styles['is-drop-area'],
+          isArchived && styles['is-archived']
+        )}
         draggable={isEditMode}
         onClick={onClickHandler}
         onDragStart={onDragStartHandler}

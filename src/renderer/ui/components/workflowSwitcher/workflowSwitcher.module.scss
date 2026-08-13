@@ -114,6 +114,11 @@
   white-space: nowrap;
   min-width: 124px;
   cursor: pointer;
+
+  // archived workflow tabs (visible in edit mode, or when current) are dimmed
+  &.is-archived {
+    opacity: 0.5;
+  }
 }
 
 .workflow-switcher-item-name-editor {

@@ -16,6 +16,7 @@ export interface WorkflowSwitcherItemProps {
   isCurrent: boolean;
   isDropArea: boolean;
   isEditNameMode: boolean;
+  isArchived: boolean;
   actionBarItemsFactory: ItemActionBarItemsFactory;
   onClick: (evt: MouseEvent<HTMLElement>, itemId: EntityId) => void;
   onContextMenu: (evt: MouseEvent<HTMLElement>, itemId: EntityId) => void;
@@ -31,7 +32,7 @@ export interface WorkflowSwitcherItemProps {
 
 export function useWorkflowSwitcherItemViewModel(props: WorkflowSwitcherItemProps) {
   const {
-    id, name, isEditMode, isCurrent, onClick, onContextMenu,
+    id, name, isEditMode, isCurrent, isArchived, onClick, onContextMenu,
     isDropArea, onDragStart, onDragEnd, onDragEnter, onDragLeave,
     onDragOver, onDrop, actionBarItemsFactory, isEditNameMode, onEditName, onFinishEditName } = props;
 
@@ -104,6 +105,7 @@ export function useWorkflowSwitcherItemViewModel(props: WorkflowSwitcherItemProp
     isEditMode,
     isCurrent,
     isDropArea,
+    isArchived,
     onClickHandler,
     onContextMenuHandler,
     onDragStartHandler,
