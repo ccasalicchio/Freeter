@@ -3,7 +3,7 @@
  * GNU General Public License v3.0 or later (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
  */
 
-import { parseAppState, listProjects, listWorkflows, listWidgets, createWidgetInState, switchProjectInState, switchWorkflowInState, reorderWorkflowsInState, setWorkflowArchivedInState, updateWidgetInState, moveWidgetInState, resizeWidgetInState, searchNames, createWorkflowInState, renameWorkflowInState, duplicateWorkflowInState, deleteWidgetFromState, createProjectInState, renameProjectInState, setProjectArchivedInState, AppStateDoc } from '@/infra/mcpServer/mcpState';
+import { parseAppState, listProjects, listWorkflows, listWidgets, createWidgetInState, switchProjectInState, switchWorkflowInState, reorderWorkflowsInState, setWorkflowArchivedInState, updateWidgetInState, moveWidgetInState, resizeWidgetInState, searchNames, createWorkflowInState, renameWorkflowInState, duplicateWorkflowInState, deleteWidgetFromState, createProjectInState, renameProjectInState, setProjectArchivedInState, listContentWidgets, parseKanbanData, kanbanColumnsFromSettings, resolveKanbanColumn, readKanbanBoard, addKanbanCardToData, updateKanbanCardInData, moveKanbanCardInData, parseCalendarData, addCalendarEventToData, AppStateDoc, KanbanData } from '@/infra/mcpServer/mcpState';
 
 function fixtureState(): AppStateDoc {
   return {
@@ -258,5 +258,133 @@ describe('mcpState phase 1', () => {
     expect(state.obj.entities.projects['P1'].settings.isArchived).toBeUndefined();
     expect(listProjects(state).find(p => p.id === 'P1')?.isArchived).toBe(false);
     expect(setProjectArchivedInState(state, 'NOPE', true)).toBe(false);
+  })
+})
+
+describe('mcpState phase 2', () => {
+  function kanbanFixture(): KanbanData {
+    return {
+      cards: [
+        { id: 1, title: 'A', description: '', color: '#4e9af1', columnIdx: 0 },
+        { id: 2, title: 'B', description: 'b', color: '#2ecc71', columnIdx: 0 },
+        { id: 3, title: 'C', description: '', color: '#e74c3c', columnIdx: 1 },
+      ],
+      nextCardId: 4
+    };
+  }
+
+  it('lists content widgets filtered by type', () => {
+    const state = fixtureState();
+    state.obj.entities.widgets['WID2'] = { id: 'WID2', type: 'to-do-list', coreSettings: { name: 'Tasks' }, settings: {} };
+    state.obj.entities.workflows['W1'].layout.push({ id: 'L2', widgetId: 'WID2', rect: { x: 2, y: 0, w: 2, h: 2 } });
+
+    expect(listContentWidgets(state).map(w => w.id)).toEqual(['WID1', 'WID2']);
+    expect(listContentWidgets(state, ['note'])).toEqual([
+      { id: 'WID1', type: 'note', name: 'My Note', projectName: 'Alpha', workflowName: 'Main' }
+    ]);
+    expect(listContentWidgets(state, ['to-do-list']).map(w => w.id)).toEqual(['WID2']);
+  })
+
+  it('parses kanban data defensively', () => {
+    expect(parseKanbanData(undefined)).toEqual({ cards: [], nextCardId: 1 });
+    expect(parseKanbanData('not json')).toEqual({ cards: [], nextCardId: 1 });
+    expect(parseKanbanData('[1,2]')).toEqual({ cards: [], nextCardId: 1 });
+    // junk cards dropped, missing fields defaulted, nextCardId healed past the max id
+    const parsed = parseKanbanData(JSON.stringify({ cards: [{ id: 7 }, { nope: true }, 'x'], nextCardId: 2 }));
+    expect(parsed.cards).toEqual([{ id: 7, title: '', description: '', color: '#4e9af1', columnIdx: 0 }]);
+    expect(parsed.nextCardId).toBe(8);
+    // valid data passes through
+    expect(parseKanbanData(JSON.stringify(kanbanFixture()))).toEqual(kanbanFixture());
+  })
+
+  it('reads kanban columns from settings with renderer defaults', () => {
+    expect(kanbanColumnsFromSettings({})).toEqual(['To Do', 'In Progress', 'Done']);
+    expect(kanbanColumnsFromSettings({ columns: [] })).toEqual(['To Do', 'In Progress', 'Done']);
+    expect(kanbanColumnsFromSettings({ columns: ['Now', 5, 'Later'] })).toEqual(['Now', 'Later']);
+  })
+
+  it('resolves kanban column references by index and name', () => {
+    const cols = ['To Do', 'In Progress', 'Done'];
+    expect(resolveKanbanColumn(cols, 0)).toBe(0);
+    expect(resolveKanbanColumn(cols, 2)).toBe(2);
+    expect(resolveKanbanColumn(cols, 3)).toBeNull();
+    expect(resolveKanbanColumn(cols, -1)).toBeNull();
+    expect(resolveKanbanColumn(cols, 'done')).toBe(2);
+    expect(resolveKanbanColumn(cols, ' In Progress ')).toBe(1);
+    expect(resolveKanbanColumn(cols, '1')).toBe(1);
+    expect(resolveKanbanColumn(cols, 'Nope')).toBeNull();
+  })
+
+  it('builds the kanban board view, including columns past the configured names', () => {
+    const data = kanbanFixture();
+    data.cards.push({ id: 4, title: 'D', description: '', color: '#f39c12', columnIdx: 3 });
+    const board = readKanbanBoard(['To Do', 'In Progress', 'Done'], data);
+    expect(board.columns.map(c => c.name)).toEqual(['To Do', 'In Progress', 'Done', '(column 3)']);
+    expect(board.columns[0].cards.map(c => c.id)).toEqual([1, 2]);
+    expect(board.columns[1].cards.map(c => c.id)).toEqual([3]);
+    expect(board.columns[2].cards).toEqual([]);
+    expect(board.columns[3].cards.map(c => c.id)).toEqual([4]);
+  })
+
+  it('adds a kanban card with renderer-compatible defaults', () => {
+    const data = kanbanFixture();
+    expect(addKanbanCardToData(data, 2, '  New card  ', 'desc')).toEqual({ cardId: 4 });
+    expect(data.cards[3]).toEqual({ id: 4, title: 'New card', description: 'desc', color: '#4e9af1', columnIdx: 2 });
+    expect(data.nextCardId).toBe(5);
+  })
+
+  it('updates a kanban card and rejects unknown ids', () => {
+    const data = kanbanFixture();
+    expect(updateKanbanCardInData(data, 2, { title: 'B2', color: '#000000' })).toBeUndefined();
+    expect(data.cards[1]).toEqual({ id: 2, title: 'B2', description: 'b', color: '#000000', columnIdx: 0 });
+    expect(updateKanbanCardInData(data, 99, { title: 'x' })).toMatch(/card 99 not found/);
+  })
+
+  it('moves a kanban card to the end of a column by default', () => {
+    const data = kanbanFixture();
+    expect(moveKanbanCardInData(data, 1, 1)).toBeUndefined();
+    expect(data.cards.map(c => c.id)).toEqual([2, 3, 1]);
+    expect(data.cards[2].columnIdx).toBe(1);
+    expect(moveKanbanCardInData(data, 99, 0)).toMatch(/card 99 not found/);
+  })
+
+  it('moves a kanban card to a position within the target column, clamping it', () => {
+    const data = kanbanFixture();
+    // move C to top of column 0: becomes first among column-0 cards in the flat list
+    expect(moveKanbanCardInData(data, 3, 0, 0)).toBeUndefined();
+    expect(data.cards.map(c => c.id)).toEqual([3, 1, 2]);
+    expect(data.cards[0].columnIdx).toBe(0);
+    // over-large position clamps to the end
+    expect(moveKanbanCardInData(data, 3, 0, 99)).toBeUndefined();
+    expect(data.cards.map(c => c.id)).toEqual([1, 2, 3]);
+    // reorder within the same column to the middle
+    expect(moveKanbanCardInData(data, 3, 0, 1)).toBeUndefined();
+    expect(data.cards.map(c => c.id)).toEqual([1, 3, 2]);
+    // move to an empty column appends at the end of the flat list
+    expect(moveKanbanCardInData(data, 1, 2, 0)).toBeUndefined();
+    expect(data.cards.map(c => c.id)).toEqual([3, 2, 1]);
+    expect(data.cards[2].columnIdx).toBe(2);
+  })
+
+  it('parses calendar data defensively', () => {
+    expect(parseCalendarData(undefined)).toEqual({ events: [], nextEventId: 1 });
+    expect(parseCalendarData('garbage')).toEqual({ events: [], nextEventId: 1 });
+    const parsed = parseCalendarData(JSON.stringify({ events: [{ id: 5, title: 'T', date: '2026-08-13' }, null], nextEventId: 1 }));
+    expect(parsed.events).toEqual([{ id: 5, title: 'T', date: '2026-08-13', description: '' }]);
+    expect(parsed.nextEventId).toBe(6);
+  })
+
+  it('adds a calendar event with date validation', () => {
+    const data = parseCalendarData(undefined);
+    expect(addCalendarEventToData(data, '2026-08-13', 'Standup', 'daily')).toEqual({ eventId: 1 });
+    expect(data.events).toEqual([{ id: 1, title: 'Standup', date: '2026-08-13', description: 'daily' }]);
+    expect(data.nextEventId).toBe(2);
+
+    expect(addCalendarEventToData(data, '13/08/2026', 'x')).toMatch(/expected YYYY-MM-DD/);
+    expect(addCalendarEventToData(data, '2026-02-30', 'x')).toMatch(/not a real calendar day/);
+    expect(addCalendarEventToData(data, '2026-13-01', 'x')).toMatch(/not a real calendar day/);
+    // failed adds leave the data untouched
+    expect(data.events).toHaveLength(1);
+    expect(data.nextEventId).toBe(2);
   })
 })

@@ -3,11 +3,11 @@
 What the Freeter MCP server can do today, what's missing, and the order to
 build the rest. Date: 2026-08-12.
 
-## Current surface (29 tools)
+## Current surface (37 tools + 2 resource templates)
 
 **Read**: `list_projects`, `list_workflows` (incl. isArchived), `list_widgets`,
-`get_widget` (full settings of any widget), `read_note`, `read_todo`, `search`,
-`list_undo`.
+`get_widget` (full settings of any widget), `read_note`, `read_todo`,
+`read_snippet`, `read_kanban`, `read_calendar`, `search`, `list_undo`.
 **Write — structure**: `create_widget` (all 23 built-in types),
 `update_widget` (rename + merge settings: links, tools, commands, everything),
 `move_widget` (between tabs), `resize_widget` (layout rect),
@@ -16,7 +16,14 @@ build the rest. Date: 2026-08-12.
 `rename_workflow`, `duplicate_workflow` (clones widgets + copies widget
 content), `create_project`, `rename_project`, `set_project_archived`.
 **Write — content**: `write_note` (replace/append/prepend, markdown),
-`add_todo_item`, `update_todo_item`, `delete_todo_item`, `reorder_todo_items`.
+`add_todo_item`, `update_todo_item`, `delete_todo_item`, `reorder_todo_items`,
+`write_snippet` (code + optional language setting), `add_kanban_card`,
+`move_kanban_card` (column by index or name, optional position),
+`update_kanban_card` (title/description/color), `add_calendar_event`.
+**Resources**: `freeter://note/{widgetId}` (text/markdown) and
+`freeter://todo/{widgetId}` (application/json) resource templates whose list
+handlers enumerate every note / to-do widget across projects (named
+"Project / Workflow / Widget").
 **Navigation**: `switch_project`, `switch_workflow`.
 **Safety**: `undo` (20-deep, covers all MCP mutations, undo-of-undo = redo).
 
@@ -39,13 +46,13 @@ the undo stack) — and the `freeter:show-notification` IPC channel + main-side
 | `freeter_resize_widget(widgetId, rect)` | ✅ Shipped earlier (before this batch). |
 | `freeter_create_project(name)` / `freeter_set_project_archived` / `freeter_rename_project` | ✅ Shipped 2026-08-13. |
 
-### Phase 2 — content breadth
+### Phase 2 — content breadth — SHIPPED 2026-08-13
 | Tool | Notes |
 |---|---|
-| `freeter_read/write_snippet(widgetId)` | code-snippet widget content (same widget-data pattern as note). |
-| `freeter_read/update_kanban(widgetId)` | Kanban cards/columns as JSON; enables "move card to Done" from AI. |
-| `freeter_read_calendar / add_calendar_event` | Calendar widget events. |
-| MCP **resources** | Expose notes/todos as MCP resources (`freeter://note/<id>`) so clients can subscribe/browse without tool calls. |
+| `freeter_read_snippet / write_snippet(widgetId, code, language?)` | ✅ Shipped 2026-08-13. Code is widget data (key `code`, plain text, same pattern as note); the language lives in widget SETTINGS, so passing `language` writes via the app state (own undo entry "set snippet language"). |
+| `freeter_read_kanban / add_kanban_card / move_kanban_card / update_kanban_card` | ✅ Shipped 2026-08-13. Real data model: flat `{cards: [{id, title, description, color, columnIdx}], nextCardId}` under key `kanban`; column NAMES are widget settings (`columns`, default To Do/In Progress/Done) referenced by index. Tools accept columns by index or name; move supports optional position (clamped); no per-card done flag — "done" = move to the Done column. `update_kanban` from the plan became the three per-card tools. |
+| `freeter_read_calendar / add_calendar_event(widgetId, date, title, description?)` | ✅ Shipped 2026-08-13. Data model: `{events: [{id, title, date: 'YYYY-MM-DD', description}], nextEventId}` under key `events`; all-day events only (no time-of-day field), date validated as a real calendar day. |
+| MCP **resources** | ✅ Shipped 2026-08-13. `freeter://note/{widgetId}` (text/markdown) + `freeter://todo/{widgetId}` (application/json) via `registerResource` + `ResourceTemplate`; list callbacks enumerate all note/to-do widgets across projects as "Project / Workflow / Widget". |
 
 ### Phase 3 — action execution (OPT-IN; separate setting)
 These make external things happen, so they ship behind a new toggle in
