@@ -23,6 +23,10 @@ import {
   switchProjectInState, switchWorkflowInState, reorderWorkflowsInState, setWorkflowArchivedInState,
   updateWidgetInState, moveWidgetInState, resizeWidgetInState, searchNames, listContentWidgets
 } from '@/infra/mcpServer/mcpState';
+import {
+  appendAlertEntries, createIngestRateLimiter, entriesToNotify, findWidgetByIngestToken, mapIngestPayload
+} from '@/infra/mcpServer/ingest';
+import { showDesktopNotification } from '@/infra/notifications/notifications';
 
 export interface McpServerConfig {
   enabled: boolean;
@@ -47,11 +51,97 @@ function errorResult(message: string) {
   return { content: [{ type: 'text' as const, text: message }], isError: true };
 }
 
+/** max accepted ingest request body (bytes); the request is destroyed beyond it */
+const maxIngestBodyBytes = 64 * 1024;
+
+/**
+ * Reads the request body up to maxBytes. Resolves null (and destroys the
+ * request) when the cap is exceeded or the stream errors.
+ */
+function readRequestBody(req: http.IncomingMessage, maxBytes: number): Promise<string | null> {
+  return new Promise(resolve => {
+    const chunks: Buffer[] = [];
+    let size = 0;
+    let done = false;
+    const finish = (result: string | null) => {
+      if (!done) {
+        done = true;
+        resolve(result);
+      }
+    };
+    req.on('data', (chunk: Buffer) => {
+      size += chunk.length;
+      if (size > maxBytes) {
+        finish(null);
+        req.destroy();
+        return;
+      }
+      chunks.push(chunk);
+    });
+    req.on('end', () => finish(Buffer.concat(chunks).toString('utf8')));
+    req.on('error', () => finish(null));
+  });
+}
+
 export function createFreeterMcpServer({ appDataStorage, widgetDataStorageManager, reloadRenderer }: Deps) {
   let httpServer: http.Server | null = null;
 
   async function readState() {
     return parseAppState(await appDataStorage.getText('app'));
+  }
+
+  // webhook ingest (POST /ingest/{token}): 10 requests/min per token
+  const ingestRateLimiter = createIngestRateLimiter();
+
+  /**
+   * Handles POST /ingest/{token}: no bearer auth — the per-widget random
+   * token in the path IS the auth (timing-safe compared, rate limited,
+   * body-capped). Appends the mapped alerts to the matching alert-inbox
+   * widget's data (NOT undo-covered: ingest is a data feed, not an MCP edit)
+   * and shows desktop notifications for firing alerts.
+   */
+  async function handleIngestRequest(req: http.IncomingMessage, res: http.ServerResponse, token: string): Promise<void> {
+    // single 404 for wrong method/route/token: don't reveal which part was wrong
+    if (req.method !== 'POST') {
+      res.writeHead(404).end();
+      return;
+    }
+    if (!ingestRateLimiter.allow(token)) {
+      res.writeHead(429, { 'Content-Type': 'application/json' }).end(JSON.stringify({ error: 'rate limit exceeded' }));
+      return;
+    }
+    const state = await readState();
+    const widget = state && findWidgetByIngestToken(state, token);
+    if (!widget) {
+      res.writeHead(404).end();
+      return;
+    }
+    const body = await readRequestBody(req, maxIngestBodyBytes);
+    if (body === null) {
+      // over the cap: the request stream is destroyed; best-effort status
+      if (!res.headersSent && res.writable) {
+        res.writeHead(413).end();
+      }
+      return;
+    }
+    let payload: unknown;
+    try {
+      payload = JSON.parse(body);
+    } catch {
+      res.writeHead(400, { 'Content-Type': 'application/json' }).end(JSON.stringify({ error: 'invalid JSON body' }));
+      return;
+    }
+    const entries = mapIngestPayload(payload, new Date().toISOString());
+    const storage = await widgetDataStorageManager.getObject(widget.id);
+    const updated = appendAlertEntries(await storage.getText('alerts'), entries);
+    await storage.setText('alerts', JSON.stringify(updated));
+    reloadRenderer();
+    if (widget.settings.notifyDesktop !== false) {
+      for (const entry of entriesToNotify(entries)) {
+        showDesktopNotification(entry.title, entry.body);
+      }
+    }
+    res.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify({ ok: true, stored: entries.length }));
   }
 
   // undo history for MCP mutations; lives for the app's lifetime (max 20 entries)
@@ -373,8 +463,7 @@ export function createFreeterMcpServer({ appDataStorage, widgetDataStorageManage
       }
       // secret-looking settings are masked; update_widget can still write them
       const settings = Object.fromEntries(Object.entries(widget.settings as Record<string, unknown>).map(([k, v]) =>
-        /token|password|secret|apikey|api_key/i.test(k) && typeof v === 'string' && v !== '' ? [k, '***'] : [k, v]
-      ));
+        /token|password|secret|apikey|api_key/i.test(k) && typeof v === 'string' && v !== '' ? [k, '***'] : [k, v]));
       return textResult({ id: widget.id, type: widget.type, name: widget.coreSettings.name ?? '', settings });
     });
 
@@ -528,6 +617,18 @@ export function createFreeterMcpServer({ appDataStorage, widgetDataStorageManage
       }
       httpServer = http.createServer(async (req, res) => {
         try {
+          // webhook ingest route: path token is the auth (no bearer header)
+          const ingestMatch = /^\/ingest\/([^/?#]+)$/.exec(req.url ?? '');
+          if (ingestMatch) {
+            let token = ingestMatch[1];
+            try {
+              token = decodeURIComponent(token);
+            } catch {
+              // malformed percent-encoding: match against the raw segment
+            }
+            await handleIngestRequest(req, res, token);
+            return;
+          }
           if (req.url !== '/mcp') {
             res.writeHead(404).end();
             return;

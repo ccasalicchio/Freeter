@@ -83,6 +83,7 @@ import { createLoginItemControllers } from '@/controllers/loginItem';
 import { createHttpRequestControllers } from '@/controllers/httpRequest';
 import { createFsListDirControllers } from '@/controllers/fsListDir';
 import { createMcpConfigControllers } from '@/controllers/mcpConfig';
+import { createNotificationControllers } from '@/controllers/notification';
 import { createExecFileControllers } from '@/controllers/execFile';
 import { createFreeterMcpServer } from '@/infra/mcpServer/mcpServer';
 import { createAutoBackup } from '@/infra/autoBackup/autoBackup';
@@ -313,7 +314,8 @@ if (!app.requestSingleInstanceLock()) {
         applyMcpConfig: (config) => mcpServer.start(config)
       }),
       ...createExecFileControllers(),
-      ...createFsListDirControllers()
+      ...createFsListDirControllers(),
+      ...createNotificationControllers()
     ])
 
     const [windowStore] = createWindowStore({

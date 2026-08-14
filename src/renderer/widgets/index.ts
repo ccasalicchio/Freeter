@@ -1,4 +1,5 @@
 import { WidgetSettings, WidgetType } from '@/widgets/appModules'
+import alertInbox from './alert-inbox';
 import appLauncher from './app-launcher';
 import webhookButton from './webhook-button';
 import gitStatus from './git-status';
@@ -29,6 +30,7 @@ import codeSnippet from './code-snippet';
 import passwordVault from './password-vault';
 
 const builtinWidgetTypes = [
+  alertInbox,
   appLauncher,
   webhookButton,
   gitStatus,

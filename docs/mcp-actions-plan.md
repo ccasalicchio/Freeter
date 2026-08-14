@@ -16,6 +16,13 @@ build the rest. Date: 2026-08-12.
 **Navigation**: `switch_project`, `switch_workflow`.
 **Safety**: `undo` (20-deep, covers all MCP mutations, undo-of-undo = redo).
 
+Non-tool surface on the same listener (added 2026-08-13): `POST
+/ingest/{token}` — webhook alert ingest for the `alert-inbox` widget (path
+token auth, no bearer; rate-limited, 64 KB cap; writes widget data outside
+the undo stack) — and the `freeter:show-notification` IPC channel + main-side
+`showDesktopNotification()` used by ingest for OS toasts. The
+`freeter_show_notification` MCP *tool* itself is still Phase 3 (not shipped).
+
 ## Gaps → proposed tools
 
 ### Phase 1 — structure completion (safe, state-only; all undo-covered)

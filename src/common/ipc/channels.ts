@@ -203,6 +203,11 @@ export const ipcSetMcpConfigChannel = makeIpcChannelName('set-mcp-config');
 export type IpcSetMcpConfigArgs = [config: { enabled: boolean; port: number; token: string; allowExternal?: boolean }];
 export type IpcSetMcpConfigRes = void;
 
+/** Show an OS desktop notification (toast) via Electron Notification. */
+export const ipcShowNotificationChannel = makeIpcChannelName('show-notification');
+export type IpcShowNotificationArgs = [title: string, body: string];
+export type IpcShowNotificationRes = void;
+
 /** Enable/disable launching Freeter at OS startup. */
 export const ipcSetLoginItemSettingsChannel = makeIpcChannelName('set-login-item-settings');
 export type IpcSetLoginItemSettingsArgs = [openAtLogin: boolean];
