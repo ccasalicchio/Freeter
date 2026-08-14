@@ -16,6 +16,7 @@ import { GetWidgetsInCurrentWorkflowUseCase } from '@/application/useCases/widge
 import { SafeStorageRenderer } from '@/infra/safeStorageProvider/safeStorageProvider';
 import { HttpProvider } from '@/infra/httpProvider/httpProvider';
 import { FsProvider } from '@/infra/fsProvider/fsProvider';
+import { NotificationProvider } from '@/infra/notificationProvider/notificationProvider';
 
 interface Deps {
   clipboardProvider: ClipboardProvider;
@@ -27,11 +28,13 @@ interface Deps {
   safeStorageProvider: SafeStorageRenderer;
   httpProvider: HttpProvider;
   fsProvider: FsProvider;
+  notificationProvider: NotificationProvider;
 }
 function _createWidgetApiFactory({
   clipboardProvider,
   httpProvider,
   fsProvider,
+  notificationProvider,
   processProvider,
   shellProvider,
   widgetDataStorageManager,
@@ -79,6 +82,11 @@ function _createWidgetApiFactory({
       }),
       fs: () => ({
         listDir: (dirPath) => fsProvider.listDir(dirPath)
+      }),
+      notification: () => ({
+        show: (title, body) => {
+          notificationProvider.show(title, body)
+        }
       }),
       shell: () => ({
         openApp: (appPath, args) => shellProvider.openApp(appPath, args),

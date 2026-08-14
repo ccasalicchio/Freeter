@@ -79,6 +79,11 @@ interface WidgetApiModules {
   readonly fs: {
     listDir: (dirPath: string) => Promise<FsListDirResult>;
   };
+  /** OS desktop notifications (toasts). */
+  readonly notification: {
+    /** Show a desktop notification with the given title and body. */
+    show: (title: string, body: string) => void;
+  };
   readonly shell: {
     openApp: (appPath: string, args?: string[]) => Promise<void>;
     openExternalUrl: (url: string) => Promise<void>;

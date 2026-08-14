@@ -28,6 +28,8 @@ import apiRequest from './api-request';
 import calendar from './calendar';
 import codeSnippet from './code-snippet';
 import passwordVault from './password-vault';
+import portWatcher from './port-watcher';
+import reminders from './reminders';
 
 const builtinWidgetTypes = [
   alertInbox,
@@ -59,6 +61,8 @@ const builtinWidgetTypes = [
   calendar,
   codeSnippet,
   passwordVault,
+  portWatcher,
+  reminders,
 ] as unknown as WidgetType<WidgetSettings>[];
 
 const allWidgetTypes = [...builtinWidgetTypes];

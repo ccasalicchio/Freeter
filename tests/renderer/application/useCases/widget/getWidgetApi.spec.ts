@@ -58,6 +58,10 @@ function setup() {
     decryptString: jest.fn(),
   };
 
+  const notificationProvider = {
+    show: jest.fn(async () => undefined),
+  };
+
   const getWidgetApiUseCase = createGetWidgetApiUseCase({
     clipboardProvider,
     processProvider,
@@ -68,6 +72,7 @@ function setup() {
     safeStorageProvider,
     httpProvider: { request: jest.fn(async () => ({ ok: true, status: 200, statusText: 'OK', body: '' })) },
     fsProvider: { listDir: jest.fn(async () => ({ ok: true, entries: [] })) },
+    notificationProvider,
   });
   return {
     clipboardProvider,
@@ -77,6 +82,7 @@ function setup() {
     widgetDataStorageManager,
     terminalProvider,
     getWidgetsInCurrentWorkflowUseCase,
+    notificationProvider,
 
     getWidgetApiUseCase
   }
@@ -251,6 +257,19 @@ describe('getWidgetApiUseCase()', () => {
     widgetApi.terminal.execCmdLines(['cmd1', 'cmd2'], 'cwd');
     expect(terminalProvider.execCmdLines).toHaveBeenCalledTimes(1);
     expect(terminalProvider.execCmdLines).toHaveBeenCalledWith(['cmd1', 'cmd2'], 'cwd');
+  })
+
+  it('should correctly setup notification module', () => {
+    const {
+      getWidgetApiUseCase,
+      notificationProvider
+    } = setup()
+
+    const widgetApi = getWidgetApiUseCase(widgetId, false, () => undefined, () => undefined, () => undefined, ['notification']);
+
+    widgetApi.notification.show('Some Title', 'Some body');
+    expect(notificationProvider.show).toHaveBeenCalledTimes(1);
+    expect(notificationProvider.show).toHaveBeenCalledWith('Some Title', 'Some body');
   })
 
   it('should correctly setup widgets module', () => {
