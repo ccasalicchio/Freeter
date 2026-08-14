@@ -5,9 +5,10 @@
 
 import { join } from 'path';
 import { pathToFileURL } from 'url';
-import { net } from 'electron';
+import { app, net } from 'electron';
 import { registerProtocol } from '@/infra/protocolHandler/protocolHandler';
-import { hostFreeterApp, hostLocalFile, schemeFreeterFile } from '@common/infra/network';
+import { serveFavicon } from '@/infra/protocolHandler/faviconCache';
+import { hostFavicon, hostFreeterApp, hostLocalFile, schemeFreeterFile } from '@common/infra/network';
 
 export function registerAppFileProtocol(devMode: boolean) {
   let fetchAppFile: (pathname: string) => Promise<Response>;
@@ -29,6 +30,12 @@ export function registerAppFileProtocol(devMode: boolean) {
           return new Response(null, { status: 403 });
         }
         return net.fetch(pathToFileURL(localPath).toString());
+      }
+      if (urlObj.host === hostFavicon) {
+        // serves site favicons from an offline disk cache, fetching
+        // <origin>/favicon.ico over the network on first use
+        const pageUrl = decodeURIComponent(urlObj.pathname.replace(/^\//, ''));
+        return serveFavicon(join(app.getPath('userData'), 'favicon-cache'), pageUrl, url => net.fetch(url));
       }
       if (urlObj.host !== hostFreeterApp) {
         return new Response(null, { status: 404 });

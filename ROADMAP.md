@@ -38,7 +38,9 @@ High-level milestone view for the Freeter v3 upgrade.
 
 **Widgets & UX**
 - New **App Launcher** widget (exe + args + icon) — v1 app shortcuts
-- Link Opener: icon modes (gallery/favicon/custom), per-link browser choice
+- Link Opener: icon modes (gallery/favicon/custom), per-link browser choice;
+  favicons served through an offline disk cache, multi-URL tiles show up to
+  4 per-URL mini-favicons (2x2)
 - Note: View/Edit/Split toggle (View default), polished markdown (syntax
   highlighting, themed typography, Content Style setting), clickable links
 - Global find-in-page (Ctrl+F) across all widgets; CodeMirror search in editors
@@ -64,7 +66,6 @@ High-level milestone view for the Freeter v3 upgrade.
   content tools, opt-in action execution, MCP resources
   (see docs/mcp-actions-plan.md; phases 1-4)
 - **Shelf bulk-pin** from the Freeter 1 Library
-- Icon polish: favicon offline caching, per-URL icons on multi-URL tiles
 - Auto-update / release channel wiring (electron-builder publish is configured
   but unused); code signing for the MSI (blocked: requires a purchased
   code-signing certificate)

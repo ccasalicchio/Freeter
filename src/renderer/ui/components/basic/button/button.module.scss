@@ -124,3 +124,10 @@ $fontSizeL: 16px;
 .button-icon {
   pointer-events: none;
 }
+
+// span wrapper used for custom icon content (iconNode); img/svg icons are
+// replaced elements, but a span needs inline-block for the size rules to apply
+span.button-icon {
+  display: inline-block;
+  vertical-align: middle;
+}
