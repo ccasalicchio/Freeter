@@ -28,7 +28,7 @@ if richer charts are needed later, add **uPlot** (~45 KB, MIT) — not before.
 
 ### Phase A — foundations + Prometheus (highest value, zero server-side setup)
 
-**A1. `prometheus-stat` — Prometheus Query widget**
+**A1. `prometheus-stat` — Prometheus Query widget** — ✅ shipped (2026-08-13)
 - Settings: `baseUrl`, `query` (PromQL), `mode: 'instant' | 'range'`,
   `rangeMinutes` (default 60), `refreshSecs` (default 30, min 5), `unit`
   (suffix string), `thresholds: { warn?: number; crit?: number; invert?: bool }`,
@@ -40,7 +40,7 @@ if richer charts are needed later, add **uPlot** (~45 KB, MIT) — not before.
 - API is stable Prometheus HTTP API v1 — also works as-is for **VictoriaMetrics,
   Thanos, Mimir, Cortex** (all Prometheus-compatible). One widget, five backends.
 
-**A2. `json-stat` — Generic JSON Metric widget (the "other tools" catch-all)**
+**A2. `json-stat` — Generic JSON Metric widget (the "other tools" catch-all)** — ✅ shipped (2026-08-13)
 - Settings: `url`, `jsonPath` (dot/bracket path, e.g. `data.stats[0].cpu`),
   `label`, `unit`, `refreshSecs`, thresholds, auth (as A1), optional `headers`.
 - Covers any reporting tool with a JSON endpoint (Datadog, New Relic, Zabbix,
@@ -48,9 +48,11 @@ if richer charts are needed later, add **uPlot** (~45 KB, MIT) — not before.
 - Implementation: reuse HTTP Monitor's poll loop; tiny path evaluator
   (no `eval`, no dependency).
 
-**Shared work in Phase A:** `src/renderer/widgets/helpers.ts` gains
-`usePolling(cb, secs)`, `Sparkline`, `BarStrip`, `thresholdColor()`; auth
-settings sub-component (`monitorAuthSettings.tsx`) shared by all these widgets.
+**Shared work in Phase A:** ✅ shipped — `src/renderer/widgets/helpers.ts` gained
+`usePolling(cb, secs)`, `Sparkline`, `thresholdColor()`, `getJsonPath()`,
+`monitorAuthHeaders()`/`sanitizeMonitorAuth()` (auth fields are inlined per
+widget for now; `BarStrip` deferred until a widget needs it). Credentials are
+plain settings in this batch — safeStorage migration planned.
 
 ### Phase B — Grafana + Alertmanager
 

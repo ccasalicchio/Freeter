@@ -8,7 +8,9 @@ import commander from './commander';
 import fileExplorer from './file-explorer';
 import fileOpener from './file-opener';
 import httpMonitor from './http-monitor';
+import jsonStat from './json-stat';
 import linkOpener from './link-opener';
+import prometheusStat from './prometheus-stat';
 import note from './note';
 import timer from './timer';
 import toDoList from './to-do-list';
@@ -34,7 +36,9 @@ const builtinWidgetTypes = [
   fileExplorer,
   fileOpener,
   httpMonitor,
+  jsonStat,
   linkOpener,
+  prometheusStat,
   note,
   timer,
   toDoList,
