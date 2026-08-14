@@ -3,7 +3,7 @@
  * GNU General Public License v3.0 or later (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
  */
 
-import { formatStatValue, getJsonPath, thresholdColor } from '@/widgets/helpers';
+import { formatSinceTime, formatStatValue, getJsonPath, thresholdColor } from '@/widgets/helpers';
 
 describe('thresholdColor()', () => {
   it('should return ok when no thresholds are set', () => {
@@ -98,5 +98,42 @@ describe('formatStatValue()', () => {
   it('should return N/A for non-finite values', () => {
     expect(formatStatValue(Number.NaN)).toBe('N/A');
     expect(formatStatValue(Number.POSITIVE_INFINITY)).toBe('N/A');
+  })
+})
+
+describe('formatSinceTime()', () => {
+  const now = Date.parse('2026-08-13T12:00:00Z');
+  const ago = (ms: number) => new Date(now - ms).toISOString();
+
+  it('should format sub-minute durations in seconds', () => {
+    expect(formatSinceTime(ago(0), now)).toBe('0s');
+    expect(formatSinceTime(ago(30 * 1000), now)).toBe('30s');
+    expect(formatSinceTime(ago(59 * 1000), now)).toBe('59s');
+  })
+
+  it('should format sub-hour durations in minutes', () => {
+    expect(formatSinceTime(ago(60 * 1000), now)).toBe('1m');
+    expect(formatSinceTime(ago(45 * 60 * 1000), now)).toBe('45m');
+    expect(formatSinceTime(ago(59 * 60 * 1000 + 59 * 1000), now)).toBe('59m');
+  })
+
+  it('should format sub-day durations in hours', () => {
+    expect(formatSinceTime(ago(60 * 60 * 1000), now)).toBe('1h');
+    expect(formatSinceTime(ago(3 * 60 * 60 * 1000), now)).toBe('3h');
+    expect(formatSinceTime(ago(23 * 60 * 60 * 1000), now)).toBe('23h');
+  })
+
+  it('should format longer durations in days', () => {
+    expect(formatSinceTime(ago(24 * 60 * 60 * 1000), now)).toBe('1d');
+    expect(formatSinceTime(ago(2 * 24 * 60 * 60 * 1000 + 5 * 60 * 60 * 1000), now)).toBe('2d');
+  })
+
+  it('should clamp future timestamps to 0s', () => {
+    expect(formatSinceTime(ago(-60 * 1000), now)).toBe('0s');
+  })
+
+  it('should return an empty string for unparsable input', () => {
+    expect(formatSinceTime('not-a-date', now)).toBe('');
+    expect(formatSinceTime('', now)).toBe('');
   })
 })

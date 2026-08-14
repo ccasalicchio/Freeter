@@ -9,6 +9,12 @@ export interface HttpRequestConfig {
   headers?: Record<string, string>;
   body?: string;
   timeoutMs?: number;
+  /**
+   * When true, the response body is retrieved as binary and returned
+   * base64-encoded in HttpResponse.bodyBase64 (body stays empty).
+   * Needed for image/binary endpoints, which res.text() would mangle.
+   */
+  binary?: boolean;
 }
 
 export interface HttpResponse {
@@ -16,5 +22,7 @@ export interface HttpResponse {
   status: number;
   statusText: string;
   body: string;
+  /** Base64-encoded body, set only when the request was made with binary: true. */
+  bodyBase64?: string;
   error?: string;
 }

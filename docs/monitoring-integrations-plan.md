@@ -56,7 +56,7 @@ plain settings in this batch — safeStorage migration planned.
 
 ### Phase B — Grafana + Alertmanager
 
-**B1. `grafana-alerts` — Grafana Alerts widget**
+**B1. `grafana-alerts` — Grafana Alerts widget** — ✅ shipped (2026-08-13)
 - Settings: `baseUrl`, service-account token (safeStorage), `stateFilter`
   (firing/pending/all), `labelFilter`, `refreshSecs`.
 - API: `GET /api/alertmanager/grafana/api/v2/alerts` (unified alerting,
@@ -67,7 +67,7 @@ plain settings in this batch — safeStorage migration planned.
   (`{baseUrl}/api/v2/alerts`) targets a **standalone Alertmanager** —
   expose as a `source: 'grafana' | 'alertmanager'` setting, one widget for both.
 
-**B2. `grafana-panel` — Grafana Panel widget (visual embed)**
+**B2. `grafana-panel` — Grafana Panel widget (visual embed)** — ✅ shipped (2026-08-13)
 Two render modes (user picks; both documented in settings `moreInfo`):
 1. **Server-rendered PNG** (default): `GET {baseUrl}/render/d-solo/{dashUid}/{slug}?panelId=N&width=&height=&from=&to=&tz=` with `Authorization: Bearer <sa token>`, fetched via the `http` API (binary → data URI). Requires the
    grafana-image-renderer plugin server-side; renderer enforces ≥1000×500 px
@@ -76,6 +76,10 @@ Two render modes (user picks; both documented in settings `moreInfo`):
    logged-in session in the webview — zero extra plugins, fully interactive.
 - Settings: `baseUrl`, `dashboardUid`, `panelId`, `mode`, `refreshSecs`,
   `timeRange` (e.g. `now-6h`), token (safeStorage).
+- Shipped note: image mode required binary-safe HTTP — the `http` widget API
+  gained `HttpRequestConfig.binary?: true` → `HttpResponse.bodyBase64`
+  (base64 body from the main-process controller; backward compatible).
+  Tokens are plain settings for now (safeStorage migration planned, as Phase A).
 
 **B3. Dashboard deep links** — no new widget: document Link Opener tiles to
 `{baseUrl}/d/{uid}` with the Grafana glyph (add a Grafana-style SVG to the

@@ -7,6 +7,8 @@ import githubPrs from './github-prs';
 import commander from './commander';
 import fileExplorer from './file-explorer';
 import fileOpener from './file-opener';
+import grafanaAlerts from './grafana-alerts';
+import grafanaPanel from './grafana-panel';
 import httpMonitor from './http-monitor';
 import jsonStat from './json-stat';
 import linkOpener from './link-opener';
@@ -35,6 +37,8 @@ const builtinWidgetTypes = [
   commander,
   fileExplorer,
   fileOpener,
+  grafanaAlerts,
+  grafanaPanel,
   httpMonitor,
   jsonStat,
   linkOpener,
