@@ -22,6 +22,13 @@ export function createHttpRequestControllers(): [
           signal: controller.signal
         });
         clearTimeout(timer);
+        if (config.binary === true) {
+          const buf = await res.arrayBuffer();
+          return {
+            ok: res.ok, status: res.status, statusText: res.statusText,
+            body: '', bodyBase64: Buffer.from(buf).toString('base64')
+          };
+        }
         const body = await res.text();
         return { ok: res.ok, status: res.status, statusText: res.statusText, body };
       } catch (err) {

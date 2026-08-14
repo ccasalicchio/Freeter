@@ -1,0 +1,148 @@
+/*
+ * Copyright: (c) 2024, Alex Kaul
+ * GNU General Public License v3.0 or later (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+ */
+
+.alerts {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 12px;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  color: var(--freeter-componentColor);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.badge {
+  font-size: 0.8em;
+  font-weight: bold;
+  padding: 2px 8px;
+  border-radius: 10px;
+  color: #fff;
+}
+
+.badge-firing {
+  background-color: #e05252;
+}
+
+.badge-ok {
+  background-color: #4caf50;
+}
+
+.as-of {
+  font-size: 0.75em;
+  opacity: 0.6;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.refresh {
+  margin-left: auto;
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 1em;
+  padding: 2px 4px;
+  opacity: 0.7;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-y: auto;
+}
+
+.row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 0.85em;
+  text-align: left;
+  padding: 2px 4px;
+  border-radius: 4px;
+  overflow: hidden;
+
+  &:hover {
+    background-color: rgba(128, 128, 128, 0.15);
+  }
+}
+
+.dot {
+  flex-shrink: 0;
+  align-self: center;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.dot-crit { background-color: #e05252; }
+.dot-warn { background-color: #e8a33d; }
+.dot-other { background-color: #8a8a8a; }
+
+.name {
+  flex-shrink: 0;
+  font-weight: bold;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 50%;
+}
+
+.summary {
+  opacity: 0.7;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.since {
+  margin-left: auto;
+  flex-shrink: 0;
+  font-size: 0.9em;
+  opacity: 0.6;
+}
+
+.error {
+  color: #e05252;
+  font-size: 0.85em;
+  overflow: hidden;
+}
+
+.note {
+  opacity: 0.6;
+  padding: 4px;
+  font-size: 0.85em;
+}
+
+.not-configured {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  opacity: 0.6;
+  padding: 8px;
+  text-align: center;
+  box-sizing: border-box;
+}
