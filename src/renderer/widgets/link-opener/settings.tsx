@@ -89,7 +89,7 @@ function SettingsEditorComp({settings, settingsApi}: SettingsEditorReactComponen
       <SettingBlock
         titleForId='link-icon-mode'
         title='Icon'
-        moreInfo='Default shows the built-in link icon. Site Favicon loads the icon of the first URL. Custom Image uses an image URL or local file path.'
+        moreInfo={'Default shows the built-in link icon. Site Favicon loads each site\'s icon (cached for offline use; tiles with multiple URLs show up to 4 mini-icons). Custom Image uses an image URL or local file path.'}
       >
         <select id='link-icon-mode' value={settings.iconMode} onChange={e => updateSettings({
           ...settings,

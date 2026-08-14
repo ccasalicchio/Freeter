@@ -8,6 +8,7 @@ import { widgetComp } from '@/widgets/link-opener/widget'
 import { screen } from '@testing-library/react';
 import { SetupWidgetSutOptional, setupWidgetSut } from '@tests/widgets/setupSut'
 import { fixtureSettings } from './fixtures';
+import { faviconUrl } from '@common/infra/network';
 
 function setupSut(settings: Settings, optional?: SetupWidgetSutOptional) {
   const { comp, ...rest } = setupWidgetSut(widgetComp, settings, optional);
@@ -60,5 +61,51 @@ describe('Link Opener Widget', () => {
     expect(openExternalUrl).toBeCalledTimes(2);
     expect(openExternalUrl).toHaveBeenNthCalledWith(1, 'test://url1');
     expect(openExternalUrl).toHaveBeenNthCalledWith(2, 'test://url2');
+  })
+
+  describe('favicon icon mode', () => {
+    it('should render the favicon of a single URL via the freeter-file favicon protocol', () => {
+      const url = 'https://example.com/some/page';
+      setupSut(fixtureSettings({ urls: [url], iconMode: 'favicon' }));
+
+      const img = screen.getByRole('button', { name: /open link/i }).querySelector('img');
+      expect(img).not.toBeNull();
+      expect(img!).toHaveAttribute('src', `freeter-file://favicon/${encodeURIComponent(url)}`);
+      expect(img!).toHaveAttribute('src', faviconUrl(url));
+    })
+
+    it('should render a per-URL favicon for each URL of a multi-URL tile', () => {
+      const urls = ['https://one.example.com/', 'https://two.example.com/page'];
+      setupSut(fixtureSettings({ urls, iconMode: 'favicon' }));
+
+      const imgs = screen.getByRole('button', { name: /open links/i }).querySelectorAll('img');
+      expect(imgs.length).toBe(2);
+      expect(imgs[0]).toHaveAttribute('src', faviconUrl(urls[0]));
+      expect(imgs[1]).toHaveAttribute('src', faviconUrl(urls[1]));
+    })
+
+    it('should render at most 4 mini-favicons on a multi-URL tile', () => {
+      const urls = [1, 2, 3, 4, 5].map(i => `https://site${i}.example.com/`);
+      setupSut(fixtureSettings({ urls, iconMode: 'favicon' }));
+
+      const imgs = screen.getByRole('button', { name: /open links/i }).querySelectorAll('img');
+      expect(imgs.length).toBe(4);
+      expect(Array.from(imgs).map(img => img.getAttribute('src')))
+        .toEqual(urls.slice(0, 4).map(faviconUrl));
+    })
+
+    it('should still open every URL on click, when showing per-URL favicons', async () => {
+      const urls = [1, 2, 3, 4, 5].map(i => `https://site${i}.example.com/`);
+      const openExternalUrl = jest.fn();
+      const { userEvent } = setupSut(
+        fixtureSettings({ urls, iconMode: 'favicon' }),
+        { mockWidgetApi: { shell: { openExternalUrl } } }
+      );
+
+      await userEvent.click(screen.getByRole('button', { name: /open links/i }))
+
+      expect(openExternalUrl).toBeCalledTimes(5);
+      urls.forEach((url, i) => expect(openExternalUrl).toHaveBeenNthCalledWith(i + 1, url));
+    })
   })
 })

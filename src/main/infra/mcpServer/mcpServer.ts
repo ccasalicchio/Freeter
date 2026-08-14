@@ -13,7 +13,7 @@
 import http from 'node:http';
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { McpServer, ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { DataStorage } from '@common/application/interfaces/dataStorage';
 import { ObjectManager } from '@common/base/objectManager';
@@ -23,7 +23,10 @@ import {
   switchProjectInState, switchWorkflowInState, reorderWorkflowsInState, setWorkflowArchivedInState,
   updateWidgetInState, moveWidgetInState, resizeWidgetInState, searchNames, listContentWidgets,
   createWorkflowInState, renameWorkflowInState, duplicateWorkflowInState, deleteWidgetFromState,
-  createProjectInState, renameProjectInState, setProjectArchivedInState
+  createProjectInState, renameProjectInState, setProjectArchivedInState,
+  parseKanbanData, kanbanColumnsFromSettings, resolveKanbanColumn, readKanbanBoard,
+  addKanbanCardToData, updateKanbanCardInData, moveKanbanCardInData,
+  parseCalendarData, addCalendarEventToData
 } from '@/infra/mcpServer/mcpState';
 import {
   appendAlertEntries, createIngestRateLimiter, entriesToNotify, findWidgetByIngestToken, mapIngestPayload
@@ -727,6 +730,256 @@ export function createFreeterMcpServer({ appDataStorage, widgetDataStorageManage
       data.items = itemIds.map(id => byId.get(id));
       await setWidgetTextWithUndo(widgetId, 'todo', JSON.stringify(data), 'reorder to-do items');
       return textResult('Items reordered.');
+    });
+
+    server.registerTool('freeter_read_snippet', {
+      description: 'Reads a code-snippet widget: its code text plus the configured syntax-highlighting language.',
+      inputSchema: { widgetId: z.string().describe('Code-snippet widget id (type "code-snippet")') }
+    }, async ({ widgetId }) => {
+      const state = await readState();
+      const widget = state && getWidget(state, widgetId);
+      if (!widget || widget.type !== 'code-snippet') {
+        return errorResult(`Widget "${widgetId}" is not a code snippet. Use freeter_list_widgets to find code-snippet widgets.`);
+      }
+      const storage = await widgetDataStorageManager.getObject(widgetId);
+      const code = await storage.getText('code');
+      const language = typeof widget.settings.language === 'string' ? widget.settings.language : 'typescript';
+      return textResult({ language, code: code ?? '' });
+    });
+
+    server.registerTool('freeter_write_snippet', {
+      description: 'Replaces the code text of a code-snippet widget. The code is widget DATA (one undo entry); the optional language is a widget SETTING stored in the app state, so passing it makes a second, separate undo entry ("set snippet language").',
+      inputSchema: {
+        widgetId: z.string().describe('Code-snippet widget id (type "code-snippet")'),
+        code: z.string().describe('New code text (replaces the current content)'),
+        language: z.enum([
+          'typescript', 'javascript', 'python', 'rust', 'go', 'sql', 'bash',
+          'json', 'yaml', 'html', 'css', 'csharp', 'java'
+        ]).optional().describe('Syntax-highlighting language (optional; updates the widget setting)')
+      }
+    }, async ({ widgetId, code, language }) => {
+      const state = await readState();
+      const widget = state && getWidget(state, widgetId);
+      if (!state || !widget || widget.type !== 'code-snippet') {
+        return errorResult(`Widget "${widgetId}" is not a code snippet. Use freeter_list_widgets to find code-snippet widgets.`);
+      }
+      if (language) {
+        updateWidgetInState(state, widgetId, { settings: { language } });
+        await writeState(state, 'set snippet language');
+      }
+      await setWidgetTextWithUndo(widgetId, 'code', code, 'write code snippet');
+      return textResult(`Snippet updated (${code.length} chars${language ? `, language ${language}` : ''}).`);
+    });
+
+    server.registerTool('freeter_read_kanban', {
+      description: 'Reads a kanban-board widget: every column (index + name, e.g. "To Do"/"In Progress"/"Done") with its cards in order (card ids included). Use the returned column indices/names and card ids with the other freeter_*_kanban_* tools.',
+      inputSchema: { widgetId: z.string().describe('Kanban widget id (type "kanban-board")') }
+    }, async ({ widgetId }) => {
+      const state = await readState();
+      const widget = state && getWidget(state, widgetId);
+      if (!widget || widget.type !== 'kanban-board') {
+        return errorResult(`Widget "${widgetId}" is not a kanban board. Use freeter_list_widgets to find kanban-board widgets.`);
+      }
+      const storage = await widgetDataStorageManager.getObject(widgetId);
+      const data = parseKanbanData(await storage.getText('kanban'));
+      return textResult(readKanbanBoard(kanbanColumnsFromSettings(widget.settings), data));
+    });
+
+    server.registerTool('freeter_add_kanban_card', {
+      description: 'Adds a card to a column of a kanban-board widget. Columns come from freeter_read_kanban and can be given by 0-based index or by name (e.g. "To Do").',
+      inputSchema: {
+        widgetId: z.string().describe('Kanban widget id (type "kanban-board")'),
+        column: z.union([z.number().int(), z.string()]).describe('Target column: 0-based index or name'),
+        title: z.string().describe('Card title'),
+        description: z.string().optional().describe('Card description (optional)')
+      }
+    }, async ({ widgetId, column, title, description }) => {
+      const state = await readState();
+      const widget = state && getWidget(state, widgetId);
+      if (!widget || widget.type !== 'kanban-board') {
+        return errorResult(`Widget "${widgetId}" is not a kanban board. Use freeter_list_widgets to find kanban-board widgets.`);
+      }
+      if (!title.trim()) {
+        return errorResult('Card title must not be empty.');
+      }
+      const columns = kanbanColumnsFromSettings(widget.settings);
+      const colIdx = resolveKanbanColumn(columns, column);
+      if (colIdx === null) {
+        return errorResult(`Column "${column}" not found. Available columns: ${columns.map((c, i) => `${i}="${c}"`).join(', ')}.`);
+      }
+      const storage = await widgetDataStorageManager.getObject(widgetId);
+      const data = parseKanbanData(await storage.getText('kanban'));
+      const { cardId } = addKanbanCardToData(data, colIdx, title, description ?? '');
+      await setWidgetTextWithUndo(widgetId, 'kanban', JSON.stringify(data), 'add kanban card');
+      return textResult(`Added card #${cardId} "${title.trim()}" to column "${columns[colIdx]}".`);
+    });
+
+    server.registerTool('freeter_move_kanban_card', {
+      description: 'Moves a kanban card to another column (e.g. to "Done" to complete it), optionally at a 0-based position within that column (default: bottom). Get card ids and columns from freeter_read_kanban.',
+      inputSchema: {
+        widgetId: z.string().describe('Kanban widget id (type "kanban-board")'),
+        cardId: z.number().int().describe('Card id from freeter_read_kanban'),
+        toColumn: z.union([z.number().int(), z.string()]).describe('Target column: 0-based index or name (e.g. "Done")'),
+        position: z.number().int().min(0).optional().describe('0-based position within the target column (clamped; default: end)')
+      }
+    }, async ({ widgetId, cardId, toColumn, position }) => {
+      const state = await readState();
+      const widget = state && getWidget(state, widgetId);
+      if (!widget || widget.type !== 'kanban-board') {
+        return errorResult(`Widget "${widgetId}" is not a kanban board. Use freeter_list_widgets to find kanban-board widgets.`);
+      }
+      const columns = kanbanColumnsFromSettings(widget.settings);
+      const colIdx = resolveKanbanColumn(columns, toColumn);
+      if (colIdx === null) {
+        return errorResult(`Column "${toColumn}" not found. Available columns: ${columns.map((c, i) => `${i}="${c}"`).join(', ')}.`);
+      }
+      const storage = await widgetDataStorageManager.getObject(widgetId);
+      const data = parseKanbanData(await storage.getText('kanban'));
+      const err = moveKanbanCardInData(data, cardId, colIdx, position);
+      if (err) {
+        return errorResult(`Move failed: ${err}. Use freeter_read_kanban to list cards.`);
+      }
+      await setWidgetTextWithUndo(widgetId, 'kanban', JSON.stringify(data), 'move kanban card');
+      return textResult(`Card #${cardId} moved to column "${columns[colIdx]}".`);
+    });
+
+    server.registerTool('freeter_update_kanban_card', {
+      description: 'Edits a kanban card\'s title, description and/or color. The board has no per-card done flag — to complete a card, move it to the "Done" column with freeter_move_kanban_card.',
+      inputSchema: {
+        widgetId: z.string().describe('Kanban widget id (type "kanban-board")'),
+        cardId: z.number().int().describe('Card id from freeter_read_kanban'),
+        title: z.string().optional().describe('New title (optional)'),
+        description: z.string().optional().describe('New description (optional)'),
+        color: z.string().optional().describe('New CSS color for the card edge, e.g. "#2ecc71" (optional)')
+      }
+    }, async ({ widgetId, cardId, title, description, color }) => {
+      const state = await readState();
+      const widget = state && getWidget(state, widgetId);
+      if (!widget || widget.type !== 'kanban-board') {
+        return errorResult(`Widget "${widgetId}" is not a kanban board. Use freeter_list_widgets to find kanban-board widgets.`);
+      }
+      if (title === undefined && description === undefined && color === undefined) {
+        return errorResult('Pass at least one of title, description or color.');
+      }
+      const storage = await widgetDataStorageManager.getObject(widgetId);
+      const data = parseKanbanData(await storage.getText('kanban'));
+      const err = updateKanbanCardInData(data, cardId, {
+        ...(title !== undefined ? { title } : {}),
+        ...(description !== undefined ? { description } : {}),
+        ...(color !== undefined ? { color } : {})
+      });
+      if (err) {
+        return errorResult(`Update failed: ${err}. Use freeter_read_kanban to list cards.`);
+      }
+      await setWidgetTextWithUndo(widgetId, 'kanban', JSON.stringify(data), 'update kanban card');
+      return textResult(`Card #${cardId} updated.`);
+    });
+
+    server.registerTool('freeter_read_calendar', {
+      description: 'Reads the events of a calendar widget (id, title, date YYYY-MM-DD, description).',
+      inputSchema: { widgetId: z.string().describe('Calendar widget id (type "calendar")') }
+    }, async ({ widgetId }) => {
+      const state = await readState();
+      const widget = state && getWidget(state, widgetId);
+      if (!widget || widget.type !== 'calendar') {
+        return errorResult(`Widget "${widgetId}" is not a calendar. Use freeter_list_widgets to find calendar widgets.`);
+      }
+      const storage = await widgetDataStorageManager.getObject(widgetId);
+      const data = parseCalendarData(await storage.getText('events'));
+      return textResult({ events: data.events });
+    });
+
+    server.registerTool('freeter_add_calendar_event', {
+      description: 'Adds an event to a calendar widget on a given day (all-day; the calendar has no time-of-day field).',
+      inputSchema: {
+        widgetId: z.string().describe('Calendar widget id (type "calendar")'),
+        date: z.string().describe('Event date, YYYY-MM-DD'),
+        title: z.string().describe('Event title'),
+        description: z.string().optional().describe('Event description (optional)')
+      }
+    }, async ({ widgetId, date, title, description }) => {
+      const state = await readState();
+      const widget = state && getWidget(state, widgetId);
+      if (!widget || widget.type !== 'calendar') {
+        return errorResult(`Widget "${widgetId}" is not a calendar. Use freeter_list_widgets to find calendar widgets.`);
+      }
+      const storage = await widgetDataStorageManager.getObject(widgetId);
+      const data = parseCalendarData(await storage.getText('events'));
+      const res = addCalendarEventToData(data, date, title, description ?? '');
+      if (typeof res === 'string') {
+        return errorResult(`Add event failed: ${res}.`);
+      }
+      await setWidgetTextWithUndo(widgetId, 'events', JSON.stringify(data), 'add calendar event');
+      return textResult(`Added event #${res.eventId} "${title}" on ${date}.`);
+    });
+
+    // MCP resources: notes and to-do lists browsable/subscribable without tool calls
+    server.registerResource('freeter-note', new ResourceTemplate('freeter://note/{widgetId}', {
+      list: async () => {
+        const state = await readState();
+        if (!state) {
+          return { resources: [] };
+        }
+        return {
+          resources: listContentWidgets(state, ['note']).map(w => ({
+            uri: `freeter://note/${w.id}`,
+            name: `${w.projectName} / ${w.workflowName} / ${w.name}`,
+            mimeType: 'text/markdown'
+          }))
+        };
+      }
+    }), {
+      title: 'Freeter notes',
+      description: 'Text/markdown content of note widgets across all projects',
+      mimeType: 'text/markdown'
+    }, async (uri, variables) => {
+      const widgetId = String(Array.isArray(variables.widgetId) ? variables.widgetId[0] : variables.widgetId ?? '');
+      const state = await readState();
+      const widget = state && getWidget(state, widgetId);
+      if (!widget || widget.type !== 'note') {
+        throw new Error(`Widget "${widgetId}" is not a note widget.`);
+      }
+      const storage = await widgetDataStorageManager.getObject(widgetId);
+      const text = await storage.getText('note');
+      return { contents: [{ uri: uri.href, mimeType: 'text/markdown', text: text ?? '' }] };
+    });
+
+    server.registerResource('freeter-todo', new ResourceTemplate('freeter://todo/{widgetId}', {
+      list: async () => {
+        const state = await readState();
+        if (!state) {
+          return { resources: [] };
+        }
+        return {
+          resources: listContentWidgets(state, ['to-do-list']).map(w => ({
+            uri: `freeter://todo/${w.id}`,
+            name: `${w.projectName} / ${w.workflowName} / ${w.name}`,
+            mimeType: 'application/json'
+          }))
+        };
+      }
+    }), {
+      title: 'Freeter to-do lists',
+      description: 'Items of to-do list widgets across all projects, as JSON',
+      mimeType: 'application/json'
+    }, async (uri, variables) => {
+      const widgetId = String(Array.isArray(variables.widgetId) ? variables.widgetId[0] : variables.widgetId ?? '');
+      const state = await readState();
+      const widget = state && getWidget(state, widgetId);
+      if (!widget || widget.type !== 'to-do-list') {
+        throw new Error(`Widget "${widgetId}" is not a to-do list widget.`);
+      }
+      const storage = await widgetDataStorageManager.getObject(widgetId);
+      const raw = await storage.getText('todo');
+      let data: unknown = { items: [], nextItemId: 1 };
+      try {
+        if (raw) {
+          data = JSON.parse(raw);
+        }
+      } catch {
+        // unreadable data: expose the empty default
+      }
+      return { contents: [{ uri: uri.href, mimeType: 'application/json', text: JSON.stringify(data, null, 2) }] };
     });
 
     return server;

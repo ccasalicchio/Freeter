@@ -12,6 +12,8 @@ export interface ButtonProps extends Omit<React.DetailedHTMLProps<React.ButtonHT
   iconSvg?: string;
   /** image icon (URL or file path); takes precedence over iconSvg */
   iconUrl?: string;
+  /** custom icon content (e.g. a favicon grid); takes precedence over iconUrl and iconSvg */
+  iconNode?: React.ReactNode;
   /** called when the iconUrl image fails to load */
   onIconError?: () => void;
   caption?: string;
@@ -23,6 +25,7 @@ export const Button = ({
   caption,
   iconSvg,
   iconUrl,
+  iconNode,
   onIconError,
   size = 'M',
   pressed,
@@ -40,8 +43,8 @@ export const Button = ({
       size === 'S' && styles['size-s'],
       size === 'Fill' && styles['size-fill'],
       primary && styles['primary'],
-      !(iconSvg || iconUrl) && caption && styles['only-caption'],
-      (iconSvg || iconUrl) && !caption && styles['only-icon'],
+      !(iconSvg || iconUrl || iconNode) && caption && styles['only-caption'],
+      (iconSvg || iconUrl || iconNode) && !caption && styles['only-icon'],
       className
     )}
     aria-pressed={pressed}
@@ -49,9 +52,11 @@ export const Button = ({
     aria-label={ariaLabel || title || caption}
     {...restProps}
   >
-    {iconUrl
-      ? <img src={iconUrl} alt='' className={styles['button-icon']} onError={onIconError} />
-      : iconSvg && <SvgIcon svg={iconSvg} className={styles['button-icon']}></SvgIcon>}
+    {iconNode
+      ? <span className={styles['button-icon']}>{iconNode}</span>
+      : iconUrl
+        ? <img src={iconUrl} alt='' className={styles['button-icon']} onError={onIconError} />
+        : iconSvg && <SvgIcon svg={iconSvg} className={styles['button-icon']}></SvgIcon>}
     {caption && <span>{caption}</span>}
   </button>
 )
