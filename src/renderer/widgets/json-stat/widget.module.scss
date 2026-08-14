@@ -1,0 +1,91 @@
+/*
+ * Copyright: (c) 2024, Alex Kaul
+ * GNU General Public License v3.0 or later (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+ */
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px 12px;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  color: var(--freeter-componentColor);
+}
+
+.label {
+  font-size: 0.85em;
+  opacity: 0.7;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.value-row {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.value {
+  font-size: 2em;
+  font-weight: bold;
+  line-height: 1.1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.value-warn { color: #e8a33d; }
+.value-crit { color: #e05252; }
+
+.unit {
+  font-size: 1em;
+  opacity: 0.7;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.as-of {
+  font-size: 0.75em;
+  opacity: 0.6;
+}
+
+.refresh {
+  margin-left: auto;
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 1em;
+  padding: 2px 4px;
+  opacity: 0.7;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
+.error {
+  color: #e05252;
+  font-size: 0.85em;
+  overflow: hidden;
+}
+
+.not-configured {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  opacity: 0.6;
+  padding: 8px;
+  text-align: center;
+  box-sizing: border-box;
+}
