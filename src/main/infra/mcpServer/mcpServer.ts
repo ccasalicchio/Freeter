@@ -21,7 +21,9 @@ import { logToFile } from '@/infra/logger/fileLog';
 import {
   parseAppState, listProjects, listWorkflows, listWidgets, getWidget, createWidgetInState,
   switchProjectInState, switchWorkflowInState, reorderWorkflowsInState, setWorkflowArchivedInState,
-  updateWidgetInState, moveWidgetInState, resizeWidgetInState, searchNames, listContentWidgets
+  updateWidgetInState, moveWidgetInState, resizeWidgetInState, searchNames, listContentWidgets,
+  createWorkflowInState, renameWorkflowInState, duplicateWorkflowInState, deleteWidgetFromState,
+  createProjectInState, renameProjectInState, setProjectArchivedInState
 } from '@/infra/mcpServer/mcpState';
 import {
   appendAlertEntries, createIngestRateLimiter, entriesToNotify, findWidgetByIngestToken, mapIngestPayload
@@ -413,6 +415,127 @@ export function createFreeterMcpServer({ appDataStorage, widgetDataStorageManage
       }
       await writeState(state, archived ? 'archive workflow' : 'unarchive workflow');
       return textResult(archived ? 'Workflow archived.' : 'Workflow unarchived.');
+    });
+
+    server.registerTool('freeter_create_workflow', {
+      description: 'Creates a new empty workflow (tab) in a project and switches to it. Get project ids from freeter_list_projects; then add widgets to the new tab with freeter_create_widget.',
+      inputSchema: {
+        projectId: z.string().describe('Project id'),
+        name: z.string().describe('Name of the new workflow (tab)')
+      }
+    }, async ({ projectId, name }) => {
+      const state = await readState();
+      if (!state) {
+        return errorResult('Freeter has no saved state yet.');
+      }
+      const res = createWorkflowInState(state, projectId, name, randomUUID);
+      if (!res) {
+        return errorResult(`Project "${projectId}" not found. Use freeter_list_projects to get valid ids.`);
+      }
+      await writeState(state, 'create workflow');
+      return textResult(`Created workflow "${name}" (id ${res.workflowId}).`);
+    });
+
+    server.registerTool('freeter_rename_workflow', {
+      description: 'Renames a workflow (tab). Get workflow ids from freeter_list_workflows.',
+      inputSchema: {
+        workflowId: z.string().describe('Workflow id'),
+        name: z.string().describe('New workflow name')
+      }
+    }, async ({ workflowId, name }) => {
+      const state = await readState();
+      if (!state || !renameWorkflowInState(state, workflowId, name)) {
+        return errorResult(`Workflow "${workflowId}" not found. Use freeter_list_workflows to get valid ids.`);
+      }
+      await writeState(state, 'rename workflow');
+      return textResult(`Workflow renamed to "${name}".`);
+    });
+
+    server.registerTool('freeter_duplicate_workflow', {
+      description: 'Duplicates a workflow (tab) inside its project: copies the layout, clones every widget under new ids, and copies widget content (note text, to-do items etc.). The copy is named "<name> Copy" and placed right after the original; rename it with freeter_rename_workflow. Undoable via freeter_undo — undo restores the app structure; the copied widget content files are left behind (harmless orphans).',
+      inputSchema: { workflowId: z.string().describe('Workflow id to duplicate (from freeter_list_workflows)') }
+    }, async ({ workflowId }) => {
+      const state = await readState();
+      if (!state) {
+        return errorResult('Freeter has no saved state yet.');
+      }
+      const res = duplicateWorkflowInState(state, workflowId, randomUUID);
+      if (!res) {
+        return errorResult(`Workflow "${workflowId}" not found. Use freeter_list_workflows to get valid ids.`);
+      }
+      await writeState(state, 'duplicate workflow');
+      // widget content (stored outside the app state) is copied best-effort;
+      // no undo entries — the state undo above restores the structure
+      let copied = 0;
+      for (const { from, to } of res.clonedWidgetIds) {
+        try {
+          if (await widgetDataStorageManager.copyObjectData(from, to)) {
+            copied++;
+          }
+        } catch (err) {
+          logToFile('error', `mcp duplicate workflow: copying widget data ${from} -> ${to} failed: ${err instanceof Error ? err.message : String(err)}`);
+        }
+      }
+      return textResult(`Duplicated workflow (new id ${res.workflowId}, ${res.clonedWidgetIds.length} widgets cloned, content copied for ${copied}).`);
+    });
+
+    server.registerTool('freeter_delete_widget', {
+      description: 'Deletes a widget from its workflow (or the shelf). DESTRUCTIVE, but undoable via freeter_undo — the widget\'s stored content (note text, to-do items etc.) is intentionally NOT deleted, so undo restores the widget fully.',
+      inputSchema: { widgetId: z.string().describe('Widget id to delete (from freeter_list_widgets or freeter_search)') }
+    }, async ({ widgetId }) => {
+      const state = await readState();
+      if (!state) {
+        return errorResult('App state not available.');
+      }
+      const err = deleteWidgetFromState(state, widgetId);
+      if (err) {
+        return errorResult(`Delete failed: ${err}. Use freeter_list_widgets to get valid ids.`);
+      }
+      await writeState(state, 'delete widget');
+      return textResult('Widget deleted. Use freeter_undo to restore it.');
+    });
+
+    server.registerTool('freeter_create_project', {
+      description: 'Creates a new empty project (dashboard). Follow up with freeter_create_workflow to add tabs and freeter_create_widget to fill them; make it visible with freeter_switch_project.',
+      inputSchema: { name: z.string().describe('Project name') }
+    }, async ({ name }) => {
+      const state = await readState();
+      if (!state) {
+        return errorResult('Freeter has no saved state yet.');
+      }
+      const res = createProjectInState(state, name, randomUUID);
+      await writeState(state, 'create project');
+      return textResult(`Created project "${name}" (id ${res.projectId}).`);
+    });
+
+    server.registerTool('freeter_rename_project', {
+      description: 'Renames a project (dashboard). Get project ids from freeter_list_projects.',
+      inputSchema: {
+        projectId: z.string().describe('Project id'),
+        name: z.string().describe('New project name')
+      }
+    }, async ({ projectId, name }) => {
+      const state = await readState();
+      if (!state || !renameProjectInState(state, projectId, name)) {
+        return errorResult(`Project "${projectId}" not found. Use freeter_list_projects to get valid ids.`);
+      }
+      await writeState(state, 'rename project');
+      return textResult(`Project renamed to "${name}".`);
+    });
+
+    server.registerTool('freeter_set_project_archived', {
+      description: 'Archives or unarchives a project (dashboard). Archived projects are hidden from the project switcher but keep all their workflows and widgets and can be unarchived later.',
+      inputSchema: {
+        projectId: z.string().describe('Project id'),
+        archived: z.boolean().describe('true to archive, false to unarchive')
+      }
+    }, async ({ projectId, archived }) => {
+      const state = await readState();
+      if (!state || !setProjectArchivedInState(state, projectId, archived)) {
+        return errorResult(`Project "${projectId}" not found. Use freeter_list_projects to get valid ids.`);
+      }
+      await writeState(state, archived ? 'archive project' : 'unarchive project');
+      return textResult(archived ? 'Project archived.' : 'Project unarchived.');
     });
 
     server.registerTool('freeter_undo', {

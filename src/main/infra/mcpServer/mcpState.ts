@@ -15,7 +15,7 @@ interface ProjectEntity extends EntityBase {
   currentWorkflowId: string;
 }
 interface WorkflowEntity extends EntityBase {
-  settings: { name?: string };
+  settings: { name?: string;[key: string]: unknown };
   layout: { id: string; widgetId: string; rect: { x: number; y: number; w: number; h: number } }[];
 }
 interface WidgetEntity extends EntityBase {
@@ -33,7 +33,11 @@ export interface AppStateDoc {
       widgets: Record<string, WidgetEntity>;
       [key: string]: unknown;
     };
-    ui: { projectSwitcher?: { projectIds?: string[]; currentProjectId?: string;[key: string]: unknown };[key: string]: unknown };
+    ui: {
+      projectSwitcher?: { projectIds?: string[]; currentProjectId?: string;[key: string]: unknown };
+      shelf?: { widgetList?: { id: string; widgetId: string }[];[key: string]: unknown };
+      [key: string]: unknown
+    };
     [key: string]: unknown;
   };
 }
@@ -93,6 +97,95 @@ export function setWorkflowArchivedInState(state: AppStateDoc, workflowId: strin
   }
   (workflow.settings as { isArchived?: boolean }).isArchived = archived ? true : undefined;
   return true;
+}
+
+/**
+ * Creates a new empty workflow (tab) in a project and makes it the project's
+ * current workflow. Returns null if the project doesn't exist.
+ */
+export function createWorkflowInState(
+  state: AppStateDoc,
+  projectId: string,
+  name: string,
+  generateId: () => string
+): { workflowId: string } | null {
+  const project = state.obj.entities.projects[projectId];
+  if (!project) {
+    return null;
+  }
+  const workflowId = generateId();
+  state.obj.entities.workflows[workflowId] = {
+    id: workflowId,
+    settings: { name, memSaver: {} },
+    layout: []
+  };
+  project.workflowIds = [...project.workflowIds, workflowId];
+  project.currentWorkflowId = workflowId;
+  return { workflowId };
+}
+
+/** Renames a workflow tab. Returns false if the workflow doesn't exist. */
+export function renameWorkflowInState(state: AppStateDoc, workflowId: string, name: string): boolean {
+  const workflow = state.obj.entities.workflows[workflowId];
+  if (!workflow) {
+    return false;
+  }
+  workflow.settings = { ...workflow.settings, name };
+  return true;
+}
+
+/**
+ * Duplicates a workflow inside its project: deep-copies the workflow entity
+ * (new id, name + ' Copy'), clones every widget entity in its layout (new
+ * widget ids) and every layout item (new item ids) pointing at the clones,
+ * and inserts the copy right after the source in the project's tab order.
+ * Widget DATA (note text etc.) lives outside the app state — the returned
+ * clonedWidgetIds pairs let the caller copy it separately.
+ * Returns null if the workflow doesn't exist or belongs to no project.
+ */
+export function duplicateWorkflowInState(
+  state: AppStateDoc,
+  workflowId: string,
+  generateId: () => string
+): { workflowId: string; clonedWidgetIds: { from: string; to: string }[] } | null {
+  const source = state.obj.entities.workflows[workflowId];
+  if (!source) {
+    return null;
+  }
+  const project = Object.values(state.obj.entities.projects).find(p => p.workflowIds.includes(workflowId));
+  if (!project) {
+    return null;
+  }
+  const clonedWidgetIds: { from: string; to: string }[] = [];
+  const newLayout: WorkflowEntity['layout'] = [];
+  for (const item of source.layout) {
+    const srcWidget = state.obj.entities.widgets[item.widgetId];
+    if (!srcWidget) {
+      // dangling layout item: don't carry it into the copy
+      continue;
+    }
+    const newWidgetId = generateId();
+    state.obj.entities.widgets[newWidgetId] = {
+      ...(JSON.parse(JSON.stringify(srcWidget)) as WidgetEntity),
+      id: newWidgetId
+    };
+    clonedWidgetIds.push({ from: item.widgetId, to: newWidgetId });
+    newLayout.push({ id: generateId(), widgetId: newWidgetId, rect: { ...item.rect } });
+  }
+  const newWorkflowId = generateId();
+  state.obj.entities.workflows[newWorkflowId] = {
+    ...(JSON.parse(JSON.stringify(source)) as WorkflowEntity),
+    id: newWorkflowId,
+    settings: {
+      ...(JSON.parse(JSON.stringify(source.settings)) as WorkflowEntity['settings']),
+      name: `${source.settings.name ?? ''} Copy`.trim()
+    },
+    layout: newLayout
+  };
+  const ids = [...project.workflowIds];
+  ids.splice(ids.indexOf(workflowId) + 1, 0, newWorkflowId);
+  project.workflowIds = ids;
+  return { workflowId: newWorkflowId, clonedWidgetIds };
 }
 
 export function listWidgets(state: AppStateDoc, workflowId: string) {
@@ -194,9 +287,7 @@ export function resizeWidgetInState(
   if (!workflow) {
     return `widget ${widgetId} is not placed in any workflow`;
   }
-  workflow.layout = workflow.layout.map(item =>
-    item.widgetId === widgetId ? { ...item, rect: { ...rect } } : item
-  );
+  workflow.layout = workflow.layout.map(item => item.widgetId === widgetId ? { ...item, rect: { ...rect } } : item);
   return undefined;
 }
 
@@ -226,6 +317,68 @@ export function createWidgetInState(
     { id: generateId(), widgetId, rect: { x: 0, y: maxY, w: 4, h: 4 } }
   ];
   return { widgetId };
+}
+
+/**
+ * Removes a widget entity plus its layout item from whichever workflow holds
+ * it, and its entry in the shelf widget list if present.
+ * Returns an error string on failure.
+ */
+export function deleteWidgetFromState(state: AppStateDoc, widgetId: string): string | undefined {
+  if (!state.obj.entities.widgets[widgetId]) {
+    return `widget ${widgetId} not found`;
+  }
+  delete state.obj.entities.widgets[widgetId];
+  for (const workflow of Object.values(state.obj.entities.workflows)) {
+    if (workflow.layout.some(item => item.widgetId === widgetId)) {
+      workflow.layout = workflow.layout.filter(item => item.widgetId !== widgetId);
+    }
+  }
+  const shelf = state.obj.ui.shelf;
+  if (shelf && Array.isArray(shelf.widgetList)) {
+    shelf.widgetList = shelf.widgetList.filter(item => item.widgetId !== widgetId);
+  }
+  return undefined;
+}
+
+/** Creates a new empty project (dashboard) and appends it to the project switcher order. */
+export function createProjectInState(
+  state: AppStateDoc,
+  name: string,
+  generateId: () => string
+): { projectId: string } {
+  const projectId = generateId();
+  state.obj.entities.projects[projectId] = {
+    id: projectId,
+    settings: { name },
+    workflowIds: [],
+    currentWorkflowId: ''
+  };
+  const switcher = state.obj.ui.projectSwitcher ?? {};
+  // absent order list: seed it from the existing projects so none disappear
+  const order = switcher.projectIds ?? Object.keys(state.obj.entities.projects).filter(id => id !== projectId);
+  state.obj.ui.projectSwitcher = { ...switcher, projectIds: [...order, projectId] };
+  return { projectId };
+}
+
+/** Renames a project. Returns false if the project doesn't exist. */
+export function renameProjectInState(state: AppStateDoc, projectId: string, name: string): boolean {
+  const project = state.obj.entities.projects[projectId];
+  if (!project) {
+    return false;
+  }
+  project.settings = { ...project.settings, name };
+  return true;
+}
+
+/** Archives or unarchives a project. Returns false if the project doesn't exist. */
+export function setProjectArchivedInState(state: AppStateDoc, projectId: string, archived: boolean): boolean {
+  const project = state.obj.entities.projects[projectId];
+  if (!project) {
+    return false;
+  }
+  project.settings.isArchived = archived ? true : undefined;
+  return true;
 }
 
 export function switchProjectInState(state: AppStateDoc, projectId: string): boolean {

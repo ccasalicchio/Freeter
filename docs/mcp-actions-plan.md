@@ -3,14 +3,18 @@
 What the Freeter MCP server can do today, what's missing, and the order to
 build the rest. Date: 2026-08-12.
 
-## Current surface (22 tools)
+## Current surface (29 tools)
 
 **Read**: `list_projects`, `list_workflows` (incl. isArchived), `list_widgets`,
 `get_widget` (full settings of any widget), `read_note`, `read_todo`, `search`,
 `list_undo`.
 **Write — structure**: `create_widget` (all 23 built-in types),
 `update_widget` (rename + merge settings: links, tools, commands, everything),
-`move_widget` (between tabs), `reorder_workflows`, `set_workflow_archived`.
+`move_widget` (between tabs), `resize_widget` (layout rect),
+`delete_widget` (undo restores fully; widget content is kept),
+`reorder_workflows`, `set_workflow_archived`, `create_workflow`,
+`rename_workflow`, `duplicate_workflow` (clones widgets + copies widget
+content), `create_project`, `rename_project`, `set_project_archived`.
 **Write — content**: `write_note` (replace/append/prepend, markdown),
 `add_todo_item`, `update_todo_item`, `delete_todo_item`, `reorder_todo_items`.
 **Navigation**: `switch_project`, `switch_workflow`.
@@ -25,15 +29,15 @@ the undo stack) — and the `freeter:show-notification` IPC channel + main-side
 
 ## Gaps → proposed tools
 
-### Phase 1 — structure completion (safe, state-only; all undo-covered)
+### Phase 1 — structure completion (safe, state-only; all undo-covered) — SHIPPED 2026-08-13
 | Tool | Notes |
 |---|---|
-| `freeter_create_workflow(projectId, name)` | The only way to make a tab today is the UI. |
-| `freeter_rename_workflow(workflowId, name)` | Trivial settings write. |
-| `freeter_duplicate_workflow(workflowId)` | Copy layout + widgets (new ids); big time-saver for templated dashboards. |
-| `freeter_delete_widget(widgetId)` | Safe now that undo exists; removes widget + layout item. |
-| `freeter_resize_widget(widgetId, rect)` | Edit the layout rect (x, y, w, h) — lets AI tidy layouts, not just append at the bottom. |
-| `freeter_create_project(name)` / `freeter_set_project_archived` / `freeter_rename_project` | Complete the project lifecycle (archive UI already exists). |
+| `freeter_create_workflow(projectId, name)` | ✅ Shipped 2026-08-13. New empty tab, made current. |
+| `freeter_rename_workflow(workflowId, name)` | ✅ Shipped 2026-08-13. |
+| `freeter_duplicate_workflow(workflowId)` | ✅ Shipped 2026-08-13. Clones layout + widget entities (new ids) and copies widget data via `widgetDataStorageManager.copyObjectData`; undo restores structure, copied content files stay as harmless orphans. |
+| `freeter_delete_widget(widgetId)` | ✅ Shipped 2026-08-13. Removes widget + layout item (and shelf entry); stored content kept so undo restores fully. |
+| `freeter_resize_widget(widgetId, rect)` | ✅ Shipped earlier (before this batch). |
+| `freeter_create_project(name)` / `freeter_set_project_archived` / `freeter_rename_project` | ✅ Shipped 2026-08-13. |
 
 ### Phase 2 — content breadth
 | Tool | Notes |
