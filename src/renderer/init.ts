@@ -84,6 +84,7 @@ import { createAddWorkflowUseCase } from '@/application/useCases/workflowSwitche
 import { createRenameWorkflowUseCase } from '@/application/useCases/workflowSwitcher/renameWorkflow';
 import { createDeleteWorkflowUseCase } from '@/application/useCases/workflowSwitcher/deleteWorkflow';
 import { createToggleWorkflowArchivedUseCase } from '@/application/useCases/workflowSwitcher/toggleWorkflowArchived';
+import { createPinWorkflowWidgetsToShelfUseCase } from '@/application/useCases/workflowSwitcher/pinWorkflowWidgetsToShelf';
 import { createOsDialogProvider } from '@/infra/dialogProvider/osDialogProvider';
 import { createDeleteWidgetUseCase } from '@/application/useCases/widget/deleteWidget';
 import { createAddWidgetToWorkflowUseCase } from '@/application/useCases/workflow/addWidgetToWorkflow';
@@ -433,6 +434,11 @@ async function createUseCases(store: ReturnType<typeof createStore>) {
     ...deps,
     cloneWidgetToWidgetListSubCase
   });
+  const pinWorkflowWidgetsToShelfUseCase = createPinWorkflowWidgetsToShelfUseCase({
+    ...deps,
+    cloneWidgetSubCase,
+    addItemToWidgetListSubCase
+  });
   const addItemToWidgetLayoutSubCase = createAddItemToWidgetLayoutSubCase(deps);
   const cloneWidgetToWidgetLayoutSubCase = createCloneWidgetToWidgetLayoutSubCase({
     ...deps,
@@ -513,6 +519,7 @@ async function createUseCases(store: ReturnType<typeof createStore>) {
     updateWorkflowSettingsUseCase,
     deleteWorkflowUseCase,
     toggleWorkflowArchivedUseCase,
+    pinWorkflowWidgetsToShelfUseCase,
 
     toggleEditModeUseCase,
     toggleMenuBarUseCase,

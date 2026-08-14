@@ -28,6 +28,7 @@ import { WorkflowEntityDeps } from '@/base/state/entities';
 import { PasteWorkflowUseCase } from '@/application/useCases/workflowSwitcher/pasteWorkflow';
 import { CopyWorkflowUseCase } from '@/application/useCases/workflow/copyWorkflow';
 import { ToggleWorkflowArchivedUseCase } from '@/application/useCases/workflowSwitcher/toggleWorkflowArchived';
+import { PinWorkflowWidgetsToShelfUseCase } from '@/application/useCases/workflowSwitcher/pinWorkflowWidgetsToShelf';
 
 type Deps = {
   useAppState: UseAppState;
@@ -45,6 +46,7 @@ type Deps = {
   copyWorkflowUseCase: CopyWorkflowUseCase;
   pasteWorkflowUseCase: PasteWorkflowUseCase;
   toggleWorkflowArchivedUseCase: ToggleWorkflowArchivedUseCase;
+  pinWorkflowWidgetsToShelfUseCase: PinWorkflowWidgetsToShelfUseCase;
 }
 
 export function createWorkflowSwitcherViewModelHook({
@@ -63,6 +65,7 @@ export function createWorkflowSwitcherViewModelHook({
   copyWorkflowUseCase,
   pasteWorkflowUseCase,
   toggleWorkflowArchivedUseCase,
+  pinWorkflowWidgetsToShelfUseCase,
 }: Deps) {
   function buildPasteMenuItems(
     copiedWorkflows: EntityList<CopiedEntitiesItem<Workflow, WorkflowEntityDeps>>,
@@ -138,6 +141,13 @@ export function createWorkflowSwitcherViewModelHook({
         label: isArchived ? 'Unarchive Tab' : 'Archive Tab',
         doAction: async () => {
           toggleWorkflowArchivedUseCase(id);
+        }
+      },
+      {
+        enabled: true,
+        label: 'Pin Widgets to Shelf',
+        doAction: async () => {
+          pinWorkflowWidgetsToShelfUseCase(id);
         }
       }
     ])
@@ -233,6 +243,12 @@ export function createWorkflowSwitcherViewModelHook({
     label: isArchived ? 'Unarchive Tab' : 'Archive Tab',
     doAction: async () => {
       toggleWorkflowArchivedUseCase(id);
+    }
+  }, {
+    enabled: true,
+    label: 'Pin Widgets to Shelf',
+    doAction: async () => {
+      pinWorkflowWidgetsToShelfUseCase(id);
     }
   }, {
     enabled: true,

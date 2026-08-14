@@ -57,6 +57,7 @@ async function setup(
   const copyWorkflowUseCase = jest.fn();
   const pasteWorkflowUseCase = jest.fn();
   const toggleWorkflowArchivedUseCase = createToggleWorkflowArchivedUseCase({ appStore, deactivateWorkflowUseCase });
+  const pinWorkflowWidgetsToShelfUseCase = jest.fn();
 
   const useWorkflowSwitcherViewModel = createWorkflowSwitcherViewModelHook({
     useAppState,
@@ -74,6 +75,7 @@ async function setup(
     copyWorkflowUseCase,
     pasteWorkflowUseCase,
     toggleWorkflowArchivedUseCase,
+    pinWorkflowWidgetsToShelfUseCase,
   })
   const WorkflowSwitcher = createWorkflowSwitcherComponent({
     useWorkflowSwitcherViewModel,
@@ -101,6 +103,7 @@ async function setup(
     deleteWorkflowUseCase,
     showContextMenuUseCase,
     toggleWorkflowArchivedUseCase,
+    pinWorkflowWidgetsToShelfUseCase,
   }
 }
 
@@ -1691,6 +1694,26 @@ describe('<WorkflowSwitcher />', () => {
       });
 
       expect(appStore.get().entities.workflows[idWB]?.settings.isArchived).toBe(false);
+    });
+
+    it('should show a "Pin Widgets to Shelf" context menu item right after the Archive item, calling the pin use case with the workflow id', async () => {
+      const { showContextMenuUseCase, pinWorkflowWidgetsToShelfUseCase } = await setup(makeState({ editMode: true, archivedB: false }));
+
+      fireEvent.contextMenu(screen.getAllByRole('tab')[1]);
+
+      expect(showContextMenuUseCase).toBeCalledTimes(1);
+      const menuItems: MenuItems = showContextMenuUseCase.mock.calls[0][0];
+      const pinItem = findMenuItemByLabel(menuItems, 'Pin Widgets to Shelf');
+      expect(pinItem).toBeDefined();
+      const archiveItemIdx = menuItems.findIndex(item => item.label === 'Archive Tab');
+      expect(menuItems[archiveItemIdx + 1]).toBe(pinItem);
+
+      await act(async () => {
+        await pinItem!.doAction!();
+      });
+
+      expect(pinWorkflowWidgetsToShelfUseCase).toBeCalledTimes(1);
+      expect(pinWorkflowWidgetsToShelfUseCase).toBeCalledWith(idWB);
     });
   });
 })
