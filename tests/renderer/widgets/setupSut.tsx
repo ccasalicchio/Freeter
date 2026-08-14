@@ -127,6 +127,10 @@ export function setupWidgetSut<T>(reactComp: ReactComponent<WidgetReactComponent
       listDir: jest.fn(async () => ({ ok: true, entries: [] })),
       ...mockWidgetApi.fs
     },
+    notification: {
+      show: jest.fn(),
+      ...mockWidgetApi.notification
+    },
     terminal: {
       execCmdLines: jest.fn(),
       ...mockWidgetApi.terminal
