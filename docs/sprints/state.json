@@ -2,7 +2,7 @@
   "project": "Freeter 3",
   "source": "docs/sprints/backlog.md",
   "created": "2026-11-27",
-  "definition_of_done": "Merged into upgrade/v3-roadmap with CI green (test, prod, lint, typecheck) AND verified in an installed MSI build",
+  "definition_of_done": "Merged to master via PR with CI green (test, prod, lint, typecheck) AND verified in an installed MSI build (n/a for docs-only items). upgrade/v3-roadmap is kept identical to master.",
   "paperclip": {
     "companyId": null,
     "projectId": null,
@@ -251,7 +251,7 @@
     {
       "id": "T005",
       "ref": null,
-      "title": "safeStorage widget API module: encrypt-on-save / decrypt-on-use for token settings",
+      "title": "Secret widget settings: WidgetType.secretSettings keys stored as enc:v1: ciphertext (encrypt in the settings-commit use case; MCP update_widget encrypts in main; plaintext legacy values migrate on save)",
       "type": "task",
       "epic": null,
       "priority": "",
@@ -261,12 +261,13 @@
       "paperclip": {
         "issue_id": null,
         "synced": false
-      }
+      },
+      "progress_note": "Rescoped 2026-11-27: the widget safeStorage API already exists (widgetApi.ts:98, used by password-vault); the real gap is settings values, which the settings editor cannot encrypt."
     },
     {
       "id": "T006",
       "ref": null,
-      "title": "Migrate token fields to safeStorage in github-ci, github-prs, grafana-alerts, grafana-panel, prometheus-stat, json-stat, alert-inbox",
+      "title": "Use secretSettings + decrypt-on-use in github-ci, github-prs, grafana-alerts, grafana-panel, prometheus-stat, json-stat (alert-inbox excluded: its token is a generated ingest secret matched in main by ingest.ts)",
       "type": "task",
       "epic": null,
       "priority": "",
