@@ -1,0 +1,621 @@
+{
+  "project": "Freeter 3",
+  "source": "docs/sprints/backlog.md",
+  "created": "2026-11-27",
+  "definition_of_done": "Merged into upgrade/v3-roadmap with CI green (test, prod, lint, typecheck) AND verified in an installed MSI build",
+  "paperclip": {
+    "companyId": null,
+    "projectId": null,
+    "projectWorkspaceId": null,
+    "sprintId": null,
+    "note": "set companyId/projectId to sync; see the skill's references/paperclip.md"
+  },
+  "execution": {
+    "mode": "subagent",
+    "model": "sonnet",
+    "note": "delegated to subagents in the session running this skill; the board is a record"
+  },
+  "go_live": {
+    "state": "pending",
+    "note": "full go-live after every sprint is complete"
+  },
+  "sprints": [
+    {
+      "number": 1,
+      "start": "2026-11-30",
+      "end": "2026-12-06",
+      "status": "planned",
+      "gates": {
+        "soft_go_live": {
+          "state": "pending",
+          "note": ""
+        },
+        "qa": {
+          "state": "pending",
+          "note": ""
+        },
+        "audit": {
+          "state": "pending",
+          "note": ""
+        },
+        "reflection": {
+          "state": "pending",
+          "note": ""
+        },
+        "gaps": {
+          "state": "pending",
+          "note": ""
+        },
+        "e2e": {
+          "state": "pending",
+          "note": ""
+        }
+      }
+    },
+    {
+      "number": 2,
+      "start": "2026-12-07",
+      "end": "2026-12-13",
+      "status": "planned",
+      "gates": {
+        "soft_go_live": {
+          "state": "pending",
+          "note": ""
+        },
+        "qa": {
+          "state": "pending",
+          "note": ""
+        },
+        "audit": {
+          "state": "pending",
+          "note": ""
+        },
+        "reflection": {
+          "state": "pending",
+          "note": ""
+        },
+        "gaps": {
+          "state": "pending",
+          "note": ""
+        },
+        "e2e": {
+          "state": "pending",
+          "note": ""
+        }
+      }
+    },
+    {
+      "number": 3,
+      "start": "2026-12-14",
+      "end": "2026-12-20",
+      "status": "planned",
+      "gates": {
+        "soft_go_live": {
+          "state": "pending",
+          "note": ""
+        },
+        "qa": {
+          "state": "pending",
+          "note": ""
+        },
+        "audit": {
+          "state": "pending",
+          "note": ""
+        },
+        "reflection": {
+          "state": "pending",
+          "note": ""
+        },
+        "gaps": {
+          "state": "pending",
+          "note": ""
+        },
+        "e2e": {
+          "state": "pending",
+          "note": ""
+        }
+      }
+    },
+    {
+      "number": 4,
+      "start": "2026-12-21",
+      "end": "2026-12-27",
+      "status": "planned",
+      "gates": {
+        "soft_go_live": {
+          "state": "pending",
+          "note": ""
+        },
+        "qa": {
+          "state": "pending",
+          "note": ""
+        },
+        "audit": {
+          "state": "pending",
+          "note": ""
+        },
+        "reflection": {
+          "state": "pending",
+          "note": ""
+        },
+        "gaps": {
+          "state": "pending",
+          "note": ""
+        },
+        "e2e": {
+          "state": "pending",
+          "note": ""
+        }
+      }
+    },
+    {
+      "number": 5,
+      "start": "2026-12-28",
+      "end": "2027-01-03",
+      "status": "planned",
+      "gates": {
+        "soft_go_live": {
+          "state": "pending",
+          "note": ""
+        },
+        "qa": {
+          "state": "pending",
+          "note": ""
+        },
+        "audit": {
+          "state": "pending",
+          "note": ""
+        },
+        "reflection": {
+          "state": "pending",
+          "note": ""
+        },
+        "gaps": {
+          "state": "pending",
+          "note": ""
+        },
+        "e2e": {
+          "state": "pending",
+          "note": ""
+        }
+      }
+    }
+  ],
+  "items": [
+    {
+      "id": "T001",
+      "ref": null,
+      "title": "Merge upgrade/v3-roadmap into master (32 commits from 2026-08-11..13 are not on fork/master despite ROADMAP saying \"all merged\")",
+      "type": "task",
+      "epic": null,
+      "priority": "",
+      "status": "done",
+      "sprint": 1,
+      "source_done_at_import": false,
+      "paperclip": {
+        "issue_id": null,
+        "synced": false
+      },
+      "started_at": "2026-11-27",
+      "progress_note": "opening PR upgrade/v3-roadmap -> master",
+      "done_at": "2026-11-27",
+      "evidence": "No work needed: already merged pre-sprint via PRs #19-#28 (2026-08-12..14); fork/master 1f454b1 tree == upgrade/v3-roadmap 5196370. Item was filed from a stale local ref."
+    },
+    {
+      "id": "T002",
+      "ref": null,
+      "title": "Refresh ROADMAP.md status to match shipped work (monitoring A-C, MCP phases 1-2, port watcher, reminders, shelf bulk-pin, favicon cache)",
+      "type": "task",
+      "epic": null,
+      "priority": "",
+      "status": "in_progress",
+      "sprint": 1,
+      "source_done_at_import": false,
+      "paperclip": {
+        "issue_id": null,
+        "synced": false
+      },
+      "started_at": "2026-11-27",
+      "progress_note": "branch docs/roadmap-status-refresh"
+    },
+    {
+      "id": "T003",
+      "ref": null,
+      "title": "Auto-update wiring: electron-updater + GitHub release channel (publish config exists, unused)",
+      "type": "task",
+      "epic": null,
+      "priority": "",
+      "status": "todo",
+      "sprint": null,
+      "source_done_at_import": false,
+      "paperclip": {
+        "issue_id": null,
+        "synced": false
+      }
+    },
+    {
+      "id": "T004",
+      "ref": null,
+      "title": "MSI code signing (blocked: needs purchased certificate)",
+      "type": "task",
+      "epic": null,
+      "priority": "",
+      "status": "todo",
+      "sprint": null,
+      "source_done_at_import": false,
+      "paperclip": {
+        "issue_id": null,
+        "synced": false
+      }
+    },
+    {
+      "id": "T005",
+      "ref": null,
+      "title": "safeStorage widget API module: encrypt-on-save / decrypt-on-use for token settings",
+      "type": "task",
+      "epic": null,
+      "priority": "",
+      "status": "todo",
+      "sprint": 1,
+      "source_done_at_import": false,
+      "paperclip": {
+        "issue_id": null,
+        "synced": false
+      }
+    },
+    {
+      "id": "T006",
+      "ref": null,
+      "title": "Migrate token fields to safeStorage in github-ci, github-prs, grafana-alerts, grafana-panel, prometheus-stat, json-stat, alert-inbox",
+      "type": "task",
+      "epic": null,
+      "priority": "",
+      "status": "todo",
+      "sprint": 1,
+      "source_done_at_import": false,
+      "paperclip": {
+        "issue_id": null,
+        "synced": false
+      }
+    },
+    {
+      "id": "T007",
+      "ref": null,
+      "title": "Profile export excludes decrypted secrets (exports encrypted blob, documented as non-portable)",
+      "type": "task",
+      "epic": null,
+      "priority": "",
+      "status": "todo",
+      "sprint": 1,
+      "source_done_at_import": false,
+      "paperclip": {
+        "issue_id": null,
+        "synced": false
+      }
+    },
+    {
+      "id": "T008",
+      "ref": null,
+      "title": "Settings -> AI \"Allow AI to trigger actions\" toggle (default off), checked per call",
+      "type": "task",
+      "epic": null,
+      "priority": "",
+      "status": "todo",
+      "sprint": null,
+      "source_done_at_import": false,
+      "paperclip": {
+        "issue_id": null,
+        "synced": false
+      }
+    },
+    {
+      "id": "T009",
+      "ref": null,
+      "title": "MCP tools: freeter_trigger_webhook, freeter_open_link, freeter_show_notification, freeter_backup_now",
+      "type": "task",
+      "epic": null,
+      "priority": "",
+      "status": "todo",
+      "sprint": null,
+      "source_done_at_import": false,
+      "paperclip": {
+        "issue_id": null,
+        "synced": false
+      }
+    },
+    {
+      "id": "T010",
+      "ref": null,
+      "title": "MCP tool: freeter_run_commander with per-widget \"AI may run this\" opt-in",
+      "type": "task",
+      "epic": null,
+      "priority": "",
+      "status": "todo",
+      "sprint": null,
+      "source_done_at_import": false,
+      "paperclip": {
+        "issue_id": null,
+        "synced": false
+      }
+    },
+    {
+      "id": "T011",
+      "ref": null,
+      "title": "MCP tools: freeter_get_app_info, freeter_set_theme",
+      "type": "task",
+      "epic": null,
+      "priority": "",
+      "status": "todo",
+      "sprint": 1,
+      "source_done_at_import": false,
+      "paperclip": {
+        "issue_id": null,
+        "synced": false
+      }
+    },
+    {
+      "id": "T012",
+      "ref": null,
+      "title": "MCP tool: freeter_read_monitors (status of all monitor-type widgets)",
+      "type": "task",
+      "epic": null,
+      "priority": "",
+      "status": "todo",
+      "sprint": null,
+      "source_done_at_import": false,
+      "paperclip": {
+        "issue_id": null,
+        "synced": false
+      }
+    },
+    {
+      "id": "T013",
+      "ref": null,
+      "title": "MCP undo hardening: persist stack to disk + conflict guard (hash compare)",
+      "type": "task",
+      "epic": null,
+      "priority": "",
+      "status": "todo",
+      "sprint": null,
+      "source_done_at_import": false,
+      "paperclip": {
+        "issue_id": null,
+        "synced": false
+      }
+    },
+    {
+      "id": "T014",
+      "ref": null,
+      "title": "Loki logs tail widget (LogQL query_range, tail-follow)",
+      "type": "task",
+      "epic": null,
+      "priority": "",
+      "status": "todo",
+      "sprint": null,
+      "source_done_at_import": false,
+      "paperclip": {
+        "issue_id": null,
+        "synced": false
+      }
+    },
+    {
+      "id": "T015",
+      "ref": null,
+      "title": "Uptime Kuma + Healthchecks.io status tiles",
+      "type": "task",
+      "epic": null,
+      "priority": "",
+      "status": "todo",
+      "sprint": null,
+      "source_done_at_import": false,
+      "paperclip": {
+        "issue_id": null,
+        "synced": false
+      }
+    },
+    {
+      "id": "T016",
+      "ref": null,
+      "title": "InfluxDB v2 (Flux) stat widget",
+      "type": "task",
+      "epic": null,
+      "priority": "",
+      "status": "todo",
+      "sprint": null,
+      "source_done_at_import": false,
+      "paperclip": {
+        "issue_id": null,
+        "synced": false
+      }
+    },
+    {
+      "id": "T017",
+      "ref": null,
+      "title": "Code Snippet \"Run\" via configured interpreter (dev plan A6)",
+      "type": "task",
+      "epic": null,
+      "priority": "",
+      "status": "todo",
+      "sprint": null,
+      "source_done_at_import": false,
+      "paperclip": {
+        "issue_id": null,
+        "synced": false
+      }
+    },
+    {
+      "id": "T018",
+      "ref": null,
+      "title": "Browser widget downloads panel",
+      "type": "task",
+      "epic": null,
+      "priority": "",
+      "status": "todo",
+      "sprint": null,
+      "source_done_at_import": false,
+      "paperclip": {
+        "issue_id": null,
+        "synced": false
+      }
+    },
+    {
+      "id": "T019",
+      "ref": null,
+      "title": "Browser widget reader mode",
+      "type": "task",
+      "epic": null,
+      "priority": "",
+      "status": "todo",
+      "sprint": null,
+      "source_done_at_import": false,
+      "paperclip": {
+        "issue_id": null,
+        "synced": false
+      }
+    },
+    {
+      "id": "T020",
+      "ref": null,
+      "title": "Multi-window (open a project in its own window)",
+      "type": "task",
+      "epic": null,
+      "priority": "",
+      "status": "todo",
+      "sprint": null,
+      "source_done_at_import": false,
+      "paperclip": {
+        "issue_id": null,
+        "synced": false
+      }
+    },
+    {
+      "id": "T021",
+      "ref": null,
+      "title": "Plugin discovery (Phase 10)",
+      "type": "task",
+      "epic": null,
+      "priority": "",
+      "status": "todo",
+      "sprint": null,
+      "source_done_at_import": false,
+      "paperclip": {
+        "issue_id": null,
+        "synced": false
+      }
+    },
+    {
+      "id": "T022",
+      "ref": null,
+      "title": "Make Playwright E2E real for Electron (currently non-functional scaffolding)",
+      "type": "task",
+      "epic": null,
+      "priority": "",
+      "status": "todo",
+      "sprint": null,
+      "source_done_at_import": false,
+      "paperclip": {
+        "issue_id": null,
+        "synced": false
+      }
+    }
+  ],
+  "daily": [
+    {
+      "date": "2026-11-27",
+      "sprint": 1,
+      "sprint_done": 0,
+      "sprint_total": 6,
+      "sprint_pct": 0.0,
+      "project_done": 0,
+      "project_total": 22,
+      "project_pct": 0.0,
+      "remaining": 6,
+      "ideal_remaining": 6.0,
+      "in_progress": 0,
+      "blocked": 0
+    }
+  ],
+  "paperclip_queue": [
+    {
+      "item_id": "T001",
+      "title": "Merge upgrade/v3-roadmap into master (32 commits from 2026-08-11..13 are not on fork/master despite ROADMAP saying \"all merged\")",
+      "issue_type": "task",
+      "reason": "planned",
+      "queued_at": "2026-11-27",
+      "synced": false,
+      "issue_id": null
+    },
+    {
+      "item_id": "T002",
+      "title": "Refresh ROADMAP.md status to match shipped work (monitoring A-C, MCP phases 1-2, port watcher, reminders, shelf bulk-pin, favicon cache)",
+      "issue_type": "task",
+      "reason": "planned",
+      "queued_at": "2026-11-27",
+      "synced": false,
+      "issue_id": null
+    },
+    {
+      "item_id": "T005",
+      "title": "safeStorage widget API module: encrypt-on-save / decrypt-on-use for token settings",
+      "issue_type": "task",
+      "reason": "planned",
+      "queued_at": "2026-11-27",
+      "synced": false,
+      "issue_id": null
+    },
+    {
+      "item_id": "T006",
+      "title": "Migrate token fields to safeStorage in github-ci, github-prs, grafana-alerts, grafana-panel, prometheus-stat, json-stat, alert-inbox",
+      "issue_type": "task",
+      "reason": "planned",
+      "queued_at": "2026-11-27",
+      "synced": false,
+      "issue_id": null
+    },
+    {
+      "item_id": "T007",
+      "title": "Profile export excludes decrypted secrets (exports encrypted blob, documented as non-portable)",
+      "issue_type": "task",
+      "reason": "planned",
+      "queued_at": "2026-11-27",
+      "synced": false,
+      "issue_id": null
+    },
+    {
+      "item_id": "T011",
+      "title": "MCP tools: freeter_get_app_info, freeter_set_theme",
+      "issue_type": "task",
+      "reason": "planned",
+      "queued_at": "2026-11-27",
+      "synced": false,
+      "issue_id": null
+    },
+    {
+      "item_id": "T001",
+      "title": "Merge upgrade/v3-roadmap into master (32 commits from 2026-08-11..13 are not on fork/master despite ROADMAP saying \"all merged\")",
+      "issue_type": "task",
+      "reason": "started",
+      "queued_at": "2026-11-27",
+      "synced": false,
+      "issue_id": null
+    },
+    {
+      "item_id": "T001",
+      "title": "Merge upgrade/v3-roadmap into master (32 commits from 2026-08-11..13 are not on fork/master despite ROADMAP saying \"all merged\")",
+      "issue_type": "task",
+      "reason": "done",
+      "queued_at": "2026-11-27",
+      "synced": false,
+      "issue_id": null
+    },
+    {
+      "item_id": "T002",
+      "title": "Refresh ROADMAP.md status to match shipped work (monitoring A-C, MCP phases 1-2, port watcher, reminders, shelf bulk-pin, favicon cache)",
+      "issue_type": "task",
+      "reason": "started",
+      "queued_at": "2026-11-27",
+      "synced": false,
+      "issue_id": null
+    }
+  ]
+}
