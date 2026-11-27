@@ -20,7 +20,7 @@ jobs:
           node-version: 20
 
       - name: Install Deps
-        run: yarn install
+        run: yarn install --frozen-lockfile
 
       - name: Run Tests
         run: yarn run test

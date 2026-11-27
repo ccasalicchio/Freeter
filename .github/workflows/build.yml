@@ -19,16 +19,16 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: 'npm'
+          cache: 'yarn'
 
       - name: Install dependencies
-        run: npm install
+        run: yarn install --frozen-lockfile
 
       - name: Build
-        run: npm run prod
+        run: yarn prod
 
       - name: Package
-        run: npm run package
+        run: yarn package
 
       - uses: actions/upload-artifact@v4
         with:
