@@ -12,8 +12,8 @@ docs/developer-features-and-mcp-plan.md, v3-plan.md. ROADMAP.md's status section
 - [ ] MSI code signing (blocked: needs purchased certificate)
 
 ## Security
-- [ ] safeStorage widget API module: encrypt-on-save / decrypt-on-use for token settings
-- [ ] Migrate token fields to safeStorage in github-ci, github-prs, grafana-alerts, grafana-panel, prometheus-stat, json-stat, alert-inbox
+- [ ] Secret widget settings: `secretSettings` keys stored as `enc:v1:` ciphertext, encrypted in the settings-commit use case and in MCP update_widget (the widget safeStorage API itself already exists)
+- [ ] Migrate token fields in github-ci, github-prs, grafana-alerts, grafana-panel, prometheus-stat, json-stat to secretSettings + decrypt-on-use (alert-inbox excluded: generated ingest secret matched in main)
 - [ ] Profile export excludes decrypted secrets (exports encrypted blob, documented as non-portable)
 
 ## MCP Phase 3 — opt-in action execution
