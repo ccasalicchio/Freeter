@@ -8,6 +8,10 @@ import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/
 import { DataStorage } from '@common/application/interfaces/dataStorage';
 import { createObjectManager } from '@common/base/objectManager';
 import { createFreeterMcpServer } from '@/infra/mcpServer/mcpServer';
+import { vi } from 'vitest';
+
+// mcpServer pulls in desktop notifications (electron), not needed here
+vi.mock('electron', () => ({ Notification: { isSupported: () => false } }));
 
 function createMemoryStorage(initial: Record<string, string> = {}): DataStorage {
   const items: Record<string, string> = { ...initial };
@@ -47,9 +51,24 @@ function fixtureAppJson() {
 
 const mcpToken = 'test-mcp-token';
 
-async function setup() {
+async function connectWithRetry(client: Client, url: URL) {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      await client.connect(new StreamableHTTPClientTransport(url, {
+        requestInit: { headers: { Authorization: `Bearer ${mcpToken}` } }
+      }));
+      return;
+    } catch (err) {
+      if (attempt >= 20) {
+        throw err;
+      }
+      await new Promise(resolve => setTimeout(resolve, 25));
+    }
+  }
+}
+
+async function setup(encryptString = jest.fn((plainText: string) => `CIPHER(${plainText})`)) {
   const appDataStorage = createMemoryStorage({ app: fixtureAppJson() });
-  const encryptString = jest.fn((plainText: string) => `CIPHER(${plainText})`);
   const server = createFreeterMcpServer({
     appDataStorage,
     widgetDataStorageManager: createObjectManager(async () => createMemoryStorage(), async () => true),
@@ -58,16 +77,14 @@ async function setup() {
   });
   const port = 40000 + Math.floor(Math.random() * 20000);
   server.start({ enabled: true, port, token: mcpToken });
-  // wait for the listener
-  await new Promise(resolve => setTimeout(resolve, 50));
   const client = new Client({ name: 'test', version: '1.0.0' });
-  await client.connect(new StreamableHTTPClientTransport(new URL(`http://127.0.0.1:${port}/mcp`), {
-    requestInit: { headers: { Authorization: `Bearer ${mcpToken}` } }
-  }));
+  await connectWithRetry(client, new URL(`http://127.0.0.1:${port}/mcp`));
+  const readAppJson = () => appDataStorage.getText('app');
   const readWidgets = async () => JSON.parse((await appDataStorage.getText('app'))!).obj.entities.widgets;
   return {
     client,
     encryptString,
+    readAppJson,
     readWidgets,
     teardown: async () => {
       await client.close();
@@ -113,6 +130,23 @@ describe('MCP server: secret widget settings', () => {
       const text = (res.content as { text: string }[])[0].text;
       expect(JSON.parse(text).settings.token).toBe('***');
       expect(text).not.toContain('CIPHER');
+    } finally {
+      await teardown();
+    }
+  })
+
+  it('should fail closed (write nothing) when the keychain can\'t encrypt', async () => {
+    const { client, readAppJson, teardown } = await setup(jest.fn((_plainText: string): string => {
+      throw new Error('keychain unavailable');
+    }));
+    try {
+      const before = await readAppJson();
+      const updateRes = await client.callTool({ name: 'freeter_update_widget', arguments: { widgetId: 'CI1', settings: { token: 'ghp_secret' } } });
+      const createRes = await client.callTool({ name: 'freeter_create_widget', arguments: { workflowId: 'W1', type: 'github-prs', name: 'PRs', settings: { token: 'ghp_new' } } });
+
+      expect(updateRes.isError).toBe(true);
+      expect(createRes.isError).toBe(true);
+      expect(await readAppJson()).toBe(before);
     } finally {
       await teardown();
     }
