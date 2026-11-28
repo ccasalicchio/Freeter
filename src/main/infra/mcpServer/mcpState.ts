@@ -8,6 +8,8 @@
  * MCP server tools. Kept SDK-free so they are unit-testable.
  */
 
+import { needsSecretEncryption, toEncryptedSecret } from '@common/base/secretSetting';
+
 interface EntityBase { id: string }
 interface ProjectEntity extends EntityBase {
   settings: { name?: string; isArchived?: boolean };
@@ -40,6 +42,46 @@ export interface AppStateDoc {
     };
     [key: string]: unknown;
   };
+}
+
+/**
+ * Secret settings keys per widget type: a copy of the renderer widget types'
+ * `secretSettings` (src/renderer/widgets/<type>/index.ts) — keep in sync.
+ * Values of these keys are stored as OS-keychain ciphertext (`enc:v1:…`).
+ * NOTE: alert-inbox's `token` is deliberately absent: it is a generated
+ * ingest secret matched in plaintext by findWidgetByIngestToken.
+ */
+export const secretSettingsByWidgetType: Readonly<Record<string, readonly string[]>> = {
+  'github-ci': ['token'],
+  'github-prs': ['token'],
+  'grafana-alerts': ['token'],
+  'grafana-panel': ['token'],
+  'prometheus-stat': ['password', 'token'],
+  'json-stat': ['password', 'token'],
+};
+
+/**
+ * Returns a copy of a settings object/patch with the widget type's secret keys
+ * encrypted (non-empty, not yet `enc:v1:`-prefixed string values only; null
+ * "delete" markers, empty strings and ciphertext pass through unchanged).
+ */
+export function encryptSecretSettingsForType(
+  type: string,
+  settings: Record<string, unknown>,
+  encrypt: (plainText: string) => string
+): Record<string, unknown> {
+  const secretKeys = secretSettingsByWidgetType[type] ?? [];
+  let result = settings;
+  for (const key of secretKeys) {
+    const value = settings[key];
+    if (needsSecretEncryption(value)) {
+      if (result === settings) {
+        result = { ...settings };
+      }
+      result[key] = toEncryptedSecret(encrypt(value));
+    }
+  }
+  return result;
 }
 
 export function parseAppState(json: string | undefined): AppStateDoc | null {

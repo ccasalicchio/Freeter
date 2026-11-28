@@ -190,10 +190,14 @@ if (!app.requestSingleInstanceLock()) {
     const autoBackup = createAutoBackup(appDataStorage, widgetDataStorageManager);
     autoBackup.start();
 
+    // OS keychain encryption (widget safeStorage API, secret widget settings written over MCP)
+    const safeStorageProvider = createSafeStorageProvider();
+
     // localhost MCP server for AI clients (Settings > AI / MCP)
     const mcpServer = createFreeterMcpServer({
       appDataStorage,
       widgetDataStorageManager,
+      safeStorageProvider,
       reloadRenderer: () => (appWindow as unknown as ElectronBrowserWindow | null)?.reload()
     });
     try {
@@ -265,7 +269,6 @@ if (!app.requestSingleInstanceLock()) {
 
     const openAppUseCase = createOpenAppUseCase({ childProcessProvider, processProvider })
 
-    const safeStorageProvider = createSafeStorageProvider();
     const safeStorageEncryptUseCase = createSafeStorageEncryptUseCase({ safeStorageProvider });
     const safeStorageDecryptUseCase = createSafeStorageDecryptUseCase({ safeStorageProvider });
 
