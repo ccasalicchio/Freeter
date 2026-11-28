@@ -16,9 +16,7 @@ export interface FindInPageProvider {
 
 export function createFindInPageProvider(): FindInPageProvider {
   return {
-    find: async (text, forward, findNext) => electronIpcRenderer.invoke<IpcFindInPageArgs, IpcFindInPageRes>(
-      ipcFindInPageChannel, text, forward, findNext
-    ),
+    find: async (text, forward, findNext) => electronIpcRenderer.invoke<IpcFindInPageArgs, IpcFindInPageRes>(ipcFindInPageChannel, text, forward, findNext),
     stop: async () => electronIpcRenderer.invoke<IpcStopFindInPageArgs, IpcStopFindInPageRes>(
       ipcStopFindInPageChannel
     ),

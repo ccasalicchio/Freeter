@@ -13,8 +13,6 @@ export interface HttpProvider {
 
 export function createHttpProvider(): HttpProvider {
   return {
-    request: async (config) => electronIpcRenderer.invoke<IpcHttpRequestArgs, IpcHttpRequestRes>(
-      ipcHttpRequestChannel, config
-    ),
+    request: async (config) => electronIpcRenderer.invoke<IpcHttpRequestArgs, IpcHttpRequestRes>(ipcHttpRequestChannel, config),
   }
 }

@@ -55,6 +55,9 @@ async function setup(
     openApplicationSettingsUseCase: jest.fn(),
     openProjectManagerUseCase: jest.fn(),
     openAppManagerUseCase: jest.fn(),
+    switchProjectUseCase: jest.fn(),
+    switchWorkflowUseCase: jest.fn(),
+    toggleEditModeUseCase: jest.fn(),
   });
 
   const App = createAppComponent({
