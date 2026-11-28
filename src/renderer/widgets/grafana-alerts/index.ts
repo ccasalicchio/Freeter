@@ -20,7 +20,8 @@ const widgetType: WidgetType<Settings> = {
   createSettingsState,
   settingsEditorComp,
   widgetComp,
-  requiresApi: ['http', 'shell']
+  requiresApi: ['http', 'shell', 'safeStorage'],
+  secretSettings: ['token']
 }
 
 export default widgetType;

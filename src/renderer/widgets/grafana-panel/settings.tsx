@@ -4,12 +4,13 @@
  */
 
 import { CreateSettingsState, ReactComponent, SettingBlock, SettingsEditorReactComponentProps } from '@/widgets/appModules';
+import { SecretInput } from '@/widgets/secretInput';
 
 export type GrafanaPanelMode = 'image' | 'iframe';
 export type GrafanaPanelTheme = 'dark' | 'light';
 
-// NOTE: the token is a plain widget setting for now — migration to the
-// safeStorage widget API (OS keychain encryption) is planned.
+// NOTE: `token` is a secret setting (see index.ts secretSettings): stored as
+// OS-keychain ciphertext (`enc:v1:…`) and decrypted by the widget on use.
 export interface Settings {
   baseUrl: string;
   dashboardUid: string;
@@ -65,9 +66,9 @@ function SettingsEditorComp({settings, settingsApi}: SettingsEditorReactComponen
         <input id='grafana-panel-refresh' type='number' min={settings.mode === 'image' ? 10 : 5} value={settings.refreshSecs}
           onChange={e => updateSettings({ ...settings, refreshSecs: Math.max(5, Number.parseInt(e.target.value) || 60) })} />
       </SettingBlock>
-      <SettingBlock titleForId='grafana-panel-token' title='Token' moreInfo='Optional Grafana service-account token, sent as an Authorization: Bearer header in image mode. Stored in the widget settings; encrypted storage (OS keychain) is planned.'>
-        <input id='grafana-panel-token' type='password' value={settings.token}
-          onChange={e => updateSettings({ ...settings, token: e.target.value })} />
+      <SettingBlock titleForId='grafana-panel-token' title='Token' moreInfo='Optional Grafana service-account token, sent as an Authorization: Bearer header in image mode. Encrypted with the OS keychain (safeStorage) when saved; profile exports and backups hold only the ciphertext, which can only be decrypted on this machine.'>
+        <SecretInput id='grafana-panel-token' value={settings.token}
+          onChange={token => updateSettings({ ...settings, token })} />
       </SettingBlock>
       <SettingBlock titleForId='grafana-panel-theme' title='Theme'>
         <select id='grafana-panel-theme' value={settings.theme} onChange={e => updateSettings({

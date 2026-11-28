@@ -5,11 +5,12 @@
 
 import { CreateSettingsState, ReactComponent, SettingBlock, SettingsEditorReactComponentProps } from '@/widgets/appModules';
 import { MonitorAuthSettings, sanitizeMonitorAuth } from '@/widgets/helpers';
+import { SecretInput } from '@/widgets/secretInput';
 
 export type PrometheusMode = 'instant' | 'range';
 
-// NOTE: auth credentials are plain widget settings for now — migration to the
-// safeStorage widget API (OS keychain encryption) is planned.
+// NOTE: `password` and `token` are secret settings (see index.ts secretSettings):
+// stored as OS-keychain ciphertext (`enc:v1:…`) and decrypted by the widget on use.
 export interface Settings extends MonitorAuthSettings {
   baseUrl: string;
   query: string;
@@ -93,7 +94,7 @@ function SettingsEditorComp({settings, settingsApi}: SettingsEditorReactComponen
           Lower is worse
         </label>
       </SettingBlock>
-      <SettingBlock titleForId='prom-stat-auth' title='Authentication' moreInfo='Credentials are stored in the widget settings; encrypted storage (OS keychain) is planned.'>
+      <SettingBlock titleForId='prom-stat-auth' title='Authentication' moreInfo='Password and token are encrypted with the OS keychain (safeStorage) when saved; profile exports and backups hold only the ciphertext, which can only be decrypted on this machine.'>
         <select id='prom-stat-auth' value={settings.authType} onChange={e => updateSettings({
           ...settings, authType: e.target.value === 'basic' ? 'basic' : e.target.value === 'bearer' ? 'bearer' : 'none'
         })}>
@@ -109,15 +110,15 @@ function SettingsEditorComp({settings, settingsApi}: SettingsEditorReactComponen
               onChange={e => updateSettings({ ...settings, username: e.target.value })} />
           </SettingBlock>
           <SettingBlock titleForId='prom-stat-password' title='Password'>
-            <input id='prom-stat-password' type='password' value={settings.password}
-              onChange={e => updateSettings({ ...settings, password: e.target.value })} />
+            <SecretInput id='prom-stat-password' value={settings.password}
+              onChange={password => updateSettings({ ...settings, password })} />
           </SettingBlock>
         </>
       )}
       {settings.authType === 'bearer' && (
         <SettingBlock titleForId='prom-stat-token' title='Token'>
-          <input id='prom-stat-token' type='password' value={settings.token}
-            onChange={e => updateSettings({ ...settings, token: e.target.value })} />
+          <SecretInput id='prom-stat-token' value={settings.token}
+            onChange={token => updateSettings({ ...settings, token })} />
         </SettingBlock>
       )}
     </>

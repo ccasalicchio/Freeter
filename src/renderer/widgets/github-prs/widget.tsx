@@ -4,7 +4,7 @@
  */
 
 import { ReactComponent, WidgetReactComponentProps } from '@/widgets/appModules';
-import { githubApiRequest } from '@/widgets/helpers';
+import { githubApiRequest, secretDecryptErrorText, useSecretSetting } from '@/widgets/helpers';
 import { Settings } from './settings';
 import styles from './widget.module.scss';
 import { useCallback, useEffect, useState } from 'react';
@@ -18,15 +18,18 @@ interface Pr {
 }
 
 function WidgetComp({settings, widgetApi}: WidgetReactComponentProps<Settings>) {
-  const { http, shell } = widgetApi;
+  const { http, shell, safeStorage } = widgetApi;
   const [prs, setPrs] = useState<Pr[] | null>(null);
   const [error, setError] = useState('');
+  const tokenState = useSecretSetting(settings.token, safeStorage);
+  // never request with an undecrypted (enc:v1:) token
+  const token = tokenState.status === 'ready' ? tokenState.value : null;
 
   const refresh = useCallback(async () => {
-    if (!settings.repo) {
+    if (!settings.repo || token === null) {
       return;
     }
-    const res = await githubApiRequest(http, `/repos/${settings.repo}/pulls?state=open&per_page=10`, settings.token);
+    const res = await githubApiRequest(http, `/repos/${settings.repo}/pulls?state=open&per_page=10`, token);
     if (!res.ok) {
       setError(res.error);
       setPrs(null);
@@ -34,7 +37,7 @@ function WidgetComp({settings, widgetApi}: WidgetReactComponentProps<Settings>) 
     }
     setError('');
     setPrs(res.data as Pr[]);
-  }, [settings.repo, settings.token, http]);
+  }, [settings.repo, token, http]);
 
   useEffect(() => {
     refresh();
@@ -44,6 +47,9 @@ function WidgetComp({settings, widgetApi}: WidgetReactComponentProps<Settings>) 
 
   if (!settings.repo) {
     return <div className={styles['not-configured']}>{'Repository not specified'}</div>;
+  }
+  if (tokenState.status === 'error') {
+    return <div className={styles['error']}>{secretDecryptErrorText}</div>;
   }
   if (error) {
     return <div className={styles['error']} onClick={refresh} title='Click to retry'>{error}</div>;
