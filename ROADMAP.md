@@ -4,7 +4,10 @@ High-level milestone view for the Freeter v3 upgrade.
 
 ---
 
-## Status — updated 2026-08-12
+## Status — updated 2026-11-27
+
+Active sprint plan and burndown: [docs/sprints/backlog.md](docs/sprints/backlog.md)
+(state in `docs/sprints/state.json`).
 
 ### ✅ Done (verified working in the installed app; all merged to `master`)
 
@@ -46,32 +49,53 @@ High-level milestone view for the Freeter v3 upgrade.
 - Global find-in-page (Ctrl+F) across all widgets; CodeMirror search in editors
 - Keyboard shortcuts: Ctrl/Cmd+1-9 projects, Alt+1-9 workflows, Ctrl/Cmd+E edit
 - Settings → Shortcuts tab (customizable project/workflow/edit-mode bindings)
-- Settings → AI tab: **Freeter MCP server** (streamable-HTTP, bearer-token,
-  11 tools over projects/workflows/widgets/notes/todos) with optional
-  WSL/network access (binds 0.0.0.0; loopback-only by default) — verified
-  end-to-end from Claude Code in WSL
+- Settings → AI tab: **Freeter MCP server** (streamable-HTTP, bearer-token)
+  with optional WSL/network access (binds 0.0.0.0; loopback-only by
+  default) — verified end-to-end from Claude Code in WSL. **37 tools**:
+  navigation/search, project + workflow lifecycle (create, rename,
+  duplicate, reorder, archive), widget create/update/resize/delete, content
+  tools for notes, to-dos, snippets, kanban and calendar, plus a 20-entry
+  undo; secret-looking settings are masked and password-vault widgets are
+  excluded. MCP resources `freeter://note/{id}` and `freeter://todo/{id}`
+  (see docs/mcp-actions-plan.md, phases 1-2)
 - Developer widgets: **Webhook Button**, **Git Status**, **GitHub CI**,
-  **GitHub PRs** (plus earlier API Client, Code Snippet, System Monitor)
-- Project archiving (hide without deleting); archived projects excluded from
-  switcher, palette and shortcuts
+  **GitHub PRs**, **File Explorer**, **HTTP Monitor**, **Port Watcher**,
+  **Reminders** (plus earlier API Client, Code Snippet, System Monitor);
+  desktop-notification widget API
+- **Monitoring** (docs/monitoring-integrations-plan.md, phases A-C):
+  **Prometheus Stat**, **JSON Stat**, **Grafana Alerts** (incl.
+  Alertmanager mode), **Grafana Panel**; alert webhook ingest
+  (`POST /ingest/<token>` on the MCP listener) feeding the **Alert Inbox**
+  widget with desktop notifications
+- Project archiving and workflow-tab archiving (hide without deleting);
+  archived items excluded from switcher, palette and shortcuts
+- Per-project accent color
+- Shelf bulk-pin: "Pin Widgets to Shelf" action on workflow tabs
 - Top-bar quick-actions toolbar (palette, apps, import/export, settings)
 - Click-hold-and-drag scrolling on all scrollable areas (tabs, shelf, lists)
 
 ### 🔜 Pending (specced, not yet built)
 
-- **Monitoring & reporting integrations** — Prometheus / Grafana /
-  Alertmanager widgets, generic JSON metric widget, alert webhook ingest +
-  desktop notifications (see docs/monitoring-integrations-plan.md)
-- **MCP actions remainder** — workflow/project lifecycle tools, snippet/kanban
-  content tools, opt-in action execution, MCP resources
-  (see docs/mcp-actions-plan.md; phases 1-4)
-- **Shelf bulk-pin** from the Freeter 1 Library
+Scheduled across sprints 1-5 (2026-11-30 → 2027-01-03) in
+[docs/sprints/backlog.md](docs/sprints/backlog.md):
+
+- **Secrets at rest** — token settings in GitHub CI/PRs, Grafana, Prometheus,
+  JSON Stat and Alert Inbox are stored in plain text and included in profile
+  exports; move them to `safeStorage` (OS keychain) per the monitoring plan's
+  cross-cutting rule
+- **MCP actions remainder** — phase 3 opt-in action execution (webhook, open
+  link, notification, backup, commander with per-widget opt-in) and phase 4
+  quality of life (app info, theme, read monitors, persistent undo with a
+  conflict guard) (see docs/mcp-actions-plan.md)
+- **Monitoring long tail** — Loki, Uptime Kuma / Healthchecks.io, InfluxDB
+  (phase D, by demand)
+- **Code Snippet "Run"** via a configured interpreter
 - Auto-update / release channel wiring (electron-builder publish is configured
   but unused); code signing for the MSI (blocked: requires a purchased
   code-signing certificate)
-- Remaining roadmap phases below that have not shipped: enhanced Browser widget
-  (Phase 6 items: address bar, downloads, reader mode), multi-window,
-  plugin discovery (Phase 10)
+- Remaining roadmap phases that have not shipped: Browser widget downloads
+  and reader mode (address bar and zoom exist), multi-window, plugin
+  discovery (Phase 10), working Playwright E2E for Electron
 
 See **[docs/v1-v2-parity-plan.md](docs/v1-v2-parity-plan.md)** and
 **[docs/developer-features-and-mcp-plan.md](docs/developer-features-and-mcp-plan.md)**
