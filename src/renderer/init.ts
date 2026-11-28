@@ -212,7 +212,8 @@ async function createUseCases(store: ReturnType<typeof createStore>) {
 
   const openWidgetSettingsUseCase = createOpenWidgetSettingsUseCase(deps);
   const closeWidgetSettingsUseCase = createCloseWidgetSettingsUseCase(deps);
-  const saveWidgetSettingsUseCase = createSaveWidgetSettingsUseCase(deps);
+  const safeStorageProvider = createSafeStorageProvider();
+  const saveWidgetSettingsUseCase = createSaveWidgetSettingsUseCase({ ...deps, safeStorageProvider });
   const getWidgetSettingsApiUseCase = createGetWidgetSettingsApiUseCase({
     ...deps,
     dialogProvider: osDialogProvider,
@@ -298,7 +299,6 @@ async function createUseCases(store: ReturnType<typeof createStore>) {
     copyWidgetDataStorage
   )
   const terminalProvider = createTerminalProvider();
-  const safeStorageProvider = createSafeStorageProvider();
   const getWidgetApiUseCase = createGetWidgetApiUseCase({
     clipboardProvider,
     processProvider,

@@ -3,7 +3,7 @@
  * GNU General Public License v3.0 or later (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
  */
 
-import { parseAppState, listProjects, listWorkflows, listWidgets, createWidgetInState, switchProjectInState, switchWorkflowInState, reorderWorkflowsInState, setWorkflowArchivedInState, updateWidgetInState, moveWidgetInState, resizeWidgetInState, searchNames, createWorkflowInState, renameWorkflowInState, duplicateWorkflowInState, deleteWidgetFromState, createProjectInState, renameProjectInState, setProjectArchivedInState, listContentWidgets, parseKanbanData, kanbanColumnsFromSettings, resolveKanbanColumn, readKanbanBoard, addKanbanCardToData, updateKanbanCardInData, moveKanbanCardInData, parseCalendarData, addCalendarEventToData, AppStateDoc, KanbanData } from '@/infra/mcpServer/mcpState';
+import { parseAppState, listProjects, listWorkflows, listWidgets, createWidgetInState, switchProjectInState, switchWorkflowInState, reorderWorkflowsInState, setWorkflowArchivedInState, updateWidgetInState, moveWidgetInState, resizeWidgetInState, searchNames, createWorkflowInState, renameWorkflowInState, duplicateWorkflowInState, deleteWidgetFromState, createProjectInState, renameProjectInState, setProjectArchivedInState, listContentWidgets, parseKanbanData, kanbanColumnsFromSettings, resolveKanbanColumn, readKanbanBoard, addKanbanCardToData, updateKanbanCardInData, moveKanbanCardInData, parseCalendarData, addCalendarEventToData, AppStateDoc, KanbanData, secretSettingsByWidgetType, encryptSecretSettingsForType } from '@/infra/mcpServer/mcpState';
 
 function fixtureState(): AppStateDoc {
   return {
@@ -386,5 +386,47 @@ describe('mcpState phase 2', () => {
     // failed adds leave the data untouched
     expect(data.events).toHaveLength(1);
     expect(data.nextEventId).toBe(2);
+  })
+})
+
+describe('secret widget settings', () => {
+  const encrypt = jest.fn((text: string) => `CIPHER(${text})`);
+  beforeEach(() => encrypt.mockClear());
+
+  it('should list the secret keys of the six token-bearing widget types, and not alert-inbox', () => {
+    expect(secretSettingsByWidgetType).toEqual({
+      'github-ci': ['token'],
+      'github-prs': ['token'],
+      'grafana-alerts': ['token'],
+      'grafana-panel': ['token'],
+      'prometheus-stat': ['password', 'token'],
+      'json-stat': ['password', 'token'],
+    });
+    expect(secretSettingsByWidgetType['alert-inbox']).toBeUndefined();
+  })
+
+  it('should encrypt plaintext secret keys and leave the other keys alone', () => {
+    const res = encryptSecretSettingsForType('json-stat', { url: 'http://x', username: 'bob', password: 'pw', token: 'tok' }, encrypt);
+    expect(res).toEqual({ url: 'http://x', username: 'bob', password: 'enc:v1:CIPHER(pw)', token: 'enc:v1:CIPHER(tok)' });
+  })
+
+  it('should pass null (delete), empty and already-encrypted values through', () => {
+    const patch = { token: null, password: '' };
+    expect(encryptSecretSettingsForType('prometheus-stat', patch, encrypt)).toBe(patch);
+    const patch2 = { token: 'enc:v1:X' };
+    expect(encryptSecretSettingsForType('github-ci', patch2, encrypt)).toBe(patch2);
+    expect(encrypt).not.toHaveBeenCalled();
+  })
+
+  it('should not encrypt anything for types without secret settings (e.g. alert-inbox)', () => {
+    const settings = { token: 'ingest-secret' };
+    expect(encryptSecretSettingsForType('alert-inbox', settings, encrypt)).toBe(settings);
+    expect(encryptSecretSettingsForType('note', settings, encrypt)).toBe(settings);
+  })
+
+  it('should not mutate the input', () => {
+    const settings = { token: 'tok' };
+    encryptSecretSettingsForType('github-prs', settings, encrypt);
+    expect(settings).toEqual({ token: 'tok' });
   })
 })

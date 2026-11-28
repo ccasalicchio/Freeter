@@ -4,12 +4,13 @@
  */
 
 import { CreateSettingsState, ReactComponent, SettingBlock, SettingsEditorReactComponentProps } from '@/widgets/appModules';
+import { SecretInput } from '@/widgets/secretInput';
 
 export type GrafanaAlertsSource = 'grafana' | 'alertmanager';
 export type GrafanaAlertsStateFilter = 'firing' | 'all';
 
-// NOTE: the token is a plain widget setting for now — migration to the
-// safeStorage widget API (OS keychain encryption) is planned.
+// NOTE: `token` is a secret setting (see index.ts secretSettings): stored as
+// OS-keychain ciphertext (`enc:v1:…`) and decrypted by the widget on use.
 export interface Settings {
   baseUrl: string;
   source: GrafanaAlertsSource;
@@ -48,9 +49,9 @@ function SettingsEditorComp({settings, settingsApi}: SettingsEditorReactComponen
           placeholder={settings.source === 'grafana' ? 'http://localhost:3000' : 'http://localhost:9093'}
           onChange={e => updateSettings({ ...settings, baseUrl: e.target.value.trim() })} />
       </SettingBlock>
-      <SettingBlock titleForId='grafana-alerts-token' title='Token' moreInfo='Optional bearer token (Grafana service-account token). Sent as an Authorization: Bearer header. Stored in the widget settings; encrypted storage (OS keychain) is planned.'>
-        <input id='grafana-alerts-token' type='password' value={settings.token}
-          onChange={e => updateSettings({ ...settings, token: e.target.value })} />
+      <SettingBlock titleForId='grafana-alerts-token' title='Token' moreInfo='Optional bearer token (Grafana service-account token). Sent as an Authorization: Bearer header. Encrypted with the OS keychain (safeStorage) when the settings are saved.'>
+        <SecretInput id='grafana-alerts-token' value={settings.token}
+          onChange={token => updateSettings({ ...settings, token })} />
       </SettingBlock>
       <SettingBlock titleForId='grafana-alerts-state' title='Show Alerts' moreInfo='Firing shows only currently active alerts. All also lists suppressed/unprocessed ones.'>
         <select id='grafana-alerts-state' value={settings.stateFilter} onChange={e => updateSettings({

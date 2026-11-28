@@ -4,7 +4,7 @@
  */
 
 import { ReactComponent, WidgetReactComponentProps } from '@/widgets/appModules';
-import { githubApiRequest } from '@/widgets/helpers';
+import { githubApiRequest, secretDecryptErrorText, useSecretSetting } from '@/widgets/helpers';
 import { Settings } from './settings';
 import styles from './widget.module.scss';
 import clsx from 'clsx';
@@ -34,16 +34,19 @@ function statusInfo(run: Run): { char: string; cls: string } {
 }
 
 function WidgetComp({settings, widgetApi}: WidgetReactComponentProps<Settings>) {
-  const { http, shell } = widgetApi;
+  const { http, shell, safeStorage } = widgetApi;
   const [runs, setRuns] = useState<Run[] | null>(null);
   const [error, setError] = useState('');
+  const tokenState = useSecretSetting(settings.token, safeStorage);
+  // never request with an undecrypted (enc:v1:) token
+  const token = tokenState.status === 'ready' ? tokenState.value : null;
 
   const refresh = useCallback(async () => {
-    if (!settings.repo) {
+    if (!settings.repo || token === null) {
       return;
     }
     const branch = settings.branch ? `&branch=${encodeURIComponent(settings.branch)}` : '';
-    const res = await githubApiRequest(http, `/repos/${settings.repo}/actions/runs?per_page=8${branch}`, settings.token);
+    const res = await githubApiRequest(http, `/repos/${settings.repo}/actions/runs?per_page=8${branch}`, token);
     if (!res.ok) {
       setError(res.error);
       setRuns(null);
@@ -51,7 +54,7 @@ function WidgetComp({settings, widgetApi}: WidgetReactComponentProps<Settings>) 
     }
     setError('');
     setRuns(((res.data as { workflow_runs?: Run[] }).workflow_runs ?? []).slice(0, 8));
-  }, [settings.repo, settings.branch, settings.token, http]);
+  }, [settings.repo, settings.branch, token, http]);
 
   useEffect(() => {
     refresh();
@@ -61,6 +64,9 @@ function WidgetComp({settings, widgetApi}: WidgetReactComponentProps<Settings>) 
 
   if (!settings.repo) {
     return <div className={styles['not-configured']}>{'Repository not specified'}</div>;
+  }
+  if (tokenState.status === 'error') {
+    return <div className={styles['error']}>{secretDecryptErrorText}</div>;
   }
   if (error) {
     return <div className={styles['error']} onClick={refresh} title='Click to retry'>{error}</div>;

@@ -4,7 +4,7 @@
  */
 
 import { ReactComponent, WidgetReactComponentProps } from '@/widgets/appModules';
-import { formatSinceTime, usePolling } from '@/widgets/helpers';
+import { formatSinceTime, secretDecryptErrorText, usePolling, useSecretSetting } from '@/widgets/helpers';
 import { Settings } from './settings';
 import styles from './widget.module.scss';
 import clsx from 'clsx';
@@ -43,16 +43,19 @@ function truncate(text: string, max: number): string {
 }
 
 function WidgetComp({settings, widgetApi}: WidgetReactComponentProps<Settings>) {
-  const { http, shell } = widgetApi;
+  const { http, shell, safeStorage } = widgetApi;
   const [alerts, setAlerts] = useState<AmAlert[] | null>(null);
   const [error, setError] = useState('');
   const [asOf, setAsOf] = useState<number | null>(null);
 
-  const { baseUrl, source, token, stateFilter, labelFilter, refreshSecs } = settings;
+  const { baseUrl, source, stateFilter, labelFilter, refreshSecs } = settings;
   const base = baseUrl.replace(/\/+$/, '');
+  const tokenState = useSecretSetting(settings.token, safeStorage);
+  // never request with an undecrypted (enc:v1:) token
+  const token = tokenState.status === 'ready' ? tokenState.value : null;
 
   const refresh = useCallback(async () => {
-    if (base === '') {
+    if (base === '' || token === null) {
       return;
     }
     const path = source === 'alertmanager' ? '/api/v2/alerts' : '/api/alertmanager/grafana/api/v2/alerts';
@@ -93,6 +96,9 @@ function WidgetComp({settings, widgetApi}: WidgetReactComponentProps<Settings>) 
 
   if (base === '') {
     return <div className={styles['not-configured']}>{'Server URL not specified'}</div>;
+  }
+  if (tokenState.status === 'error') {
+    return <div className={styles['error']}>{secretDecryptErrorText}</div>;
   }
 
   const filtered = alerts !== null ? alerts.filter(a => matchesLabelFilter(a, labelFilter)) : null;

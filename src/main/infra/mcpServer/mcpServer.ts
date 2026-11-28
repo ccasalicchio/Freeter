@@ -26,7 +26,7 @@ import {
   createProjectInState, renameProjectInState, setProjectArchivedInState,
   parseKanbanData, kanbanColumnsFromSettings, resolveKanbanColumn, readKanbanBoard,
   addKanbanCardToData, updateKanbanCardInData, moveKanbanCardInData,
-  parseCalendarData, addCalendarEventToData
+  parseCalendarData, addCalendarEventToData, encryptSecretSettingsForType
 } from '@/infra/mcpServer/mcpState';
 import {
   appendAlertEntries, createIngestRateLimiter, entriesToNotify, findWidgetByIngestToken, mapIngestPayload
@@ -46,6 +46,8 @@ type Deps = {
   widgetDataStorageManager: ObjectManager<DataStorage>;
   /** reloads the renderer so external state edits become visible */
   reloadRenderer: () => void;
+  /** OS keychain encryption, for the secret settings of widgets written over MCP */
+  safeStorageProvider: { encryptString: (plainText: string) => string };
 }
 
 function textResult(data: unknown) {
@@ -88,8 +90,24 @@ function readRequestBody(req: http.IncomingMessage, maxBytes: number): Promise<s
   });
 }
 
-export function createFreeterMcpServer({ appDataStorage, widgetDataStorageManager, reloadRenderer }: Deps) {
+export function createFreeterMcpServer({ appDataStorage, widgetDataStorageManager, reloadRenderer, safeStorageProvider }: Deps) {
   let httpServer: http.Server | null = null;
+
+  /**
+   * Encrypts the secret keys (tokens, passwords) of a widget type's settings
+   * before they are written into the persisted state, mirroring the renderer's
+   * save-settings use case. Fails closed: returns null when the OS keychain
+   * can't encrypt, and the caller then writes nothing.
+   */
+  function encryptSecrets(type: string, settings: Record<string, unknown>): Record<string, unknown> | null {
+    try {
+      return encryptSecretSettingsForType(type, settings, plainText => safeStorageProvider.encryptString(plainText));
+    } catch (err) {
+      logToFile('warn', `mcp: could not encrypt secret ${type} widget settings: ${err instanceof Error ? err.message : String(err)}`);
+      return null;
+    }
+  }
+  const encryptFailedMessage = 'The OS keychain could not encrypt the secret setting (token/password); nothing was written. Set it in the widget settings in Freeter instead.';
 
   async function readState() {
     return parseAppState(await appDataStorage.getText('app'));
@@ -328,7 +346,11 @@ export function createFreeterMcpServer({ appDataStorage, widgetDataStorageManage
       if (!state) {
         return errorResult('Freeter has no saved state yet.');
       }
-      const res = createWidgetInState(state, workflowId, type, name, settings ?? {}, randomUUID);
+      const settingsToWrite = encryptSecrets(type, settings ?? {});
+      if (!settingsToWrite) {
+        return errorResult(encryptFailedMessage);
+      }
+      const res = createWidgetInState(state, workflowId, type, name, settingsToWrite, randomUUID);
       if (!res) {
         return errorResult(`Workflow "${workflowId}" not found. Use freeter_list_workflows to get valid ids.`);
       }
@@ -602,10 +624,15 @@ export function createFreeterMcpServer({ appDataStorage, widgetDataStorageManage
       }
     }, async ({ widgetId, name, settings }) => {
       const state = await readState();
-      if (state && getWidget(state, widgetId)?.type === 'password-vault') {
+      const widgetType = state ? getWidget(state, widgetId)?.type : undefined;
+      if (widgetType === 'password-vault') {
         return errorResult('Password vault widgets are not editable over MCP.');
       }
-      if (!state || !updateWidgetInState(state, widgetId, { name, settings })) {
+      const settingsToWrite = settings && widgetType !== undefined ? encryptSecrets(widgetType, settings) : settings;
+      if (settingsToWrite === null) {
+        return errorResult(encryptFailedMessage);
+      }
+      if (!state || !updateWidgetInState(state, widgetId, { name, settings: settingsToWrite })) {
         return errorResult(`Widget "${widgetId}" not found. Use freeter_list_widgets to get valid ids.`);
       }
       await writeState(state, 'update widget');

@@ -4,7 +4,7 @@
  */
 
 import { ReactComponent, WidgetReactComponentProps } from '@/widgets/appModules';
-import { usePolling } from '@/widgets/helpers';
+import { secretDecryptErrorText, usePolling, useSecretSetting } from '@/widgets/helpers';
 import { Settings } from './settings';
 import styles from './widget.module.scss';
 import { useCallback, useState } from 'react';
@@ -18,17 +18,20 @@ function panelQuery(panelId: number, timeRange: string, theme: string): string {
 }
 
 function WidgetComp({settings, widgetApi}: WidgetReactComponentProps<Settings>) {
-  const { http } = widgetApi;
+  const { http, safeStorage } = widgetApi;
   const [imgSrc, setImgSrc] = useState('');
   const [error, setError] = useState('');
   const [asOf, setAsOf] = useState<number | null>(null);
 
-  const { baseUrl, dashboardUid, panelId, mode, timeRange, refreshSecs, token, theme } = settings;
+  const { baseUrl, dashboardUid, panelId, mode, timeRange, refreshSecs, theme } = settings;
   const base = baseUrl.replace(/\/+$/, '');
   const configured = base !== '' && dashboardUid !== '';
+  const tokenState = useSecretSetting(settings.token, safeStorage);
+  // never request with an undecrypted (enc:v1:) token
+  const token = tokenState.status === 'ready' ? tokenState.value : null;
 
   const refresh = useCallback(async () => {
-    if (!configured || mode !== 'image') {
+    if (!configured || mode !== 'image' || token === null) {
       return;
     }
     const url = `${base}/render/d-solo/${encodeURIComponent(dashboardUid)}/panel?${panelQuery(panelId, timeRange, theme)}&width=${renderWidth}&height=${renderHeight}`;
@@ -73,6 +76,11 @@ function WidgetComp({settings, widgetApi}: WidgetReactComponentProps<Settings>) 
         ></webview>
       </div>
     );
+  }
+
+  // the token is only used by image mode (iframe mode relies on the embedded Grafana session)
+  if (tokenState.status === 'error') {
+    return <div className={styles['error']}>{secretDecryptErrorText}</div>;
   }
 
   return (

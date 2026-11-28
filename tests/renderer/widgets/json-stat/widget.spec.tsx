@@ -150,4 +150,54 @@ describe('JSON Stat Widget', () => {
 
     expect(request.mock.calls.length).toBe(callsAfterMount + 1);
   })
+
+  describe('encrypted credentials', () => {
+    it('should send the decrypted bearer token, never the ciphertext', async () => {
+      const request = jest.fn(async (_cfg: { headers?: Record<string, string> }) => fixtureHttpResponse());
+      const decryptString = jest.fn(async (cipher: string) => (cipher === 'VE9L' ? 'plain-token' : 'wrong'));
+      setupSut(fixtureSettings({ authType: 'bearer', token: 'enc:v1:VE9L' }), {
+        mockWidgetApi: { http: { request }, safeStorage: { decryptString } }
+      });
+
+      expect(await screen.findByText('42.5')).toBeInTheDocument();
+      expect(request.mock.calls[0][0].headers?.Authorization).toBe('Bearer plain-token');
+    })
+
+    it('should decrypt the basic-auth password', async () => {
+      const request = jest.fn(async (_cfg: { headers?: Record<string, string> }) => fixtureHttpResponse());
+      const decryptString = jest.fn(async () => 'pw');
+      setupSut(fixtureSettings({ authType: 'basic', username: 'bob', password: 'enc:v1:UFc=' }), {
+        mockWidgetApi: { http: { request }, safeStorage: { decryptString } }
+      });
+
+      expect(await screen.findByText('42.5')).toBeInTheDocument();
+      expect(request.mock.calls[0][0].headers?.Authorization).toBe(`Basic ${btoa('bob:pw')}`);
+    })
+
+    it('should show a re-enter error and make no request, when the credential can\'t be decrypted', async () => {
+      const request = jest.fn(async () => fixtureHttpResponse());
+      const decryptString = jest.fn(async () => {
+        throw new Error('decrypt failed');
+      });
+      setupSut(fixtureSettings({ authType: 'bearer', token: 'enc:v1:VE9L' }), {
+        mockWidgetApi: { http: { request }, safeStorage: { decryptString } }
+      });
+
+      expect(await screen.findByText(/can't be decrypted on this machine/i)).toBeInTheDocument();
+      expect(request).not.toHaveBeenCalled();
+    })
+
+    it('should ignore an undecryptable secret of an auth type that is not selected', async () => {
+      const request = jest.fn(async () => fixtureHttpResponse());
+      const decryptString = jest.fn(async () => {
+        throw new Error('decrypt failed');
+      });
+      setupSut(fixtureSettings({ authType: 'none', token: 'enc:v1:VE9L' }), {
+        mockWidgetApi: { http: { request }, safeStorage: { decryptString } }
+      });
+
+      expect(await screen.findByText('42.5')).toBeInTheDocument();
+      expect(decryptString).not.toHaveBeenCalled();
+    })
+  })
 })

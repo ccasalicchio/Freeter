@@ -4,7 +4,7 @@
  */
 
 import { ReactComponent, WidgetReactComponentProps } from '@/widgets/appModules';
-import { Thresholds, formatStatValue, getJsonPath, monitorAuthHeaders, thresholdColor, usePolling } from '@/widgets/helpers';
+import { Thresholds, formatStatValue, getJsonPath, monitorAuthHeaders, secretDecryptErrorText, thresholdColor, useMonitorAuth, usePolling } from '@/widgets/helpers';
 import { Settings } from './settings';
 import styles from './widget.module.scss';
 import clsx from 'clsx';
@@ -30,16 +30,20 @@ function parseHeadersJson(headersJson: string): Record<string, string> | null {
 }
 
 function WidgetComp({settings, widgetApi}: WidgetReactComponentProps<Settings>) {
-  const { http } = widgetApi;
+  const { http, safeStorage } = widgetApi;
   const [value, setValue] = useState<unknown>(undefined);
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState('');
   const [asOf, setAsOf] = useState<number | null>(null);
 
-  const { url, jsonPath, label, unit, refreshSecs, warn, crit, invert, authType, username, password, token, headersJson } = settings;
+  const { url, jsonPath, label, unit, refreshSecs, warn, crit, invert, headersJson } = settings;
+  const authState = useMonitorAuth(settings, safeStorage);
+  // never request with undecrypted (enc:v1:) credentials
+  const { authType, username, password, token } = authState.status === 'ready' ? authState.auth : { authType: 'none', username: '', password: '', token: '' } as const;
+  const authReady = authState.status === 'ready';
 
   const refresh = useCallback(async () => {
-    if (url === '') {
+    if (url === '' || !authReady) {
       return;
     }
     const extraHeaders = parseHeadersJson(headersJson);
@@ -79,12 +83,15 @@ function WidgetComp({settings, widgetApi}: WidgetReactComponentProps<Settings>) 
     setValue(extracted);
     setLoaded(true);
     setAsOf(Date.now());
-  }, [http, url, jsonPath, headersJson, authType, username, password, token]);
+  }, [http, url, jsonPath, headersJson, authReady, authType, username, password, token]);
 
   usePolling(refresh, refreshSecs);
 
   if (url === '') {
     return <div className={styles['not-configured']}>{'URL not specified'}</div>;
+  }
+  if (authState.status === 'error') {
+    return <div className={styles['error']}>{secretDecryptErrorText}</div>;
   }
 
   const thresholds: Thresholds = { warn: warn ?? undefined, crit: crit ?? undefined, invert };

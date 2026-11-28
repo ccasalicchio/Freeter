@@ -3,7 +3,8 @@
  * GNU General Public License v3.0 or later (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
  */
 
-import { createElement, useEffect, type ReactElement } from 'react';
+import { createElement, useEffect, useState, type ReactElement } from 'react';
+import { fromEncryptedSecret, isEncryptedSecret } from '@common/base/secretSetting';
 
 export { debounce } from '@common/helpers/debounce'
 export type { DebouncedFunc } from '@common/helpers/debounce';
@@ -159,8 +160,8 @@ export interface MonitorAuthSettings {
 
 /**
  * Builds the Authorization header for basic/bearer monitor auth settings.
- * NOTE: credentials are plain widget settings for now — migration to the
- * safeStorage widget API (OS keychain encryption) is planned.
+ * The credentials passed in must already be decrypted (see useSecretSetting):
+ * the stored settings hold them as OS-keychain ciphertext (`enc:v1:…`).
  */
 export function monitorAuthHeaders(auth: MonitorAuthSettings): Record<string, string> {
   if (auth.authType === 'basic' && (auth.username !== '' || auth.password !== '')) {
@@ -242,4 +243,88 @@ export async function githubApiRequest(
   } catch {
     return { ok: false, error: 'Unexpected GitHub API response' };
   }
+}
+
+export { isEncryptedSecret } from '@common/base/secretSetting';
+
+/** shown by widgets when a stored secret can't be decrypted (e.g. a profile from another machine) */
+export const secretDecryptErrorText = 'Saved token can\'t be decrypted on this machine — re-enter it in settings';
+
+export type SecretSettingState =
+  | { readonly status: 'ready'; readonly value: string }
+  | { readonly status: 'pending' }
+  | { readonly status: 'error' };
+
+/**
+ * Resolves a secret widget setting to its plaintext for use in requests.
+ * - empty / legacy plaintext values resolve synchronously ('ready');
+ * - `enc:v1:` ciphertext is decrypted through the safeStorage widget API:
+ *   'pending' until the IPC round trip resolves, then 'ready' or 'error'.
+ * Callers must not send any request until the status is 'ready', so the
+ * ciphertext is never used as a credential.
+ */
+export function useSecretSetting(
+  stored: string,
+  safeStorage: { decryptString: (encryptedText: string) => Promise<string> } | undefined
+): SecretSettingState {
+  const encrypted = isEncryptedSecret(stored);
+  const [decrypted, setDecrypted] = useState<{ stored: string; result: SecretSettingState } | null>(null);
+
+  useEffect(() => {
+    if (!encrypted) {
+      return undefined;
+    }
+    let cancelled = false;
+    (async () => {
+      let result: SecretSettingState;
+      try {
+        if (!safeStorage) {
+          throw new Error('safeStorage widget API not available');
+        }
+        const value = await safeStorage.decryptString(fromEncryptedSecret(stored));
+        result = typeof value === 'string' ? { status: 'ready', value } : { status: 'error' };
+      } catch {
+        result = { status: 'error' };
+      }
+      if (!cancelled) {
+        setDecrypted({ stored, result });
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [stored, encrypted, safeStorage]);
+
+  if (!encrypted) {
+    return { status: 'ready', value: stored };
+  }
+  if (decrypted !== null && decrypted.stored === stored) {
+    return decrypted.result;
+  }
+  return { status: 'pending' };
+}
+
+export type MonitorAuthState =
+  | { readonly status: 'ready'; readonly auth: MonitorAuthSettings }
+  | { readonly status: 'pending' }
+  | { readonly status: 'error' };
+
+/**
+ * Decrypts the secret monitor auth settings (password, token) on use. Only
+ * the secret the selected authType actually sends is considered, so an
+ * undecryptable leftover of another auth type doesn't block requests.
+ */
+export function useMonitorAuth(
+  auth: MonitorAuthSettings,
+  safeStorage: { decryptString: (encryptedText: string) => Promise<string> } | undefined
+): MonitorAuthState {
+  const password = useSecretSetting(auth.authType === 'basic' ? auth.password : '', safeStorage);
+  const token = useSecretSetting(auth.authType === 'bearer' ? auth.token : '', safeStorage);
+  if (password.status === 'error' || token.status === 'error') {
+    return { status: 'error' };
+  }
+  if (password.status === 'pending' || token.status === 'pending') {
+    return { status: 'pending' };
+  }
+  return { status: 'ready', auth: { authType: auth.authType, username: auth.username, password: password.value, token: token.value } };
 }

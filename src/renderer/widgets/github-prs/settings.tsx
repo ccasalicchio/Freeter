@@ -4,6 +4,7 @@
  */
 
 import { CreateSettingsState, ReactComponent, SettingBlock, SettingsEditorReactComponentProps } from '@/widgets/appModules';
+import { SecretInput } from '@/widgets/secretInput';
 
 export interface Settings {
   repo: string;
@@ -26,9 +27,9 @@ function SettingsEditorComp({settings, settingsApi}: SettingsEditorReactComponen
         <input id='gh-prs-repo' type='text' value={settings.repo} placeholder='owner/name'
           onChange={e => updateSettings({ ...settings, repo: e.target.value.trim() })} />
       </SettingBlock>
-      <SettingBlock titleForId='gh-prs-token' title='Access Token (optional)' moreInfo='Fine-grained personal access token with Pull requests read permission. Required for private repositories. Stored in the local Freeter profile.'>
-        <input id='gh-prs-token' type='password' value={settings.token} placeholder='github_pat_…'
-          onChange={e => updateSettings({ ...settings, token: e.target.value.trim() })} />
+      <SettingBlock titleForId='gh-prs-token' title='Access Token (optional)' moreInfo='Fine-grained personal access token with Pull requests read permission. Required for private repositories. Encrypted with the OS keychain (safeStorage) when the settings are saved.'>
+        <SecretInput id='gh-prs-token' value={settings.token} placeholder='github_pat_…'
+          onChange={token => updateSettings({ ...settings, token: token.trim() })} />
       </SettingBlock>
       <SettingBlock titleForId='gh-prs-refresh' title='Refresh Every'>
         <select id='gh-prs-refresh' value={settings.refreshSecs} onChange={e => updateSettings({
