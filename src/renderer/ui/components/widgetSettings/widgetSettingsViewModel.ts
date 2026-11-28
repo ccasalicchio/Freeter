@@ -50,7 +50,7 @@ export function createWidgetSettingsViewModelHook({
     }, [])
 
     const onOkClickHandler = useCallback(() => {
-      saveWidgetSettingsUseCase();
+      void saveWidgetSettingsUseCase();
     }, []);
 
     const onCancelClickHandler = useCallback(() => {

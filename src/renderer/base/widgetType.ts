@@ -30,4 +30,11 @@ export interface WidgetType<TSettings = WidgetSettings> extends Entity {
   readonly createSettingsState: CreateSettingsState<TSettings>;
   readonly requiresApi?: WidgetApiModuleName[]; // specifies WidgetAPI modules it requires access to
   readonly requiresState?: SharedStateSliceName[];
+  /**
+   * Names of string settings keys holding secrets (API tokens, passwords).
+   * They are encrypted with the OS keychain (safeStorage) when the settings
+   * are saved and stored as `enc:v1:<ciphertext>`; the widget decrypts them on
+   * use via the safeStorage widget API (so it must also require 'safeStorage').
+   */
+  readonly secretSettings?: readonly string[];
 }
