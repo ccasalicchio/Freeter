@@ -37,7 +37,7 @@ function WidgetComp({settings, widgetApi}: WidgetReactComponentProps<Settings>) 
       iconSvg={glyphSvg}
       iconUrl={iconUrl}
       onIconError={() => setIconFailed(true)}
-      title={`Launch Application`}
+      title={'Launch Application'}
       size='Fill'
       style={settings.glyphColor ? { color: settings.glyphColor } : undefined}
     />

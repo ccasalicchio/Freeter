@@ -22,7 +22,7 @@ describe('Store', () => {
       });
     })
 
-    it('should call an onStoreReady callback, when the store is ready', () => new Promise<void>((done, fail) => {
+    it('should call an onStoreReady callback, when the store is ready', () => new Promise<void>((done) => {
       const initState = { state: 'init state' };
       createStore({
         stateStorage: fixtureStateStorageWithValidData({})

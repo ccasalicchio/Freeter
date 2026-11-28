@@ -13,8 +13,6 @@ export interface McpConfigProvider {
 
 export function createMcpConfigProvider(): McpConfigProvider {
   return {
-    applyMcpConfig: async (config) => electronIpcRenderer.invoke<IpcSetMcpConfigArgs, IpcSetMcpConfigRes>(
-      ipcSetMcpConfigChannel, config
-    ),
+    applyMcpConfig: async (config) => electronIpcRenderer.invoke<IpcSetMcpConfigArgs, IpcSetMcpConfigRes>(ipcSetMcpConfigChannel, config),
   }
 }

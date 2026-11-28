@@ -3,6 +3,7 @@
  * GNU General Public License v3.0 or later (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
  */
 
+import { vi } from 'vitest';
 import { StateStorage, createStateStorage, windowStateDataStoragKey } from '@common/data/stateStorage';
 import { createPersistentWindowState, currentWindowStateVersion, migrateWindowState } from '@/base/state/window';
 import { createWindowStateStorage } from '@/data/windowStateStorage'

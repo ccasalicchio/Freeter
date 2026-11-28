@@ -54,6 +54,9 @@ export function installDragScroll(): () => void {
     e.preventDefault();
   };
 
+  // endDrag and the pointer handlers reference each other; both are only
+  // invoked after this whole closure has been initialized
+  /* eslint-disable no-use-before-define */
   const endDrag = () => {
     if (dragging) {
       document.body.style.removeProperty('user-select');
@@ -68,6 +71,8 @@ export function installDragScroll(): () => void {
     window.removeEventListener('pointerup', onPointerUp);
     window.removeEventListener('pointercancel', onPointerUp);
   };
+
+  /* eslint-enable no-use-before-define */
 
   const onPointerMove = (e: PointerEvent) => {
     if (!scrollEl) {

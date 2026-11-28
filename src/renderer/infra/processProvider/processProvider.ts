@@ -17,8 +17,6 @@ export async function createProcessProvider(): Promise<ProcessProvider> {
     getSystemMetrics: async () => electronIpcRenderer.invoke<IpcGetSystemMetricsArgs, IpcGetSystemMetricsRes>(
       ipcGetSystemMetricsChannel
     ),
-    execFile: async (cmd, args, cwd) => electronIpcRenderer.invoke<IpcExecFileArgs, IpcExecFileRes>(
-      ipcExecFileChannel, cmd, args, cwd
-    )
+    execFile: async (cmd, args, cwd) => electronIpcRenderer.invoke<IpcExecFileArgs, IpcExecFileRes>(ipcExecFileChannel, cmd, args, cwd)
   }
 }
