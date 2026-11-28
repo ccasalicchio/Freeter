@@ -3,6 +3,7 @@
  * GNU General Public License v3.0 or later (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
  */
 
+import net from 'node:net';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import { DataStorage } from '@common/application/interfaces/dataStorage';
@@ -51,19 +52,36 @@ function fixtureAppJson() {
 
 const mcpToken = 'test-mcp-token';
 
-async function connectWithRetry(client: Client, url: URL) {
+/** asks the OS for a currently free localhost port */
+function getFreePort(): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const srv = net.createServer();
+    srv.once('error', reject);
+    srv.listen(0, '127.0.0.1', () => {
+      const { port } = srv.address() as net.AddressInfo;
+      srv.close(() => resolve(port));
+    });
+  });
+}
+
+/** resolves once something accepts TCP connections on the port */
+async function waitForListening(port: number): Promise<void> {
   for (let attempt = 0; ; attempt++) {
-    try {
-      await client.connect(new StreamableHTTPClientTransport(url, {
-        requestInit: { headers: { Authorization: `Bearer ${mcpToken}` } }
-      }));
+    const ok = await new Promise<boolean>(resolve => {
+      const sock = net.connect(port, '127.0.0.1');
+      sock.once('connect', () => {
+        sock.destroy();
+        resolve(true);
+      });
+      sock.once('error', () => resolve(false));
+    });
+    if (ok) {
       return;
-    } catch (err) {
-      if (attempt >= 20) {
-        throw err;
-      }
-      await new Promise(resolve => setTimeout(resolve, 25));
     }
+    if (attempt >= 100) {
+      throw new Error(`MCP test server did not start listening on port ${port}`);
+    }
+    await new Promise(resolve => setTimeout(resolve, 20));
   }
 }
 
@@ -75,10 +93,13 @@ async function setup(encryptString = jest.fn((plainText: string) => `CIPHER(${pl
     reloadRenderer: jest.fn(),
     safeStorageProvider: { encryptString },
   });
-  const port = 40000 + Math.floor(Math.random() * 20000);
+  const port = await getFreePort();
   server.start({ enabled: true, port, token: mcpToken });
+  await waitForListening(port);
   const client = new Client({ name: 'test', version: '1.0.0' });
-  await connectWithRetry(client, new URL(`http://127.0.0.1:${port}/mcp`));
+  await client.connect(new StreamableHTTPClientTransport(new URL(`http://127.0.0.1:${port}/mcp`), {
+    requestInit: { headers: { Authorization: `Bearer ${mcpToken}` } }
+  }));
   const readAppJson = () => appDataStorage.getText('app');
   const readWidgets = async () => JSON.parse((await appDataStorage.getText('app'))!).obj.entities.widgets;
   return {
