@@ -13,7 +13,8 @@ export interface LoginItemProvider {
 export function createLoginItemProvider(): LoginItemProvider {
   return {
     setLaunchAtStartup: async (enabled) => electronIpcRenderer.invoke<IpcSetLoginItemSettingsArgs, IpcSetLoginItemSettingsRes>(
-      ipcSetLoginItemSettingsChannel, enabled
+      ipcSetLoginItemSettingsChannel,
+      enabled
     ),
   }
 }

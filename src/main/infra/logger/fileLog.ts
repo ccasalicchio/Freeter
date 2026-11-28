@@ -10,6 +10,21 @@ const maxLogSize = 2 * 1024 * 1024; // rotate to .old beyond this
 
 let logFilePath: string | null = null;
 
+export function getLogFilePath(): string | null {
+  return logFilePath;
+}
+
+export function logToFile(level: 'info' | 'warn' | 'error', message: string): void {
+  if (!logFilePath) {
+    return;
+  }
+  try {
+    appendFileSync(logFilePath, `${new Date().toISOString()} [${level}] ${message}\n`);
+  } catch {
+    // never throw from logging
+  }
+}
+
 /**
  * Initializes the plain-text app log. Safe to call before app is ready.
  * Logging must never break the app: all failures are swallowed.
@@ -24,20 +39,5 @@ export function initFileLog(path: string): void {
     logToFile('info', `==== log started (pid ${process.pid}) ====`);
   } catch {
     logFilePath = null;
-  }
-}
-
-export function getLogFilePath(): string | null {
-  return logFilePath;
-}
-
-export function logToFile(level: 'info' | 'warn' | 'error', message: string): void {
-  if (!logFilePath) {
-    return;
-  }
-  try {
-    appendFileSync(logFilePath, `${new Date().toISOString()} [${level}] ${message}\n`);
-  } catch {
-    // never throw from logging
   }
 }

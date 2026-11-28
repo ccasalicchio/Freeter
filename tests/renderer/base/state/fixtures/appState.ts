@@ -8,6 +8,7 @@ import { EditTogglePos, ProjectSwitcherPos } from '@/base/state/ui';
 import { StateInStore } from '@common/application/interfaces/store';
 import { deepFreeze } from '@common/helpers/deepFreeze';
 import { fixtureEntitiesState } from '@tests/base/state/fixtures/entitiesState';
+import { fixtureAppConfig } from '@tests/base/fixtures/appConfig';
 
 const appState: AppState = {
   entities: fixtureEntitiesState(),
@@ -17,14 +18,7 @@ const appState: AppState = {
     menuBar: true,
     topBar: true,
     editTogglePos: EditTogglePos.TabBarRight,
-    appConfig: {
-      mainHotkey: '',
-      memSaver: {
-        activateWorkflowsOnProjectSwitch: true,
-        workflowInactiveAfter: -1
-      },
-      uiTheme: 'light'
-    },
+    appConfig: fixtureAppConfig(),
     apps: {
       appIds: [],
     },

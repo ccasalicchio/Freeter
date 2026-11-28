@@ -4,6 +4,8 @@
  */
 
 import { fixtureStore } from '@testscommon/data/fixtures/store';
-import { AppState } from '@/base/state/app';
+import { AppState, createPersistentAppState } from '@/base/state/app';
 
-export const fixtureAppStore = fixtureStore<AppState>;
+// persist exactly what the real app store persists: ui.memSaver holds timer
+// handles, which are circular Node objects in the test environment
+export const fixtureAppStore = (state: AppState) => fixtureStore<AppState>(state, createPersistentAppState);

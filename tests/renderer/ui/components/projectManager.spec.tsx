@@ -39,6 +39,8 @@ async function setup(
     updateProjectSettingsInProjectManagerUseCase,
     updateProjectsOrderInProjectManagerUseCase,
     duplicateProjectInProjectManagerUseCase,
+    showOpenDirDialogUseCase: jest.fn(),
+    showOpenFileDialogUseCase: jest.fn(),
   })
   const ProjectManager = createProjectManagerComponent({
     useProjectManagerViewModel
