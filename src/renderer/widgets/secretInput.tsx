@@ -4,6 +4,7 @@
  */
 
 import { isEncryptedSecret } from '@common/base/secretSetting';
+import { useState } from 'react';
 
 export interface SecretInputProps {
   id: string;
@@ -18,19 +19,25 @@ export interface SecretInputProps {
  * Password input for a secret widget setting (see WidgetType.secretSettings).
  * A stored ciphertext is never shown as if it were the secret: the input is
  * empty with a "saved (encrypted)" hint, and the stored value is kept unless
- * the user types a new one or clears it.
+ * the user types a new one (erasing that new one back to empty restores the
+ * saved value) or clicks Clear.
  */
 export function SecretInput({ id, value, placeholder, onChange }: SecretInputProps) {
+  // the ciphertext this editor session started from, restorable until Clear
+  const [savedCipher, setSavedCipher] = useState(() => (isEncryptedSecret(value) ? value : ''));
   const saved = isEncryptedSecret(value);
   return (
     <>
       <input id={id} type='password' value={saved ? '' : value}
         placeholder={saved ? 'saved (encrypted) — type to replace' : placeholder}
-        onChange={e => onChange(e.target.value)} />
+        onChange={e => onChange(e.target.value === '' && savedCipher !== '' ? savedCipher : e.target.value)} />
       {saved && (
         <div style={{ fontSize: '0.85em', opacity: 0.75, marginTop: 4 }}>
           {'Saved (encrypted with the OS keychain). '}
-          <button type='button' onClick={() => onChange('')}>{'Clear'}</button>
+          <button type='button' onClick={() => {
+            setSavedCipher('');
+            onChange('');
+          }}>{'Clear'}</button>
         </div>
       )}
     </>

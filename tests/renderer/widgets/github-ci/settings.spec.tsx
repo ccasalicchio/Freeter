@@ -42,6 +42,17 @@ describe('GitHub CI Settings', () => {
     expect(getSettings().token).toBe('ghp_new');
   })
 
+  it('should restore the encrypted token, when a typed replacement is erased', async () => {
+    const { userEvent, getSettings } = setupSettingsSut(settingsEditorComp, fixtureSettings({ token: 'enc:v1:Q0lQSEVS' }));
+    const input = screen.getByLabelText(/access token/i);
+
+    await userEvent.type(input, 'ab');
+    expect(getSettings().token).toBe('ab');
+    await userEvent.type(input, '{backspace}{backspace}');
+
+    expect(getSettings().token).toBe('enc:v1:Q0lQSEVS');
+  })
+
   it('should clear an encrypted token with the Clear button', async () => {
     const { userEvent, getSettings } = setupSettingsSut(settingsEditorComp, fixtureSettings({ token: 'enc:v1:Q0lQSEVS' }));
 

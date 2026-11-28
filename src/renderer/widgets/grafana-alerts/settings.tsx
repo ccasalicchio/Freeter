@@ -49,7 +49,7 @@ function SettingsEditorComp({settings, settingsApi}: SettingsEditorReactComponen
           placeholder={settings.source === 'grafana' ? 'http://localhost:3000' : 'http://localhost:9093'}
           onChange={e => updateSettings({ ...settings, baseUrl: e.target.value.trim() })} />
       </SettingBlock>
-      <SettingBlock titleForId='grafana-alerts-token' title='Token' moreInfo='Optional bearer token (Grafana service-account token). Sent as an Authorization: Bearer header. Encrypted with the OS keychain (safeStorage) when saved; profile exports and backups hold only the ciphertext, which can only be decrypted on this machine.'>
+      <SettingBlock titleForId='grafana-alerts-token' title='Token' moreInfo='Optional bearer token (Grafana service-account token). Sent as an Authorization: Bearer header. Encrypted with the OS keychain (safeStorage) when the settings are saved.'>
         <SecretInput id='grafana-alerts-token' value={settings.token}
           onChange={token => updateSettings({ ...settings, token })} />
       </SettingBlock>

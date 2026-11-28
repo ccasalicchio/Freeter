@@ -27,7 +27,7 @@ function SettingsEditorComp({settings, settingsApi}: SettingsEditorReactComponen
         <input id='gh-prs-repo' type='text' value={settings.repo} placeholder='owner/name'
           onChange={e => updateSettings({ ...settings, repo: e.target.value.trim() })} />
       </SettingBlock>
-      <SettingBlock titleForId='gh-prs-token' title='Access Token (optional)' moreInfo='Fine-grained personal access token with Pull requests read permission. Required for private repositories. Encrypted with the OS keychain (safeStorage) when saved; profile exports and backups hold only the ciphertext, which can only be decrypted on this machine.'>
+      <SettingBlock titleForId='gh-prs-token' title='Access Token (optional)' moreInfo='Fine-grained personal access token with Pull requests read permission. Required for private repositories. Encrypted with the OS keychain (safeStorage) when the settings are saved.'>
         <SecretInput id='gh-prs-token' value={settings.token} placeholder='github_pat_…'
           onChange={token => updateSettings({ ...settings, token: token.trim() })} />
       </SettingBlock>

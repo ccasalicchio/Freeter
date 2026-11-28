@@ -66,7 +66,7 @@ function SettingsEditorComp({settings, settingsApi}: SettingsEditorReactComponen
         <input id='grafana-panel-refresh' type='number' min={settings.mode === 'image' ? 10 : 5} value={settings.refreshSecs}
           onChange={e => updateSettings({ ...settings, refreshSecs: Math.max(5, Number.parseInt(e.target.value) || 60) })} />
       </SettingBlock>
-      <SettingBlock titleForId='grafana-panel-token' title='Token' moreInfo='Optional Grafana service-account token, sent as an Authorization: Bearer header in image mode. Encrypted with the OS keychain (safeStorage) when saved; profile exports and backups hold only the ciphertext, which can only be decrypted on this machine.'>
+      <SettingBlock titleForId='grafana-panel-token' title='Token' moreInfo='Optional Grafana service-account token, sent as an Authorization: Bearer header in image mode. Encrypted with the OS keychain (safeStorage) when the settings are saved.'>
         <SecretInput id='grafana-panel-token' value={settings.token}
           onChange={token => updateSettings({ ...settings, token })} />
       </SettingBlock>

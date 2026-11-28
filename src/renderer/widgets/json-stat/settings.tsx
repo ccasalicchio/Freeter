@@ -82,7 +82,7 @@ function SettingsEditorComp({settings, settingsApi}: SettingsEditorReactComponen
           Lower is worse
         </label>
       </SettingBlock>
-      <SettingBlock titleForId='json-stat-auth' title='Authentication' moreInfo='Password and token are encrypted with the OS keychain (safeStorage) when saved; profile exports and backups hold only the ciphertext, which can only be decrypted on this machine.'>
+      <SettingBlock titleForId='json-stat-auth' title='Authentication' moreInfo='Password and token are encrypted with the OS keychain (safeStorage) when the settings are saved.'>
         <select id='json-stat-auth' value={settings.authType} onChange={e => updateSettings({
           ...settings, authType: e.target.value === 'basic' ? 'basic' : e.target.value === 'bearer' ? 'bearer' : 'none'
         })}>
